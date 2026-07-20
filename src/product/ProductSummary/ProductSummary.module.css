@@ -1,0 +1,434 @@
+.summaryContainer {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.productTitle {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.6rem 0;
+  line-height: 1.25;
+}
+
+/* Rating Row */
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.starIcon {
+  color: #dddddd;
+  font-size: 0.95rem;
+}
+
+.starFilled {
+  color: #ffb400;
+  fill: #ffb400;
+}
+
+.ratingScore {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.reviewCount {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ratingDivider {
+  color: rgba(0, 0, 0, 0.15);
+}
+
+.writeReviewLink {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.writeReviewLink:hover {
+  color: var(--secondary-color);
+}
+
+/* Pricing Container */
+.priceContainer {
+  margin-bottom: 1.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1.2rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.sellingPrice {
+  font-family: var(--font-sans);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.originalPrice {
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+.discountBadge {
+  background-color: var(--bg-soft-pink-darker);
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-button);
+}
+
+.taxText {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-light);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* Quick Specs Grid */
+.specsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem 1.5rem;
+  background-color: var(--bg-white);
+  border: 1px solid rgba(209, 27, 105, 0.06);
+  border-radius: var(--radius-card);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.specItem {
+  display: grid;
+  grid-template-columns: 110px 15px 1fr;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+}
+
+.specLabel {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.specColon {
+  color: var(--text-light);
+}
+
+.specVal {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* Stock tag */
+.stockRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
+
+.stockDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2e7d32;
+}
+
+.stockStatus {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.stockDivider {
+  color: rgba(0, 0, 0, 0.15);
+}
+
+.shipStatus {
+  color: var(--text-muted);
+}
+
+/* Pincode Box */
+.pincodeBox {
+  background-color: var(--bg-soft-pink-darker);
+  border: 1px solid rgba(209, 27, 105, 0.06);
+  border-radius: var(--radius-button);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.pincodeForm {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pincodeLabel {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pincodeInput {
+  flex-grow: 1;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-button);
+  padding: 0.5rem 0.8rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.pincodeInput:focus {
+  border-color: var(--primary-color);
+  background-color: var(--bg-white);
+}
+
+.pincodeBtn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.pincodeBtn:hover {
+  background-color: var(--secondary-color);
+}
+
+.deliveryMsg {
+  margin-top: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+
+.deliverySuccess {
+  color: #2e7d32;
+  margin: 0;
+}
+
+.deliveryError {
+  color: #c62828;
+  margin: 0;
+}
+
+/* Quantity Row */
+.quantityRow {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.quantityLabel {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.quantityCounter {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background-color: var(--bg-white);
+}
+
+.qtyBtn {
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.qtyBtn:hover {
+  background-color: var(--bg-soft-pink-darker);
+  color: var(--primary-color);
+}
+
+.qtyVal {
+  width: 40px;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Secondary Actions (Wishlist & Share) */
+.secondaryActions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.wishlistBtn, .shareBtn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition-smooth);
+}
+
+.wishlistBtn:hover, .shareBtn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: var(--bg-soft-pink-darker);
+}
+
+.activeWishlist {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  background-color: var(--bg-soft-pink-darker);
+}
+
+.actionIcon {
+  font-size: 1rem;
+}
+
+/* Primary CTAs */
+.primaryActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.addToCartBtn {
+  background-color: var(--bg-white);
+  border: 1.5px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.95rem 1.5rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-smooth);
+}
+
+.addToCartBtn:hover {
+  background-color: var(--bg-soft-pink-darker);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.1);
+}
+
+.buyNowBtn {
+  background-color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
+  color: var(--bg-white);
+  padding: 0.95rem 1.5rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.2);
+}
+
+.buyNowBtn:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(10, 126, 140, 0.25);
+}
+
+.ctaIcon {
+  font-size: 1.1rem;
+}
+
+/* Trust Badges */
+.trustBadges {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 1.2rem;
+}
+
+.badgeItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.trustIcon {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .specsGrid {
+    grid-template-columns: 1fr;
+  }
+  .primaryActions {
+    grid-template-columns: 1fr;
+  }
+  .trustBadges {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+}

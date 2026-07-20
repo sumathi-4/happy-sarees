@@ -1,0 +1,113 @@
+.cardContainer {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.6rem;
+}
+
+.offersList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.offerCard {
+  background-color: var(--bg-soft-pink);
+  border: 1px dashed rgba(209, 27, 105, 0.2);
+  border-radius: var(--radius-button);
+  padding: 0.9rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  transition: var(--transition-smooth);
+}
+
+.appliedCard {
+  background-color: #f1f8e9;
+  border-color: #aed581;
+}
+
+.offerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tagIcon {
+  color: var(--primary-color);
+  font-size: 0.85rem;
+}
+
+.codeText {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-color);
+  letter-spacing: 0.5px;
+}
+
+.badge {
+  background-color: var(--gold-color);
+  color: #333;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.offerDesc {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.applyBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.applyBtn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+}
+
+.appliedBtn {
+  color: #2e7d32 !important;
+  font-weight: 700;
+  cursor: default;
+}

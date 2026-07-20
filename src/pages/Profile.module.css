@@ -1,0 +1,64 @@
+.pageWrapper {
+  background-color: var(--bg-soft-pink);
+  min-height: 100vh;
+  padding-bottom: 5rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Breadcrumb */
+.breadcrumbBar {
+  padding: 1.5rem 0 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crumbLink {
+  color: var(--text-light);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+}
+
+.crumbLink:hover {
+  color: var(--primary-color);
+}
+
+.separator {
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.activeCrumb {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Two-Column Grid */
+.accountGrid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2.2rem;
+  align-items: start;
+}
+
+.leftCol {
+  width: 100%;
+}
+
+.rightCol {
+  width: 100%;
+}
+
+@media (max-width: 991px) {
+  .accountGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,35 @@
+.badge {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pink {
+  background-color: var(--bg-soft-pink-darker);
+  color: var(--primary-color);
+}
+
+.magenta {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+}
+
+.gold {
+  background-color: #fff8e1;
+  color: #c5a059;
+}
+
+.green {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.blue {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}

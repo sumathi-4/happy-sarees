@@ -1,0 +1,20 @@
+# Tasks
+
+- [x] Build 404 Not Found page (`src/pages/NotFound.jsx` & `src/pages/NotFound.module.css`)
+- [x] Build Global Loading Screen (`src/components/common/LoadingScreen/`)
+- [x] Build Skeleton Loading components (`src/components/common/Skeleton/`)
+- [x] Build Empty State components for Wishlist, Cart, Orders, Search, and Reviews (`src/components/common/EmptyState/`)
+- [x] Build Toast Notification system (`src/context/ToastContext.jsx` & `src/components/common/Toast/`)
+- [x] Build Confirmation Modal (`src/components/common/ConfirmationModal/`)
+- [x] Build Search Suggestions dropdown and Search Results page (`src/pages/SearchResults.jsx`)
+- [x] Build Reusable Breadcrumb component (`src/components/common/Breadcrumb/`)
+- [x] Build Floating Back to Top button (`src/components/common/BackToTop/`)
+- [x] Build Scroll Progress indicator (`src/components/common/ScrollProgress/`)
+- [x] Build Newsletter Success popup (`src/components/common/NewsletterModal/`)
+- [x] Build Reusable Button component with multiple variants (`src/components/common/Button/`)
+- [x] Build Badge component (`src/components/common/Badge/`)
+- [x] Build Chip component (`src/components/common/Chip/`)
+- [x] Build Reusable Section Title component (`src/components/common/SectionTitle/`)
+- [x] Build Reusable Product Card component (`src/components/common/ProductCard/`)
+- [x] Build Reusable Product Carousel component (`src/components/common/ProductCarousel/`)
+- [x] Verify project compilation via `npm run build`

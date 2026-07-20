@@ -1,0 +1,69 @@
+.skeletonContainer {
+  display: contents;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #f8f8f8 50%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.productSkeletonCard {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--bg-white);
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.imgBox {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+}
+
+.metaBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.line {
+  height: 14px;
+  border-radius: 4px;
+}
+
+.listSkeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-radius: var(--radius-card);
+  background-color: var(--bg-white);
+}
+
+.thumb {
+  width: 50px;
+  height: 65px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}

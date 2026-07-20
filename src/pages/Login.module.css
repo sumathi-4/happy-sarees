@@ -1,0 +1,249 @@
+.pageWrapper {
+  background-color: var(--bg-soft-pink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.container {
+  max-width: 1150px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.splitGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.leftCol {
+  width: 100%;
+  height: 100%;
+}
+
+.rightCol {
+  width: 100%;
+}
+
+.formCard {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.05);
+  padding: 3rem 2.5rem;
+  text-align: left;
+}
+
+.headerBlock {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.4rem 0;
+}
+
+.subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.inputGroup label {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-light);
+  font-size: 1.05rem;
+}
+
+.inputField {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 0.8rem 1rem 0.8rem 2.8rem;
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  outline: none;
+  background-color: var(--bg-white);
+  transition: var(--transition-smooth);
+}
+
+.inputField:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.1);
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.optionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  margin-top: -0.2rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.checkbox {
+  accent-color: var(--primary-color);
+  width: 16px;
+  height: 16px;
+}
+
+.forgotLink {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.95rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 15px rgba(209, 27, 105, 0.2);
+  margin-top: 0.4rem;
+}
+
+.submitBtn:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(10, 126, 140, 0.25);
+}
+
+/* Divider */
+.dividerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.5rem 0;
+}
+
+.dividerLine {
+  flex-grow: 1;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.dividerText {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+
+/* Google Button */
+.googleBtn {
+  width: 100%;
+  background-color: var(--bg-white);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: var(--text-color);
+  padding: 0.8rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: var(--transition-smooth);
+}
+
+.googleBtn:hover {
+  background-color: var(--bg-soft-pink);
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+.googleIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.footerRow {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.8rem;
+}
+
+.switchLink {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.switchLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 991px) {
+  .splitGrid {
+    grid-template-columns: 1fr;
+  }
+}

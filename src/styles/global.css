@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  /* Brand Color Combo: Magenta/Pink and Teal, with soft pink background and gold accents */
+  --primary-color: #d11b69; /* Magenta pink from logo */
+  --secondary-color: #061feb; /* Royal Blue from logo */
+  --gold-color: #c5a059; /* Dull luxury gold */
+  --gold-hover: #a88444;
+  
+  --bg-soft-pink: #fef8f9; /* Luxurious soft pink background */
+  --bg-soft-pink-darker: #fbebed;
+  --bg-white: #ffffff;
+  
+  --text-color: #2b2b2b;
+  --text-muted: #666666;
+  --text-light: #999999;
+  
+  /* Typography Matching the Logo and Luxury Theme */
+  --font-serif: 'Playfair Display', serif; /* Elegant headings */
+  --font-script: 'Alex Brush', cursive; /* Handwritten signature font from logo */
+  --font-display: 'Cinzel', serif; /* Roman display typography */
+  --font-sans: 'Montserrat', sans-serif; /* Modern, clean sans-serif */
+  
+  /* Design Tokens */
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --shadow-premium: 0 12px 30px rgba(209, 27, 105, 0.05);
+  --shadow-hover: 0 20px 45px rgba(209, 27, 105, 0.12);
+  --radius-premium: 16px;
+  --radius-button: 30px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-soft-pink);
+  color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-soft-pink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}

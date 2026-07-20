@@ -1,0 +1,257 @@
+.stepCard {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 1.8rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.stepNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleIcon {
+  color: var(--primary-color);
+}
+
+.addBtn {
+  background: transparent;
+  border: 1px dashed var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition-smooth);
+}
+
+.addBtn:hover {
+  background-color: var(--bg-soft-pink-darker);
+}
+
+.addressGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.addrCard {
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-card);
+  padding: 1.2rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  background-color: var(--bg-white);
+  position: relative;
+}
+
+.selectedCard {
+  border-color: var(--primary-color);
+  background-color: var(--bg-soft-pink);
+  box-shadow: 0 4px 15px rgba(209, 27, 105, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.radioGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio {
+  accent-color: var(--primary-color);
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.defaultTag {
+  background-color: var(--bg-soft-pink-darker);
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.selectedIcon {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+.cardBody {
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.name {
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.3rem 0;
+}
+
+.street {
+  margin: 0 0 0.4rem 0;
+}
+
+.phone {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Address Form */
+.addressForm {
+  background-color: var(--bg-soft-pink);
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.inputGroup label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.inputGroup input {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  outline: none;
+  background-color: var(--bg-white);
+  transition: var(--transition-smooth);
+}
+
+.inputGroup input:focus {
+  border-color: var(--primary-color);
+}
+
+.checkboxLabel {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  cursor: pointer;
+}
+
+.saveAddressBtn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Footer Row */
+.footerRow {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 1.2rem;
+}
+
+.nextBtn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.85rem 1.8rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 15px rgba(209, 27, 105, 0.2);
+}
+
+.nextBtn:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

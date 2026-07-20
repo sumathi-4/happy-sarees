@@ -1,0 +1,202 @@
+.productTabsContainer {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* Left Column */
+.leftCol {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  overflow: hidden;
+}
+
+.tabHeaders {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--bg-soft-pink);
+}
+
+.tabBtn {
+  flex-grow: 1;
+  padding: 1.1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-align: center;
+}
+
+.tabBtn:hover {
+  color: var(--primary-color);
+}
+
+.activeTabBtn {
+  color: var(--primary-color) !important;
+  border-bottom-color: var(--primary-color) !important;
+  background-color: var(--bg-white);
+  font-weight: 700;
+}
+
+.tabPanel {
+  padding: 2rem;
+}
+
+.panelContent {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.narrativeText {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.narrativeText:last-child {
+  margin-bottom: 0;
+}
+
+.careList {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.careList li {
+  margin-bottom: 0.6rem;
+}
+
+.specListGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.specBox {
+  background-color: var(--bg-soft-pink-darker);
+  border-radius: var(--radius-button);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.specBoxLabel {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-light);
+  letter-spacing: 1px;
+}
+
+.specBoxVal {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Right Column (Specifications Summary Card) */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.specsCard {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 1.8rem;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 1.2rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.6rem;
+}
+
+.cardTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.cardRow {
+  display: grid;
+  grid-template-columns: 120px 15px 1fr;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+}
+
+.cardLabel {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cardColon {
+  color: var(--text-light);
+}
+
+.cardVal {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.toggleSpecsBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 auto;
+  transition: var(--transition-smooth);
+}
+
+.toggleSpecsBtn:hover {
+  color: var(--secondary-color);
+}
+
+@media (max-width: 991px) {
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+}

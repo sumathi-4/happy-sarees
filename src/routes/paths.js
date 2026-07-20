@@ -1,0 +1,20 @@
+export const PATHS = {
+  HOME: '/',
+  SHOP: '/shop',
+  PRODUCT_DETAILS: '/product/:id',
+  WISHLIST: '/wishlist',
+  CART: '/cart',
+  CHECKOUT: '/checkout',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
+  VERIFY_OTP: '/verify-otp',
+  RESET_PASSWORD: '/reset-password',
+  PROFILE: '/profile',
+  ABOUT: '/about',
+  CONTACT: '/contact',
+  COLLECTIONS: '/collections',
+  NEW_ARRIVALS: '/new-arrivals',
+  SEARCH: '/search',
+};
+

@@ -1,0 +1,29 @@
+.breadcrumbBar {
+  padding: 1.2rem 0;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crumbLink {
+  color: var(--text-light);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+}
+
+.crumbLink:hover {
+  color: var(--primary-color);
+}
+
+.separator {
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.activeCrumb {
+  color: var(--primary-color);
+  font-weight: 600;
+}

@@ -1,0 +1,187 @@
+.tabWrapper {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 2rem;
+  text-align: left;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tabTitle {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.subCount {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.addBtn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition-smooth);
+}
+
+.addBtn:hover {
+  background-color: var(--secondary-color);
+}
+
+.formBox {
+  background-color: var(--bg-soft-pink);
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+  margin-bottom: 1.8rem;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+}
+
+.formBox h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.inputField {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  outline: none;
+  background-color: var(--bg-white);
+}
+
+.saveBtn {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.addressGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+.addrCard {
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-card);
+  padding: 1.4rem;
+  background-color: var(--bg-white);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pinIcon {
+  color: var(--primary-color);
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.defaultBadge {
+  background-color: var(--bg-soft-pink-darker);
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.actionBtns {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.actionIconBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.cardBody {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.name {
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.3rem 0;
+}
+
+.address {
+  margin: 0 0 0.4rem 0;
+}
+
+.phone {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .addressGrid,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

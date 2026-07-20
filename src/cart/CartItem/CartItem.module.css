@@ -1,0 +1,259 @@
+.cartCard {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.5rem;
+  transition: var(--transition-smooth);
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.cartCard:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(209, 27, 105, 0.08);
+}
+
+.imageFrame {
+  position: relative;
+  width: 140px;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-soft-pink);
+  flex-shrink: 0;
+}
+
+.imageLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.productImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.cartCard:hover .productImg {
+  transform: scale(1.05);
+}
+
+.discountBadge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Details Column */
+.detailsCol {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.productName {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.2rem 0;
+}
+
+.nameLink {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.nameLink:hover {
+  color: var(--primary-color);
+}
+
+.fabricText {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-light);
+  display: block;
+}
+
+.trashBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  transition: var(--transition-smooth);
+}
+
+.trashBtn:hover {
+  color: #c62828;
+  transform: scale(1.1);
+}
+
+/* Spec Line */
+.specLine {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.6rem 0;
+}
+
+.dot {
+  color: rgba(0, 0, 0, 0.15);
+}
+
+/* Rating Row */
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.starIcon {
+  color: #dddddd;
+  font-size: 0.75rem;
+}
+
+.starFilled {
+  color: #ffb400;
+  fill: #ffb400;
+}
+
+.ratingScore {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.reviewCount {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+/* Footer Row */
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.sellingPrice {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.originalPrice {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+/* Quantity Counter */
+.quantityCounter {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background-color: var(--bg-soft-pink-darker);
+}
+
+.qtyBtn {
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.qtyBtn:hover {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+}
+
+.qtyVal {
+  width: 34px;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.moveToWishlistBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition-smooth);
+}
+
+.moveToWishlistBtn:hover {
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .cartCard {
+    flex-direction: column;
+  }
+  .imageFrame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}

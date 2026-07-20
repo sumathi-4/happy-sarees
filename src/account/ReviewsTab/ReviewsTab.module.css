@@ -1,0 +1,128 @@
+.tabWrapper {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+  padding: 2rem;
+  text-align: left;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tabTitle {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.subCount {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.reviewsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.reviewCard {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-card);
+  padding: 1.2rem;
+  background-color: var(--bg-white);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.thumb {
+  width: 48px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.meta {
+  flex-grow: 1;
+}
+
+.productName {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.2rem 0;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.starIcon {
+  color: #dddddd;
+  font-size: 0.8rem;
+}
+
+.starFilled {
+  color: #ffb400;
+  fill: #ffb400;
+}
+
+.dateText {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.verifiedTag {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cardBody {
+  font-family: var(--font-sans);
+}
+
+.revTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.3rem 0;
+}
+
+.comment {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}

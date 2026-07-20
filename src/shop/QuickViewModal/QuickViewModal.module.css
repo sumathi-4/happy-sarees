@@ -1,0 +1,298 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1.5rem;
+}
+
+.modalContainer {
+  background-color: var(--bg-white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-hover);
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(254, 248, 249, 0.9);
+  border: 1px solid rgba(0,0,0,0.05);
+  font-size: 1.3rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: var(--transition-smooth);
+  color: var(--text-color);
+}
+
+.closeBtn:hover {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  transform: rotate(90deg);
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+}
+
+/* Image Column */
+.imageCol {
+  position: relative;
+  height: 520px;
+  background-color: var(--bg-soft-pink);
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discountBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-button);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(209, 27, 105, 0.2);
+}
+
+/* Info Column */
+.infoCol {
+  padding: 3rem 2.5rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fabricTag {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.productName {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.8rem 0;
+  line-height: 1.3;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.starIcon {
+  color: #dddddd;
+  font-size: 0.95rem;
+}
+
+.starFilled {
+  color: #ffb400;
+  fill: #ffb400;
+}
+
+.ratingText {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1.2rem;
+}
+
+.sellingPrice {
+  font-family: var(--font-sans);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.originalPrice {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+/* Specs Table */
+.specsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.specsTitle {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-color);
+  letter-spacing: 1px;
+  margin: 0 0 0.4rem 0;
+}
+
+.specRow {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.4rem;
+}
+
+.specRow:last-child {
+  border-bottom: none;
+}
+
+.specLabel {
+  color: var(--text-light);
+}
+
+.specValue {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.inStockText {
+  color: #2e7d32;
+}
+
+.outOfStockText {
+  color: #c62828;
+}
+
+/* Actions Section */
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.addToCartBtn {
+  flex-grow: 1;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.15);
+}
+
+.addToCartBtn:hover:not(:disabled) {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(10, 126, 140, 0.2);
+}
+
+.addToCartBtn:disabled {
+  background-color: #e0e0e0;
+  color: #9e9e9e;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.wishlistBtn {
+  background-color: var(--bg-white);
+  color: var(--text-color);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.85rem 1.2rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition-smooth);
+}
+
+.wishlistBtn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: var(--bg-soft-pink-darker);
+}
+
+.btnIcon {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+  .imageCol {
+    height: 300px;
+  }
+  .infoCol {
+    padding: 1.8rem;
+  }
+}

@@ -1,0 +1,174 @@
+.galleryContainer {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.thumbnailCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.thumbnailList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.thumbBtn {
+  width: 90px;
+  height: 110px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
+  background: var(--bg-soft-pink);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.thumbBtn:hover {
+  border-color: rgba(209, 27, 105, 0.4);
+}
+
+.activeThumb {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 10px rgba(209, 27, 105, 0.2);
+}
+
+.thumbImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Main Display Frame */
+.mainImageFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background-color: var(--bg-soft-pink);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(209, 27, 105, 0.04);
+}
+
+.mainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.mainImageFrame:hover .mainImage {
+  transform: scale(1.05);
+}
+
+.discountBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-button);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(209, 27, 105, 0.2);
+  z-index: 5;
+}
+
+.zoomTriggerBtn {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: var(--bg-white);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: var(--transition-smooth);
+  z-index: 5;
+}
+
+.zoomTriggerBtn:hover {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  transform: scale(1.1);
+}
+
+/* Fullscreen Zoom Modal */
+.zoomModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 2rem;
+}
+
+.zoomModalContent {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoomedImage {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.closeZoomBtn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: var(--bg-white);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.closeZoomBtn:hover {
+  color: var(--primary-color);
+  transform: rotate(90deg);
+}
+
+@media (max-width: 768px) {
+  .galleryContainer {
+    grid-template-columns: 1fr;
+  }
+  .thumbnailList {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .thumbBtn {
+    width: 70px;
+    height: 90px;
+    flex-shrink: 0;
+  }
+}
