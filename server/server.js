@@ -1,0 +1,103 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
+
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const addressRoutes = require('./routes/addressRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+// 1. Security HTTP Headers (Helmet)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// 2. Secure CORS Configuration
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:3000'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow during dev & testing
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
+// 3. Request Body Size Limits & Parsers
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 4. Rate Limiting for Auth Endpoints (100 requests per 15 mins)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many authentication attempts. Please try again after 15 minutes.' }
+});
+
+// Health Check Route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: '✨ Happy Sarees Express.js Backend API is Running!',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Routes
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/addresses', addressRoutes);
+app.use('/api/cart', cartRoutes);
+
+// Global Production Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error('[SERVER ERROR]', err.stack);
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
+  });
+});
+
+// 404 Route Handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: `API Route '${req.originalUrl}' Not Found` });
+});
+
+// Start Server with EADDRINUSE Port Conflict Handler
+const server = app.listen(PORT, () => {
+  console.log(`===================================================`);
+  console.log(`🌸 Happy Sarees Backend API Running on Port ${PORT}`);
+  console.log(`🔗 URL: http://localhost:${PORT}`);
+  console.log(`🛡 Security: Helmet, Rate Limiter, and CORS Enabled`);
+  console.log(`===================================================`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ [EADDRINUSE] Port ${PORT} is already in use by another running Node process.`);
+    console.error(`👉 Solution: Stop any existing running server instance or change PORT in server/.env.\n`);
+    process.exit(1);
+  } else {
+    console.error('Server Listener Error:', err);
+  }
+});

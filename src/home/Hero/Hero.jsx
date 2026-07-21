@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HERO_SLIDES } from '../../data/mockData';
 import styles from './Hero.module.css';
 
 function Hero() {
+  const navigate = useNavigate();
   const slide = HERO_SLIDES[0];
 
   return (
@@ -22,8 +24,12 @@ function Hero() {
           </h2>
           <p className={styles.description}>{slide.description}</p>
           <div className={styles.ctaGroup}>
-            <button className={styles.primaryBtn}>{slide.primaryCta}</button>
-            <button className={styles.secondaryBtn}>{slide.secondaryCta}</button>
+            <button onClick={() => navigate('/shop')} className={styles.primaryBtn}>
+              {slide.primaryCta || 'SHOP NOW'}
+            </button>
+            <button onClick={() => navigate('/shop')} className={styles.secondaryBtn}>
+              {slide.secondaryCta || 'EXPLORE COLLECTIONS'}
+            </button>
           </div>
         </div>
 

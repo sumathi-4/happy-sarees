@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PRODUCTS } from '../data/mockData';
+import api from '../services/api';
 import Breadcrumb from '../shop/Breadcrumb/Breadcrumb';
 import Toolbar from '../shop/Toolbar/Toolbar';
 import FilterSidebar from '../shop/FilterSidebar/FilterSidebar';
@@ -11,6 +12,9 @@ import styles from './Shop.module.css';
 function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Products state (populated from API)
+  const [productsList, setProductsList] = useState(PRODUCTS);
+
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCollections, setSelectedCollections] = useState([]);
@@ -18,7 +22,7 @@ function Shop() {
   const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedPatterns, setSelectedPatterns] = useState([]);
-  const [priceRange, setPriceRange] = useState(10000);
+  const [priceRange, setPriceRange] = useState(25000);
   const [minRating, setMinRating] = useState(0);
   const [blouseFilter, setBlouseFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
@@ -32,16 +36,36 @@ function Shop() {
   const [visibleCount, setVisibleCount] = useState(6);
   
   // Wishlist Mock State
-  const [wishlistedIds, setWishlistedIds] = useState(['p1', 'p5']);
+  const [wishlistedIds, setWishlistedIds] = useState([]);
   
   // Quick View Product State
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+
+  // Fetch products from Neon PostgreSQL API on mount
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    api.getProducts()
+      .then((data) => {
+        if (isMounted && data.success && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => {
+        console.log('[Shop] Operating in offline mode with preloaded products:', err.message);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
 
   // Sync with Search Parameters (e.g. from header mega menu clicks)
   useEffect(() => {
     const fabric = searchParams.get('fabric');
     if (fabric) {
-      // Capitalize for matching MOCK data (e.g. "silk" -> "Silk")
       const capFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
       setSelectedFabrics([capFabric]);
     } else {
@@ -64,27 +88,6 @@ function Shop() {
     }
   }, [searchParams]);
 
-  // Simulate loading state on filters trigger
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 450); // quick soft skeleton transition
-    return () => clearTimeout(timer);
-  }, [
-    searchQuery,
-    selectedCollections,
-    selectedFabrics,
-    selectedOccasions,
-    selectedColors,
-    selectedPatterns,
-    priceRange,
-    minRating,
-    blouseFilter,
-    availabilityFilter,
-    sortBy
-  ]);
-
   // Reset Filters handler
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -93,12 +96,12 @@ function Shop() {
     setSelectedOccasions([]);
     setSelectedColors([]);
     setSelectedPatterns([]);
-    setPriceRange(10000);
+    setPriceRange(25000);
     setMinRating(0);
     setBlouseFilter('all');
     setAvailabilityFilter('all');
     setSortBy('newest');
-    setSearchParams({}); // Clear URL params
+    setSearchParams({});
   };
 
   const handleToggleWishlist = (id) => {
@@ -114,7 +117,7 @@ function Shop() {
   // --------------------------------------------------
   // CLIENT FILTER LOGIC
   // --------------------------------------------------
-  let filteredProducts = [...PRODUCTS];
+  let filteredProducts = [...productsList];
 
   // 1. Search filter
   if (searchQuery.trim()) {
@@ -122,7 +125,7 @@ function Shop() {
     filteredProducts = filteredProducts.filter(
       p =>
         p.name.toLowerCase().includes(query) ||
-        p.fabric.toLowerCase().includes(query)
+        (p.fabric && p.fabric.toLowerCase().includes(query))
     );
   }
 
@@ -175,7 +178,7 @@ function Shop() {
 
   // 11. Sort ordering
   if (sortBy === 'newest') {
-    filteredProducts.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+    filteredProducts.sort((a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0));
   } else if (sortBy === 'price-asc') {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortBy === 'price-desc') {

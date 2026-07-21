@@ -1,14 +1,45 @@
-import React, { useState } from 'react';
-import { FiPackage, FiSearch, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiPackage, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import api from '../../services/api';
 import styles from './OrdersTab.module.css';
 
-function OrdersTab({ orders = [] }) {
+function OrdersTab({ orders: initialOrders = [] }) {
+  const [orders, setOrders] = useState(initialOrders);
   const [filter, setFilter] = useState('All');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
+  useEffect(() => {
+    let isMounted = true;
+    api.getMyOrders()
+      .then((data) => {
+        if (isMounted && data.success && data.orders.length > 0) {
+          const formatted = data.orders.map(o => ({
+            id: o.order_number || o.id,
+            date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+            status: o.order_status || 'Processing',
+            totalPrice: Number(o.total_amount),
+            items: (o.items || []).map(i => ({
+              id: i.id,
+              name: i.productName || 'Silk Saree',
+              fabric: 'Silk',
+              quantity: i.quantity,
+              price: Number(i.price),
+              image: i.image || '/src/assets/hero_saree_model.png'
+            }))
+          }));
+          setOrders(formatted);
+        }
+      })
+      .catch((err) => {
+        console.log('[OrdersTab] Operating with initial order data:', err.message);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
   const filteredOrders = orders.filter((ord) => {
     if (filter === 'All') return true;
-    return ord.status.toLowerCase() === filter.toLowerCase();
+    return (ord.status || '').toLowerCase() === filter.toLowerCase();
   });
 
   const toggleExpand = (id) => {
@@ -52,10 +83,10 @@ function OrdersTab({ orders = [] }) {
                 </div>
 
                 <div className={styles.headerRight}>
-                  <span className={`${styles.statusBadge} ${styles[order.status.toLowerCase()]}`}>
-                    {order.status}
+                  <span className={`${styles.statusBadge} ${styles[(order.status || 'processing').toLowerCase()]}`}>
+                    {order.status || 'Processing'}
                   </span>
-                  <strong className={styles.totalPrice}>₹{order.totalPrice.toLocaleString()}</strong>
+                  <strong className={styles.totalPrice}>₹{(order.totalPrice || 0).toLocaleString()}</strong>
                   <button className={styles.expandBtn}>
                     {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                   </button>
@@ -64,14 +95,14 @@ function OrdersTab({ orders = [] }) {
 
               {/* Items Breakdown */}
               <div className={styles.itemsPreview}>
-                {order.items.map((item) => (
+                {(order.items || []).map((item) => (
                   <div key={item.id} className={styles.itemRow}>
                     <img src={item.image} alt={item.name} className={styles.itemThumb} />
                     <div className={styles.itemInfo}>
                       <h5 className={styles.itemName}>{item.name}</h5>
                       <span className={styles.itemMeta}>Fabric: {item.fabric} | Qty: {item.quantity}</span>
                     </div>
-                    <span className={styles.itemPrice}>₹{item.price.toLocaleString()}</span>
+                    <span className={styles.itemPrice}>₹{(item.price || 0).toLocaleString()}</span>
                   </div>
                 ))}
               </div>

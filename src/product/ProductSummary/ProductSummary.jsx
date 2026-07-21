@@ -5,28 +5,10 @@ import styles from './ProductSummary.module.css';
 
 function ProductSummary({ product, onAddToCart, onBuyNow }) {
   const [quantity, setQuantity] = useState(1);
-  const [pincode, setPincode] = useState('');
-  const [deliveryResult, setDeliveryResult] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
 
   if (!product) return null;
-
-  const handleCheckPincode = (e) => {
-    e.preventDefault();
-    if (pincode.trim().length === 6) {
-      setDeliveryResult({
-        success: true,
-        date: 'Thursday, 24th July',
-        cod: true
-      });
-    } else {
-      setDeliveryResult({
-        success: false,
-        message: 'Please enter a valid 6-digit Pincode.'
-      });
-    }
-  };
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -75,94 +57,12 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
         <span className={styles.taxText}>Inclusive of all taxes</span>
       </div>
 
-      {/* Specs Grid (Matching reference wireframe) */}
-      <div className={styles.specsGrid}>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Fabric</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.fabric}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Color</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.color}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Width</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.width}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Pattern</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.pattern}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Height</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.height}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Occasion</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.occasion}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Blouse Included</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.blouseIncluded ? 'Yes' : 'No'}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Weave</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.weave || 'Handloom'}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>Blouse Size</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.blouseSize}</span>
-        </div>
-        <div className={styles.specItem}>
-          <span className={styles.specLabel}>SKU</span>
-          <span className={styles.specColon}>:</span>
-          <span className={styles.specVal}>{product.sku}</span>
-        </div>
-      </div>
-
       {/* In Stock Notice */}
       <div className={styles.stockRow}>
         <span className={styles.stockDot}></span>
         <span className={styles.stockStatus}>In Stock</span>
         <span className={styles.stockDivider}>|</span>
         <span className={styles.shipStatus}>Ready to Ship</span>
-      </div>
-
-      {/* Deliver to Pincode UI */}
-      <div className={styles.pincodeBox}>
-        <form onSubmit={handleCheckPincode} className={styles.pincodeForm}>
-          <label htmlFor="pincode-input" className={styles.pincodeLabel}>Deliver to</label>
-          <input
-            id="pincode-input"
-            type="text"
-            placeholder="Enter Pincode"
-            maxLength={6}
-            value={pincode}
-            onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-            className={styles.pincodeInput}
-          />
-          <button type="submit" className={styles.pincodeBtn}>Check</button>
-        </form>
-        {deliveryResult && (
-          <div className={styles.deliveryMsg}>
-            {deliveryResult.success ? (
-              <p className={styles.deliverySuccess}>
-                ✓ Estimated Delivery by <strong>{deliveryResult.date}</strong>. Cash on Delivery Available.
-              </p>
-            ) : (
-              <p className={styles.deliveryError}>{deliveryResult.message}</p>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Quantity Selector */}

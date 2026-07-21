@@ -1,7 +1,6 @@
 import React from 'react';
 import Hero from '../home/Hero/Hero';
 import SignatureCollections from '../home/SignatureCollections/SignatureCollections';
-import Categories from '../home/Categories/Categories';
 import NewArrivals from '../home/NewArrivals/NewArrivals';
 import FeaturedBanner from '../home/FeaturedBanner/FeaturedBanner';
 import BestSellers from '../home/BestSellers/BestSellers';
@@ -16,7 +15,6 @@ function Home() {
     <div>
       <Hero />
       <SignatureCollections />
-      <Categories />
       <NewArrivals />
       <FeaturedBanner />
       <BestSellers />

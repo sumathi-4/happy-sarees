@@ -6,32 +6,10 @@ import { PRODUCTS } from '../../data/mockData';
 import styles from './Header.module.css';
 import logoImg from '../../assets/logo.jpg';
 
-// Dynamic navigation configuration data
+// Dynamic navigation configuration data (Without Collections, About, or Contact)
 const NAV_MENU_DATA = [
   { label: 'Home', path: PATHS.HOME },
   { label: 'New Arrivals', path: PATHS.NEW_ARRIVALS },
-  {
-    label: 'Collections',
-    path: PATHS.COLLECTIONS,
-    hasMegaMenu: true,
-    menuType: 'collections',
-    items: [
-      { name: 'Wedding Collection', path: PATHS.COLLECTIONS },
-      { name: 'Bridal Collection', path: PATHS.COLLECTIONS },
-      { name: 'Festival Collection', path: PATHS.COLLECTIONS },
-      { name: 'Premium Collection', path: PATHS.COLLECTIONS },
-      { name: 'Celebrity Picks', path: PATHS.COLLECTIONS },
-      { name: 'Trending Collection', path: PATHS.COLLECTIONS },
-      { name: 'Office Collection', path: PATHS.COLLECTIONS },
-      { name: 'View All Collections', path: PATHS.COLLECTIONS }
-    ],
-    featured: {
-      title: 'Celebrate Every Occasion in Style',
-      cta: 'Explore Collection',
-      image: '/src/assets/wedding_saree.png',
-      path: PATHS.COLLECTIONS
-    }
-  },
   {
     label: 'Shop',
     path: PATHS.SHOP,
@@ -197,9 +175,7 @@ const NAV_MENU_DATA = [
       }
     ]
   },
-  { label: 'Sale', path: PATHS.SHOP },
-  { label: 'About', path: PATHS.ABOUT },
-  { label: 'Contact', path: PATHS.CONTACT }
+  { label: 'Sale', path: PATHS.SHOP }
 ];
 
 const TRENDING_SEARCHES = ['Banarasi Silk', 'Floral Organza', 'Red Bridal', 'Mulmul Cotton', 'Tissue Zari'];
@@ -253,30 +229,6 @@ function Header() {
       setSearchQuery('');
       navigate(PATHS.SHOP);
     }
-  };
-
-  // Mega Menu Helpers
-  const renderCollectionsMegaMenu = (menu) => {
-    return (
-      <div className={styles.collectionsMegaMenu}>
-        <div className={styles.collectionsGrid}>
-          {menu.items.map((item, i) => (
-            <Link key={i} to={item.path} className={styles.collectionLinkItem}>
-              {item.name}
-            </Link>
-          ))}
-        </div>
-        <div className={styles.collectionsPromoBanner}>
-          <img src={menu.featured.image} alt={menu.featured.title} className={styles.collectionsPromoBg} />
-          <div className={styles.collectionsPromoContent}>
-            <h3 className={styles.collectionsPromoText}>{menu.featured.title}</h3>
-            <Link to={menu.featured.path} className={styles.collectionsPromoBtn}>
-              {menu.featured.cta}
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const renderSimpleGridMegaMenu = (menu) => {
@@ -386,7 +338,6 @@ function Header() {
 
                     {hasMega && (
                       <div className={styles.megaMenuContainer}>
-                        {menu.menuType === 'collections' && renderCollectionsMegaMenu(menu)}
                         {menu.menuType === 'fabrics' && renderFabricsMegaMenu(menu)}
                         {menu.menuType === 'simple-grid' && renderSimpleGridMegaMenu(menu)}
                       </div>

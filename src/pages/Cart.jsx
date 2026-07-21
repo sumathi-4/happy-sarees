@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
 import {
@@ -7,6 +7,7 @@ import {
   RECOMMENDED_PRODUCTS,
   SAMPLE_PRODUCT_DETAIL
 } from '../data/mockData';
+import api from '../services/api';
 import CartItem from '../cart/CartItem/CartItem';
 import OrderSummary from '../cart/OrderSummary/OrderSummary';
 import AvailableOffers from '../cart/AvailableOffers/AvailableOffers';
@@ -21,6 +22,31 @@ function Cart() {
   const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS);
   const [appliedCoupon, setAppliedCoupon] = useState(AVAILABLE_OFFERS.find(o => o.code === 'FREESHIP') || null);
 
+  useEffect(() => {
+    let isMounted = true;
+    api.getCart()
+      .then((data) => {
+        if (isMounted && data.success && data.cart.length > 0) {
+          const formatted = data.cart.map(c => ({
+            id: c.id,
+            productId: c.product_id || c.id,
+            name: c.name,
+            price: Number(c.price),
+            originalPrice: c.original_price ? Number(c.original_price) : null,
+            image: c.image_url || '/src/assets/hero_saree_model.png',
+            quantity: c.quantity,
+            fabric: c.fabric || 'Silk'
+          }));
+          setCartItems(formatted);
+        }
+      })
+      .catch((err) => {
+        console.log('[Cart] Operating with local cart items:', err.message);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
   const handleUpdateQuantity = (id, newQty) => {
     if (newQty < 1) {
       handleRemove(id);
@@ -32,10 +58,12 @@ function Cart() {
   };
 
   const handleRemove = (id) => {
+    api.removeFromCart(id).catch(() => {});
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
 
   const handleMoveToWishlist = (product) => {
+    api.addToWishlist(product.productId || product.id).catch(() => {});
     setCartItems(prev => prev.filter(item => item.id !== product.id));
     alert(`"${product.name}" moved to your Wishlist!`);
   };

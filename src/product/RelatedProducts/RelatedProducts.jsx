@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { FiChevronLeft, FiChevronRight, FiHeart } from 'react-icons/fi';
-import { FaStar } from 'react-icons/fa';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import ProductCard from '../../components/common/ProductCard/ProductCard';
 import styles from './RelatedProducts.module.css';
 
 function RelatedProducts({ products = [] }) {
@@ -40,35 +39,8 @@ function RelatedProducts({ products = [] }) {
 
       <div ref={scrollRef} className={styles.productSlider}>
         {products.map((item) => (
-          <div key={item.id} className={styles.productCard}>
-            <div className={styles.imageFrame}>
-              <Link to={`/product/${item.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-                <img src={item.image} alt={item.name} className={styles.productImg} />
-              </Link>
-              <button className={styles.wishlistBtn} aria-label="Add to wishlist">
-                <FiHeart />
-              </button>
-            </div>
-
-            <div className={styles.cardMeta}>
-              <h4 className={styles.productName}>
-                <Link to={`/product/${item.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  {item.name}
-                </Link>
-              </h4>
-              <span className={styles.colorTag}>{item.colorTag}</span>
-              <div className={styles.priceRow}>
-                <span className={styles.sellingPrice}>₹{item.price.toLocaleString()}</span>
-                {item.originalPrice > item.price && (
-                  <span className={styles.originalPrice}>₹{item.originalPrice.toLocaleString()}</span>
-                )}
-                {item.rating && (
-                  <span className={styles.ratingVal}>
-                    <FaStar className={styles.starIcon} /> {item.rating} ({item.ratingCount})
-                  </span>
-                )}
-              </div>
-            </div>
+          <div key={item.id} style={{ flex: '0 0 260px', minWidth: '260px' }}>
+            <ProductCard product={item} />
           </div>
         ))}
       </div>

@@ -22,12 +22,6 @@ function ProductTabs({ product }) {
               Description
             </button>
             <button
-              className={`${styles.tabBtn} ${activeTab === 'specifications' ? styles.activeTabBtn : ''}`}
-              onClick={() => setActiveTab('specifications')}
-            >
-              Specifications
-            </button>
-            <button
               className={`${styles.tabBtn} ${activeTab === 'washcare' ? styles.activeTabBtn : ''}`}
               onClick={() => setActiveTab('washcare')}
             >
@@ -49,29 +43,6 @@ function ProductTabs({ product }) {
                 <p className={styles.narrativeText}>
                   Designed for women who appreciate rich heritage textiles, this saree combines traditional weaving techniques with modern color palettes. Pair it with gold temple jewelry and a sleek hair bun to complete your royal ethnic look.
                 </p>
-              </div>
-            )}
-
-            {activeTab === 'specifications' && (
-              <div className={styles.panelContent}>
-                <div className={styles.specListGrid}>
-                  <div className={styles.specBox}>
-                    <span className={styles.specBoxLabel}>Weave Type</span>
-                    <span className={styles.specBoxVal}>{product.weave || 'Traditional Handloom'}</span>
-                  </div>
-                  <div className={styles.specBox}>
-                    <span className={styles.specBoxLabel}>Border Work</span>
-                    <span className={styles.specBoxVal}>{product.border || 'Zari Woven Border'}</span>
-                  </div>
-                  <div className={styles.specBox}>
-                    <span className={styles.specBoxLabel}>Pallu Design</span>
-                    <span className={styles.specBoxVal}>{product.pallu || 'Grand Zari Pallu'}</span>
-                  </div>
-                  <div className={styles.specBox}>
-                    <span className={styles.specBoxLabel}>Weight</span>
-                    <span className={styles.specBoxVal}>{product.weight || '650 Grams'}</span>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -99,10 +70,10 @@ function ProductTabs({ product }) {
           </div>
         </div>
 
-        {/* Right Column: Full Specifications Summary Box */}
+        {/* Right Column: Full Saree Details Summary Box */}
         <div className={styles.rightCol}>
           <div className={styles.specsCard}>
-            <h4 className={styles.cardTitle}>Specifications</h4>
+            <h4 className={styles.cardTitle}>SAREE DETAILS</h4>
 
             <div className={styles.cardTable}>
               <div className={styles.cardRow}>

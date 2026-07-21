@@ -1,98 +1,194 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiHeart, FiShoppingCart, FiEye } from 'react-icons/fi';
-import { FaStar } from 'react-icons/fa';
-import Badge from '../Badge/Badge';
+import { FiHeart, FiEye, FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useToast } from '../../../context/ToastContext';
+import api from '../../../services/api';
 import styles from './ProductCard.module.css';
 
-function ProductCard({ product }) {
+function ProductCard({
+  product,
+  onQuickView,
+  onAddToCart,
+  onToggleWishlist
+}) {
   const navigate = useNavigate();
   const toast = useToast();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  if (!product) return null;
+
+  // Multi-image gallery fallback: if product.images is an array, use it; otherwise provide multi-angle gallery images
+  const defaultGallery = [
+    product.image,
+    "/src/assets/hero_saree_model.png",
+    "/src/assets/wedding_saree.png",
+    "/src/assets/festive_saree.png",
+    "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=600&auto=format&fit=crop"
+  ].filter(Boolean);
+
+  const images = Array.isArray(product.images) && product.images.length > 0
+    ? product.images
+    : defaultGallery;
 
   const handleCardClick = (e) => {
-    // If click is not on a button, navigate to Product Details page
-    if (!e.target.closest('button')) {
-      navigate(`/product/${product.id}`);
+    if (e.target.closest('button') || e.target.closest('a')) {
+      return;
     }
+    navigate(`/product/${product.id}`);
   };
 
   const handleWishlistToggle = (e) => {
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    if (!isWishlisted) {
+    e.preventDefault();
+    const nextState = !isWishlisted;
+    setIsWishlisted(nextState);
+
+    // Call PostgreSQL Wishlist API
+    if (nextState) {
+      api.addToWishlist(product.id).catch(() => {});
       toast.success(`Saved "${product.name}" to Wishlist! ❤️`);
     } else {
+      api.removeFromWishlist(product.id).catch(() => {});
       toast.info(`Removed "${product.name}" from Wishlist.`);
+    }
+
+    if (onToggleWishlist) {
+      onToggleWishlist(product.id);
     }
   };
 
-  const handleAddToCart = (e) => {
+  const handleAddCartClick = (e) => {
     e.stopPropagation();
+    e.preventDefault();
+
+    // Call PostgreSQL Cart API
+    api.addToCart(product.id, 1).catch(() => {});
     toast.success(`Added "${product.name}" to Shopping Bag! 🛍️`);
+
+    if (onAddToCart) {
+      onAddToCart(product);
+    }
   };
 
-  const discountPercent = product.originalPrice > product.price
+  const handleQuickViewClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onQuickView) {
+      onQuickView(product);
+    } else {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentImgIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentImgIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  // Calculate discount percentage
+  const calculatedDiscount = product.originalPrice > product.price
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
 
   return (
-    <div className={styles.card} onClick={handleCardClick}>
-      {/* Image Frame with badges and hover actions */}
-      <div className={styles.imgFrame}>
-        <img src={product.image} alt={product.name} className={styles.productImg} />
+    <div className={styles.cardContainer} onClick={handleCardClick}>
+      {/* Product Image Frame */}
+      <div className={styles.imageFrame}>
+        <Link to={`/product/${product.id}`} className={styles.imageLink}>
+          <img
+            src={images[currentImgIndex]}
+            alt={product.name}
+            className={styles.productImg}
+          />
+        </Link>
 
-        {/* Badges */}
-        <div className={styles.badgeGroup}>
-          {discountPercent && <Badge variant="magenta">{discountPercent}% OFF</Badge>}
-          {product.badge && <Badge variant="pink">{product.badge}</Badge>}
-        </div>
+        {/* Wishlist Floating Button (Top Right) */}
+        <button
+          onClick={handleWishlistToggle}
+          className={`${styles.wishlistBtn} ${isWishlisted ? styles.wishlistActive : ''}`}
+          aria-label="Toggle Wishlist"
+          title="Add to Wishlist"
+        >
+          <FiHeart className={styles.heartIcon} />
+        </button>
 
-        {/* Floating Quick Action Buttons */}
-        <div className={styles.floatingActions}>
-          <button
-            onClick={handleWishlistToggle}
-            className={`${styles.actionIconBtn} ${isWishlisted ? styles.wishlisted : ''}`}
-            aria-label="Wishlist"
-            title="Add to Wishlist"
-          >
-            <FiHeart className={styles.heartIcon} />
-          </button>
-          <button
-            onClick={() => navigate(`/product/${product.id}`)}
-            className={styles.actionIconBtn}
-            aria-label="Quick View"
-            title="Quick View"
-          >
-            <FiEye />
-          </button>
+        {/* Image Slider Navigation Arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevImage}
+              className={`${styles.sliderArrow} ${styles.prevArrow}`}
+              aria-label="Previous image"
+              title="Previous Image"
+            >
+              <FiChevronLeft />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className={`${styles.sliderArrow} ${styles.nextArrow}`}
+              aria-label="Next image"
+              title="Next Image"
+            >
+              <FiChevronRight />
+            </button>
+          </>
+        )}
+
+        {/* On-Hover Gradient & Icon-Only Action Buttons */}
+        <div className={styles.hoverOverlay}>
+          <div className={styles.iconBtnGroup}>
+            <button
+              onClick={handleQuickViewClick}
+              className={styles.iconActionBtn}
+              aria-label="Quick View"
+              title="Quick View"
+            >
+              <FiEye />
+            </button>
+            <button
+              onClick={handleAddCartClick}
+              className={styles.iconActionBtn}
+              aria-label="Add to Cart"
+              title="Add to Cart"
+            >
+              <FiShoppingCart />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Meta Content */}
+      {/* Product Details Meta Info */}
       <div className={styles.metaContent}>
-        <span className={styles.fabricLabel}>{product.fabric}</span>
-        <h4 className={styles.productTitle}>{product.name}</h4>
-
-        <div className={styles.ratingRow}>
-          <div className={styles.stars}>
-            <FaStar className={styles.starFilled} />
-            <span className={styles.ratingScore}>{product.rating || 4.8}</span>
-          </div>
-          <span className={styles.reviewsCount}>({product.reviewsCount || 42} reviews)</span>
-        </div>
+        <h3 className={styles.productTitle}>
+          <Link to={`/product/${product.id}`} className={styles.titleLink}>
+            {product.name}
+          </Link>
+        </h3>
 
         <div className={styles.priceRow}>
-          <strong className={styles.sellingPrice}>₹{product.price.toLocaleString()}</strong>
-          {product.originalPrice > product.price && (
-            <span className={styles.originalPrice}>₹{product.originalPrice.toLocaleString()}</span>
+          <span className={styles.sellingPrice}>
+            Rs. {product.price.toLocaleString('en-IN')}
+          </span>
+          {product.originalPrice && product.originalPrice > product.price && (
+            <span className={styles.originalPrice}>
+              Rs. {product.originalPrice.toLocaleString('en-IN')}
+            </span>
+          )}
+          {calculatedDiscount && (
+            <span className={styles.discountText}>
+              ({calculatedDiscount}% OFF)
+            </span>
           )}
         </div>
-
-        <button onClick={handleAddToCart} className={styles.cartBtn}>
-          <FiShoppingCart /> Add to Bag
-        </button>
       </div>
     </div>
   );

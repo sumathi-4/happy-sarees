@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiMaximize2, FiX } from 'react-icons/fi';
 import styles from './ProductGallery.module.css';
 
-function ProductGallery({ images = [], discountBadge = '22% OFF', productName = 'Saree' }) {
+function ProductGallery({ images = [], productName = 'Saree' }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
 
@@ -31,11 +31,6 @@ function ProductGallery({ images = [], discountBadge = '22% OFF', productName = 
       {/* Main Display Image Frame */}
       <div className={styles.mainImageFrame}>
         <img src={currentImage} alt={productName} className={styles.mainImage} />
-
-        {/* Discount Badge */}
-        {discountBadge && (
-          <span className={styles.discountBadge}>{discountBadge}</span>
-        )}
 
         {/* Zoom Trigger Button */}
         <button

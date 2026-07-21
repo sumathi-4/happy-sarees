@@ -4,7 +4,6 @@ import styles from './FilterSidebar.module.css';
 
 // Filter metadata
 const FILTER_DATA = {
-  collections: ['Wedding Collection', 'Bridal Collection', 'Festival Collection', 'Premium Collection', 'Celebrity Picks', 'Trending Collection'],
   fabrics: ['Silk', 'Cotton', 'Linen', 'Organza', 'Georgette', 'Tissue', 'Banarasi', 'Kanchipuram'],
   occasions: ['Wedding', 'Reception', 'Party', 'Office', 'Daily Wear', 'Festive'],
   colors: [
@@ -21,8 +20,6 @@ const FILTER_DATA = {
 };
 
 function FilterSidebar({
-  selectedCollections,
-  setSelectedCollections,
   selectedFabrics,
   setSelectedFabrics,
   selectedOccasions,
@@ -42,7 +39,6 @@ function FilterSidebar({
   onResetFilters
 }) {
   const [openFilters, setOpenFilters] = useState({
-    collections: true,
     fabrics: true,
     occasions: true,
     colors: true,
@@ -76,30 +72,7 @@ function FilterSidebar({
         </button>
       </div>
 
-      {/* 1. Collections Accordion */}
-      <div className={styles.accordionSection}>
-        <button className={styles.accordionHeader} onClick={() => toggleSection('collections')}>
-          <span>Collections</span>
-          {openFilters.collections ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {openFilters.collections && (
-          <div className={styles.accordionBody}>
-            {FILTER_DATA.collections.map((item, i) => (
-              <label key={i} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={selectedCollections.includes(item)}
-                  onChange={() => handleToggleArray(item, selectedCollections, setSelectedCollections)}
-                  className={styles.checkboxInput}
-                />
-                <span className={styles.checkboxText}>{item}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 2. Fabric Accordion */}
+      {/* 1. Fabric Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('fabrics')}>
           <span>Fabric</span>
@@ -122,7 +95,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 3. Occasion Accordion */}
+      {/* 2. Occasion Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('occasions')}>
           <span>Occasion</span>
@@ -145,7 +118,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 4. Color Swatches Accordion */}
+      {/* 3. Color Swatches Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('colors')}>
           <span>Color</span>
@@ -174,7 +147,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 5. Pattern Accordion */}
+      {/* 4. Pattern Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('patterns')}>
           <span>Pattern</span>
@@ -197,7 +170,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 6. Price Range Accordion */}
+      {/* 5. Price Range Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('price')}>
           <span>Price Range</span>
@@ -228,7 +201,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 7. Rating Accordion */}
+      {/* 6. Rating Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('rating')}>
           <span>Rating</span>
@@ -264,7 +237,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 8. Blouse Included Accordion */}
+      {/* 7. Blouse Included Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('blouse')}>
           <span>Blouse Included</span>
@@ -292,7 +265,7 @@ function FilterSidebar({
         )}
       </div>
 
-      {/* 9. Availability Accordion */}
+      {/* 8. Availability Accordion */}
       <div className={styles.accordionSection}>
         <button className={styles.accordionHeader} onClick={() => toggleSection('availability')}>
           <span>Availability</span>

@@ -7,8 +7,8 @@ function SignatureCollections() {
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <span className={styles.tagline}>Curated Lifestyle Looks</span>
-        <h2 className={styles.title}>Signature Collections</h2>
+        <span className={styles.tagline}>Draped In Grandeur</span>
+        <h2 className={styles.title}>Shop By Occasion</h2>
         <div className={styles.divider}>
           <span className={styles.dot}></span>
         </div>
@@ -25,7 +25,7 @@ function SignatureCollections() {
               <span className={styles.cardSubtitle}>{col.subtitle}</span>
               <h3 className={styles.cardTitle}>{col.title}</h3>
               <p className={styles.cardDesc}>{col.description}</p>
-              <Link to={`/shop?collection=${encodeURIComponent(col.subtitle)}`} className={styles.exploreBtn} style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+              <Link to={`/shop?occasion=${encodeURIComponent(col.subtitle)}`} className={styles.exploreBtn} style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
                 {col.ctaText}
               </Link>
             </div>

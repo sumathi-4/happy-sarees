@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
 export const DEFAULT_MOCK_USER = {
   name: "Sumathi",
-  email: "sumathi@example.com",
+  email: "sumathi@happysarees.com",
   phone: "+91 98765 43210",
   memberTier: "Premium Member",
   rewardPoints: 1520,
@@ -21,7 +22,7 @@ export const DEFAULT_MOCK_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('happy_sarees_user');
+    const saved = localStorage.getItem('hs_user') || localStorage.getItem('happy_sarees_user');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -29,37 +30,84 @@ export function AuthProvider({ children }) {
         return DEFAULT_MOCK_USER;
       }
     }
-    // Default logged in user for seamless testing
     return DEFAULT_MOCK_USER;
   });
 
+  // Verify JWT session on mount
+  useEffect(() => {
+    const token = localStorage.getItem('hs_token');
+    if (token) {
+      api.getProfile()
+        .then((data) => {
+          if (data.success && data.user) {
+            const fullUser = { ...DEFAULT_MOCK_USER, ...data.user };
+            setUser(fullUser);
+            localStorage.setItem('hs_user', JSON.stringify(fullUser));
+          }
+        })
+        .catch(() => {
+          console.log('[AuthContext] Session offline or expired.');
+        });
+    }
+  }, []);
+
   const isAuthenticated = !!user;
 
-  const login = (email, password) => {
-    const loggedInUser = {
-      ...DEFAULT_MOCK_USER,
-      email: email || DEFAULT_MOCK_USER.email,
-      name: email ? email.split('@')[0] : DEFAULT_MOCK_USER.name
-    };
-    setUser(loggedInUser);
-    localStorage.setItem('happy_sarees_user', JSON.stringify(loggedInUser));
-    return true;
+  const login = async (email, password) => {
+    try {
+      const data = await api.login({ email, password });
+      if (data.success && data.token) {
+        localStorage.setItem('hs_token', data.token);
+        const loggedInUser = { ...DEFAULT_MOCK_USER, ...data.user };
+        setUser(loggedInUser);
+        localStorage.setItem('hs_user', JSON.stringify(loggedInUser));
+        return { success: true, message: data.message };
+      }
+    } catch (err) {
+      // Fallback local login if backend is unreachable
+      const loggedInUser = {
+        ...DEFAULT_MOCK_USER,
+        email: email || DEFAULT_MOCK_USER.email,
+        name: email ? email.split('@')[0] : DEFAULT_MOCK_USER.name
+      };
+      setUser(loggedInUser);
+      localStorage.setItem('hs_user', JSON.stringify(loggedInUser));
+      return { success: true, message: 'LoggedIn (Offline Mode)' };
+    }
   };
 
-  const register = (userData) => {
-    const newUser = {
-      ...DEFAULT_MOCK_USER,
-      name: userData.name || DEFAULT_MOCK_USER.name,
-      email: userData.email || DEFAULT_MOCK_USER.email,
-      phone: userData.phone || DEFAULT_MOCK_USER.phone
-    };
-    setUser(newUser);
-    localStorage.setItem('happy_sarees_user', JSON.stringify(newUser));
-    return true;
+  const register = async (userData) => {
+    try {
+      const data = await api.register({
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        phone: userData.phone
+      });
+      if (data.success && data.token) {
+        localStorage.setItem('hs_token', data.token);
+        const newUser = { ...DEFAULT_MOCK_USER, ...data.user };
+        setUser(newUser);
+        localStorage.setItem('hs_user', JSON.stringify(newUser));
+        return { success: true, message: data.message };
+      }
+    } catch (err) {
+      const newUser = {
+        ...DEFAULT_MOCK_USER,
+        name: userData.name || DEFAULT_MOCK_USER.name,
+        email: userData.email || DEFAULT_MOCK_USER.email,
+        phone: userData.phone || DEFAULT_MOCK_USER.phone
+      };
+      setUser(newUser);
+      localStorage.setItem('hs_user', JSON.stringify(newUser));
+      return { success: true, message: 'Registered (Offline Mode)' };
+    }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('hs_token');
+    localStorage.removeItem('hs_user');
     localStorage.removeItem('happy_sarees_user');
   };
 
@@ -67,7 +115,7 @@ export function AuthProvider({ children }) {
     if (!user) return;
     const updated = { ...user, ...updatedFields };
     setUser(updated);
-    localStorage.setItem('happy_sarees_user', JSON.stringify(updated));
+    localStorage.setItem('hs_user', JSON.stringify(updated));
   };
 
   return (

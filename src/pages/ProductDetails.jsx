@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '../data/mockData';
+import api from '../services/api';
 import ProductGallery from '../product/ProductGallery/ProductGallery';
 import ProductSummary from '../product/ProductSummary/ProductSummary';
 import ProductTabs from '../product/ProductTabs/ProductTabs';
@@ -15,12 +16,30 @@ function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Retrieve matching product by ID from mock data
-  const product = getProductById(id);
+  const [product, setProduct] = useState(() => getProductById(id));
+  const [loading, setLoading] = useState(false);
 
-  // Scroll to top when product ID changes
+  // Scroll to top and fetch product by ID from Neon API
   useEffect(() => {
     window.scrollTo(0, 0);
+    let isMounted = true;
+    setLoading(true);
+
+    api.getProductById(id)
+      .then((data) => {
+        if (isMounted && data.success && data.product) {
+          setProduct(data.product);
+        }
+      })
+      .catch((err) => {
+        console.log('[ProductDetails] Operating with local fallback product data:', err.message);
+        setProduct(getProductById(id));
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
   }, [id]);
 
   const handleAddToCart = (item, qty) => {
@@ -32,7 +51,7 @@ function ProductDetails() {
   };
 
   // If Product ID is invalid, display clean "Product Not Found" fallback
-  if (!product) {
+  if (!product && !loading) {
     return (
       <div className={styles.pageWrapper}>
         <div className={styles.container}>
@@ -52,6 +71,8 @@ function ProductDetails() {
       </div>
     );
   }
+
+  if (!product) return null;
 
   return (
     <div className={styles.pageWrapper}>
@@ -81,7 +102,6 @@ function ProductDetails() {
         <div className={styles.mainProductGrid}>
           <ProductGallery
             images={product.images || [product.image]}
-            discountBadge={product.discountBadge}
             productName={product.name}
           />
           <ProductSummary
@@ -99,6 +119,7 @@ function ProductDetails() {
 
         {/* Customer Reviews Section */}
         <CustomerReviews
+          productId={product.id}
           rating={product.rating}
           reviewCount={product.reviewCount}
           reviewsList={product.reviewsList}

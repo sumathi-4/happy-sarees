@@ -7,6 +7,7 @@ import {
   DELIVERY_METHODS,
   PAYMENT_METHODS
 } from '../data/mockData';
+import api from '../services/api';
 import CheckoutStepper from '../checkout/CheckoutStepper/CheckoutStepper';
 import AddressStep from '../checkout/AddressStep/AddressStep';
 import DeliveryStep from '../checkout/DeliveryStep/DeliveryStep';
@@ -24,6 +25,7 @@ function Checkout() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(DELIVERY_METHODS[0]?.id || '');
   const [selectedPaymentId, setSelectedPaymentId] = useState(PAYMENT_METHODS[0]?.id || '');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdOrderNumber, setCreatedOrderNumber] = useState('HS-84920');
 
   // Derived selections
   const selectedAddress = MOCK_ADDRESSES.find(a => a.id === selectedAddressId) || MOCK_ADDRESSES[0];
@@ -37,7 +39,30 @@ function Checkout() {
   const grandTotal = Math.max(0, subtotal - discount + deliveryPrice);
 
   const handlePlaceOrder = () => {
-    setShowSuccessModal(true);
+    const orderPayload = {
+      items: cartItems.map(item => ({
+        id: item.id,
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      totalAmount: grandTotal,
+      shippingAddress: selectedAddress,
+      paymentMethod: selectedPayment?.title || 'COD'
+    };
+
+    api.createOrder(orderPayload)
+      .then((data) => {
+        if (data.success && data.order) {
+          setCreatedOrderNumber(data.order.orderNumber || `HS-${Date.now()}`);
+        }
+      })
+      .catch((err) => {
+        console.log('[Checkout] Operating in offline checkout mode:', err.message);
+      })
+      .finally(() => {
+        setShowSuccessModal(true);
+      });
   };
 
   return (
@@ -131,7 +156,7 @@ function Checkout() {
         {/* Order Success Modal */}
         {showSuccessModal && (
           <OrderSuccessModal
-            orderId="HS-84920"
+            orderId={createdOrderNumber}
             totalAmount={grandTotal}
             address={selectedAddress}
             onClose={() => setShowSuccessModal(false)}

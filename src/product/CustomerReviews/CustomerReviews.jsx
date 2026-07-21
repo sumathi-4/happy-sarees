@@ -1,36 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { FiCheckCircle, FiX } from 'react-icons/fi';
+import api from '../../services/api';
 import styles from './CustomerReviews.module.css';
 
-function CustomerReviews({ rating = 4.8, reviewCount = 248, reviewsList = [] }) {
+function CustomerReviews({ productId, rating = 4.8, reviewCount = 24, reviewsList = [] }) {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [newReview, setNewReview] = useState({ name: '', rating: 5, comment: '' });
   const [reviews, setReviews] = useState(reviewsList);
 
+  // Fetch product reviews dynamically when productId is passed
+  useEffect(() => {
+    if (productId) {
+      let isMounted = true;
+      api.getReviews(productId)
+        .then((data) => {
+          if (isMounted && data.success && data.reviews) {
+            setReviews(data.reviews.map(r => ({
+              id: r.id,
+              name: r.reviewer_name || 'Verified Customer',
+              verified: r.is_verified_buyer,
+              date: new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+              rating: r.rating,
+              comment: r.comment,
+              photos: []
+            })));
+          }
+        })
+        .catch((err) => {
+          console.log('[CustomerReviews] Using default reviews:', err.message);
+        });
+      return () => { isMounted = false; };
+    }
+  }, [productId]);
+
   const starBreakdown = [
-    { stars: 5, count: 184, percent: 75 },
-    { stars: 4, count: 48, percent: 19 },
-    { stars: 3, count: 12, percent: 5 },
-    { stars: 2, count: 3, percent: 1 },
-    { stars: 1, count: 1, percent: 0 }
+    { stars: 5, count: Math.round(reviewCount * 0.75), percent: 75 },
+    { stars: 4, count: Math.round(reviewCount * 0.18), percent: 18 },
+    { stars: 3, count: Math.round(reviewCount * 0.05), percent: 5 },
+    { stars: 2, count: Math.round(reviewCount * 0.01), percent: 1 },
+    { stars: 1, count: 1, percent: 1 }
   ];
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
     if (!newReview.name || !newReview.comment) return;
 
-    const reviewToAdd = {
-      id: Date.now(),
-      name: newReview.name,
-      verified: true,
-      date: 'Just now',
+    const reviewPayload = {
       rating: newReview.rating,
       comment: newReview.comment,
-      photos: []
+      reviewerName: newReview.name
     };
 
-    setReviews([reviewToAdd, ...reviews]);
+    if (productId) {
+      api.addReview(productId, reviewPayload)
+        .then((data) => {
+          if (data.success && data.review) {
+            const added = {
+              id: data.review.id,
+              name: data.review.reviewer_name,
+              verified: true,
+              date: 'Just now',
+              rating: data.review.rating,
+              comment: data.review.comment,
+              photos: []
+            };
+            setReviews([added, ...reviews]);
+          }
+        })
+        .catch(() => {
+          // Fallback state update
+          setReviews([{
+            id: Date.now(),
+            name: newReview.name,
+            verified: true,
+            date: 'Just now',
+            rating: newReview.rating,
+            comment: newReview.comment
+          }, ...reviews]);
+        });
+    } else {
+      setReviews([{
+        id: Date.now(),
+        name: newReview.name,
+        verified: true,
+        date: 'Just now',
+        rating: newReview.rating,
+        comment: newReview.comment
+      }, ...reviews]);
+    }
+
     setIsWriteModalOpen(false);
     setNewReview({ name: '', rating: 5, comment: '' });
   };
@@ -39,13 +98,13 @@ function CustomerReviews({ rating = 4.8, reviewCount = 248, reviewsList = [] }) 
     <div id="customer-reviews" className={styles.sectionContainer}>
       {/* Header Bar */}
       <div className={styles.sectionHeader}>
-        <h3 className={styles.title}>Customer Reviews ({reviewCount})</h3>
+        <h3 className={styles.title}>Customer Reviews ({reviews.length || reviewCount})</h3>
         <button onClick={() => setIsWriteModalOpen(true)} className={styles.writeReviewBtn}>
           Write a Review
         </button>
       </div>
 
-      {/* Ratings Dashboard (Matching Reference Image) */}
+      {/* Ratings Dashboard */}
       <div className={styles.dashboardGrid}>
         {/* Overall Score Box */}
         <div className={styles.scoreBox}>
@@ -55,7 +114,7 @@ function CustomerReviews({ rating = 4.8, reviewCount = 248, reviewsList = [] }) 
               <FaStar key={i} className={styles.starFilled} />
             ))}
           </div>
-          <span className={styles.scoreSubtext}>Based on {reviewCount} reviews</span>
+          <span className={styles.scoreSubtext}>Based on {reviews.length || reviewCount} reviews</span>
         </div>
 
         {/* Star Breakdown Progress Bars */}
@@ -82,7 +141,7 @@ function CustomerReviews({ rating = 4.8, reviewCount = 248, reviewsList = [] }) 
             {/* User Meta Row */}
             <div className={styles.userRow}>
               <div className={styles.avatarCircle}>
-                {rev.name.charAt(0)}
+                {rev.name ? rev.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className={styles.userInfo}>
                 <h4 className={styles.userName}>{rev.name}</h4>

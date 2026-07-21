@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
-import { FiHeart, FiEye, FiShoppingCart, FiStar, FiX } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiHeart, FiEye, FiShoppingCart } from 'react-icons/fi';
 import { PRODUCTS } from '../../data/mockData';
+import api from '../../services/api';
+import QuickViewModal from '../../shop/QuickViewModal/QuickViewModal';
 import styles from './BestSellers.module.css';
 
 function BestSellers() {
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [wishlist, setWishlist] = useState(PRODUCTS.filter(p => p.isWishlisted).map(p => p.id));
+  const [bestsellerList, setBestsellerList] = useState(() => PRODUCTS.filter(p => p.isBestSeller));
+  const [wishlist, setWishlist] = useState([]);
 
-  const bestSellers = PRODUCTS.filter((p) => p.isBestSeller);
-  const featured = bestSellers.find((p) => p.isFeaturedBestSeller) || bestSellers[0];
-  const others = bestSellers.filter((p) => p.id !== featured.id);
+  useEffect(() => {
+    let isMounted = true;
+    api.getBestsellers()
+      .then((data) => {
+        if (isMounted && data.success && data.products.length > 0) {
+          setBestsellerList(data.products);
+        }
+      })
+      .catch((err) => {
+        console.log('[BestSellers] Operating with preloaded fallback products:', err.message);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const featured = bestsellerList.find((p) => p.isFeaturedBestSeller) || bestsellerList[0] || PRODUCTS[0];
+  const others = bestsellerList.filter((p) => p.id !== featured.id);
 
   const toggleWishlist = (id) => {
     if (wishlist.includes(id)) {
@@ -57,7 +74,9 @@ function BestSellers() {
               <div className={styles.featuredFooter}>
                 <div className={styles.priceGroup}>
                   <span className={styles.featuredPrice}>₹{featured.price.toLocaleString('en-IN')}</span>
-                  <span className={styles.featuredOriginalPrice}>₹{featured.originalPrice.toLocaleString('en-IN')}</span>
+                  {featured.originalPrice && (
+                    <span className={styles.featuredOriginalPrice}>₹{featured.originalPrice.toLocaleString('en-IN')}</span>
+                  )}
                 </div>
                 <div className={styles.btnGroup}>
                   <button onClick={() => setSelectedProduct(featured)} className={styles.quickViewBtn}>
@@ -104,7 +123,9 @@ function BestSellers() {
                   <h4 className={styles.smallName}>{product.name}</h4>
                   <div className={styles.smallPriceGroup}>
                     <span className={styles.smallPrice}>₹{product.price.toLocaleString('en-IN')}</span>
-                    <span className={styles.smallOriginalPrice}>₹{product.originalPrice.toLocaleString('en-IN')}</span>
+                    {product.originalPrice && (
+                      <span className={styles.smallOriginalPrice}>₹{product.originalPrice.toLocaleString('en-IN')}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -113,82 +134,12 @@ function BestSellers() {
         </div>
       </div>
 
-      {/* Specification Modal (Reused) */}
+      {/* Unified Quick View Modal */}
       {selectedProduct && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedProduct(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSelectedProduct(null)} aria-label="Close modal">
-              <FiX />
-            </button>
-            <div className={styles.modalBody}>
-              <div className={styles.modalImageWrapper}>
-                <img src={selectedProduct.image} alt={selectedProduct.name} className={styles.modalImage} />
-              </div>
-              <div className={styles.modalDetails}>
-                <span className={styles.modalFabric}>{selectedProduct.fabric}</span>
-                <h3 className={styles.modalName}>{selectedProduct.name}</h3>
-                
-                <div className={styles.modalRating}>
-                  <span className={styles.stars}>
-                    {[...Array(5)].map((_, i) => (
-                      <FiStar 
-                        key={i} 
-                        className={i < Math.floor(selectedProduct.rating) ? styles.starFilled : styles.starEmpty} 
-                      />
-                    ))}
-                  </span>
-                  <span>({selectedProduct.rating} / 5)</span>
-                </div>
-
-                <div className={styles.modalPriceContainer}>
-                  <span className={styles.modalPrice}>₹{selectedProduct.price.toLocaleString('en-IN')}</span>
-                  {selectedProduct.originalPrice && (
-                    <span className={styles.modalOriginalPrice}>₹{selectedProduct.originalPrice.toLocaleString('en-IN')}</span>
-                  )}
-                  {selectedProduct.discountBadge && (
-                    <span className={styles.modalDiscount}>{selectedProduct.discountBadge}</span>
-                  )}
-                </div>
-
-                {/* Detailed Specifications */}
-                <div className={styles.specsTable}>
-                  <h4 className={styles.specsTitle}>Specifications</h4>
-                  <div className={styles.specRow}>
-                    <span className={styles.specLabel}>Fabric Type</span>
-                    <span className={styles.specValue}>{selectedProduct.fabric}</span>
-                  </div>
-                  <div className={styles.specRow}>
-                    <span className={styles.specLabel}>Saree Size</span>
-                    <span className={styles.specValue}>{selectedProduct.height} height x {selectedProduct.width} width</span>
-                  </div>
-                  <div className={styles.specRow}>
-                    <span className={styles.specLabel}>Matching Blouse</span>
-                    <span className={styles.specValue}>{selectedProduct.blouseIncluded ? 'Included' : 'Not Included'}</span>
-                  </div>
-                  {selectedProduct.blouseIncluded && (
-                    <div className={styles.specRow}>
-                      <span className={styles.specLabel}>Blouse Fabric Length</span>
-                      <span className={styles.specValue}>{selectedProduct.blouseSize}</span>
-                    </div>
-                  )}
-                  <div className={styles.specRow}>
-                    <span className={styles.specLabel}>Availability</span>
-                    <span className={selectedProduct.inStock ? styles.inStock : styles.outOfStock}>
-                      {selectedProduct.inStock ? `Available (${selectedProduct.stockCount} items left)` : 'Sold Out'}
-                    </span>
-                  </div>
-                </div>
-
-                <button 
-                  className={styles.modalAddToCartBtn} 
-                  disabled={!selectedProduct.inStock}
-                >
-                  <FiShoppingCart /> Add To Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <QuickViewModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
       )}
     </section>
   );
