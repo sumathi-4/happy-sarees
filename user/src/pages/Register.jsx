@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiPhone, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiUser, FiPhone, FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
 import AuthBanner from '../auth/AuthBanner/AuthBanner';
+import GoogleLoginModal from '../components/GoogleLoginModal';
 import styles from './Register.module.css';
 
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +10,7 @@ import { PATHS } from '../routes/paths';
 
 function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -20,31 +21,64 @@ function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    setError(''); // Clear error on change
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!formData.name || !formData.phone || !formData.email || !formData.password) {
-      alert('Please fill in all required fields.');
+      setError('Please fill in all required fields.');
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match. Please check and try again.');
+      setError('Passwords do not match. Please check and try again.');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
       return;
     }
     if (!formData.agreeTerms) {
-      alert('Please agree to the Terms & Conditions to proceed.');
+      setError('Please agree to the Terms & Conditions to proceed.');
       return;
     }
-    register(formData);
-    alert(`Account created successfully for ${formData.name}!`);
+
+    setLoading(true);
+    const result = await register(formData);
+    setLoading(false);
+
+    if (!result.success) {
+      setError(result.message || 'An account with this email address already exists.');
+      return;
+    }
+
+    // Success -> redirect to Profile
+    navigate(PATHS.PROFILE);
+  };
+
+  const handleGoogleSignIn = async (googleAccount) => {
+    setLoading(true);
+    const result = await googleLogin(googleAccount);
+    setLoading(false);
+    setIsGoogleModalOpen(false);
+
+    if (!result.success) {
+      setError(result.message || 'Google authentication failed.');
+      return;
+    }
+
     navigate(PATHS.PROFILE);
   };
 
@@ -67,6 +101,26 @@ function Register() {
                 <h1 className={styles.title}>Create Your Account ✨</h1>
                 <p className={styles.subtitle}>Create an account to enjoy exclusive benefits</p>
               </div>
+
+              {/* Error Alert Box */}
+              {error && (
+                <div style={{
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fca5a5',
+                  color: '#991b1b',
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  fontSize: '0.88rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  marginBottom: '1.2rem',
+                  fontWeight: '500'
+                }}>
+                  <FiAlertCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+                  <span>{error}</span>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 {/* Full Name */}
@@ -188,8 +242,8 @@ function Register() {
                 </label>
 
                 {/* Submit Button */}
-                <button type="submit" className={styles.submitBtn}>
-                  Create Account
+                <button type="submit" className={styles.submitBtn} disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
 
                 {/* Footer Link */}
@@ -204,6 +258,14 @@ function Register() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Google Sign In Modal */}
+      <GoogleLoginModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onGoogleSignIn={handleGoogleSignIn}
+        isLoading={loading}
+      />
     </div>
   );
 }

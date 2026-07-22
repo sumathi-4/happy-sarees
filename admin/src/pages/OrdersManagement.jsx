@@ -408,8 +408,50 @@ function OrdersManagement() {
               <p style={{ fontSize: '12px', color: '#666666' }}>Curation checklist of all order invoices</p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className={styles.excelBtn} onClick={() => triggerToast("Selected orders exported as Excel.")}>Export Excel</button>
-              <button className={styles.pdfBtn} onClick={() => triggerToast("Selected orders invoices compiled as PDF Bundle.")}>Export PDF</button>
+              <button 
+                className={styles.excelBtn} 
+                onClick={() => {
+                  if (!filteredOrders || filteredOrders.length === 0) {
+                    triggerToast("No orders to export.");
+                    return;
+                  }
+                  const headers = ['Order ID', 'Customer Name', 'Email', 'Phone', 'Total Amount (INR)', 'Payment Status', 'Order Status', 'Date'];
+                  const rows = filteredOrders.map(o => [
+                    o.id,
+                    `"${(o.customerName || '').replace(/"/g, '""')}"`,
+                    `"${o.customerEmail || ''}"`,
+                    `"${o.customerPhone || ''}"`,
+                    o.totalAmount || 0,
+                    o.paymentStatus || '',
+                    o.orderStatus || '',
+                    `"${o.orderDate || ''}"`
+                  ]);
+                  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  triggerToast("Orders directory exported successfully to CSV!");
+                }}
+              >
+                Export Excel
+              </button>
+              <button 
+                className={styles.pdfBtn} 
+                onClick={() => {
+                  if (!activeOrder) {
+                    triggerToast("No active order selected.");
+                    return;
+                  }
+                  window.print();
+                }}
+              >
+                Print Invoice
+              </button>
               <button className={styles.createBtn} onClick={() => triggerToast("Order creator module is locked for integration.")}>+ Create Order</button>
             </div>
           </div>

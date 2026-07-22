@@ -82,8 +82,28 @@ function Reports() {
           <h2 className={styles.title}>Reports & Analytics</h2>
           <p className={styles.desc}>Analyze your business trends, transactions, and inventory performance</p>
         </div>
-        <button className={styles.pdfExportBtn} onClick={() => triggerToast("Generating PDF Report...")}>
-          Export PDF ▼
+        <button 
+          className={styles.pdfExportBtn} 
+          onClick={() => {
+            const headers = ['Metric Label', 'Value', 'Change'];
+            const rows = SUMMARY_STATS.map(s => [
+              `"${s.label}"`,
+              `"${s.value}"`,
+              `"${s.change}"`
+            ]);
+            const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `analytics_summary_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            triggerToast("Analytics summary report exported successfully!");
+          }}
+        >
+          <FiDownload style={{ marginRight: '6px' }} /> Export Report CSV
         </button>
       </div>
 

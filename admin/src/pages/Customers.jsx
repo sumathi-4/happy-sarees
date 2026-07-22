@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FiSearch, FiFilter, FiDownload, FiPlus, FiEye, FiEdit2, 
-  FiMail, FiPhone, FiMapPin, FiX, FiCheck, FiAlertCircle 
+  FiMail, FiPhone, FiMapPin, FiX, FiCheck, FiAlertCircle, FiRefreshCw 
 } from 'react-icons/fi';
 import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/Customers.module.css';
 
 function Customers() {
-  const { customers, setCustomers } = useAdminData();
+  const { customers, setCustomers, refreshCustomers } = useAdminData();
+
+  // Refresh live customers list from Neon PostgreSQL DB on page load
+  useEffect(() => {
+    if (refreshCustomers) {
+      refreshCustomers();
+    }
+  }, []);
 
   // Selected customer for detail sidebar
   const [selectedCustomerId, setSelectedCustomerId] = useState(1);
@@ -93,10 +100,28 @@ function Customers() {
   };
 
   // Toggle status (Active / Blocked) in details panel
-  const handleToggleStatus = (checked) => {
+  const handleToggleStatus = async (checked) => {
     const nextStatus = checked ? 'Active' : 'Blocked';
+    try {
+      const token = localStorage.getItem('hs_admin_token');
+      if (token && activeCustomer.id) {
+        await fetch(`http://localhost:5001/api/admin/customers/${activeCustomer.id}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: checked ? 'unblock' : 'block',
+            reason: checked ? '' : 'Blocked by Admin from Customers Directory'
+          })
+        });
+      }
+    } catch (err) {
+      console.warn('[Customers] Status sync error:', err.message);
+    }
     setCustomers(prev => prev.map(c => 
-      c.id === activeCustomer.id ? { ...c, status: nextStatus } : c
+      c.id === activeCustomer.id ? { ...c, status: nextStatus, isBlocked: !checked } : c
     ));
     triggerToast(`Customer ${activeCustomer.name} marked as ${nextStatus}.`);
   };
@@ -141,6 +166,36 @@ function Customers() {
     setFormData({ ...cust });
     setModalMode('edit');
     setShowAddEditModal(true);
+  };
+
+  // Real CSV Export Handler
+  const handleExportCustomers = () => {
+    if (!filteredCustomers || filteredCustomers.length === 0) {
+      triggerToast("No customer data to export.");
+      return;
+    }
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Total Orders', 'Total Spent (INR)', 'Status', 'Joined Date'];
+    const rows = filteredCustomers.map(c => [
+      c.id,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${c.email || ''}"`,
+      `"${c.phone || ''}"`,
+      c.totalOrders || 0,
+      c.totalSpent || 0,
+      c.status || 'Active',
+      `"${c.joinedDate || ''}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `customers_directory_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast("Customer directory exported successfully to CSV!");
   };
 
   const handleOpenAddModal = () => {
@@ -260,8 +315,10 @@ function Customers() {
           <div className={styles.cardHeaderBar}>
             <h3>Customer Directory</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className={styles.exportBtn} onClick={() => triggerToast("Customer spreadsheet exported.")}>Export</button>
-              <button className={styles.addBtn} onClick={handleOpenAddModal}>+ Add Customer</button>
+              <button className={styles.exportBtn} onClick={() => { refreshCustomers(); triggerToast("Refreshed live customers from Neon DB."); }} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <FiRefreshCw /> Refresh
+              </button>
+              <button className={styles.exportBtn} onClick={handleExportCustomers}>Export</button>
             </div>
           </div>
 

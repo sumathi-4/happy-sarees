@@ -27,10 +27,10 @@ export function AuthProvider({ children }) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        return DEFAULT_MOCK_USER;
+        return null;
       }
     }
-    return DEFAULT_MOCK_USER;
+    return null;
   });
 
   // Verify JWT session on mount
@@ -45,14 +45,18 @@ export function AuthProvider({ children }) {
             localStorage.setItem('hs_user', JSON.stringify(fullUser));
           }
         })
-        .catch(() => {
-          console.log('[AuthContext] Session offline or expired.');
+        .catch((err) => {
+          console.log('[AuthContext] Session invalid or expired:', err.message);
+          localStorage.removeItem('hs_token');
+          localStorage.removeItem('hs_user');
+          setUser(null);
         });
     }
   }, []);
 
   const isAuthenticated = !!user;
 
+  // ── Login ───────────────────────────────────────────────
   const login = async (email, password) => {
     try {
       const data = await api.login({ email, password });
@@ -63,19 +67,14 @@ export function AuthProvider({ children }) {
         localStorage.setItem('hs_user', JSON.stringify(loggedInUser));
         return { success: true, message: data.message };
       }
+      return { success: false, message: data.message || 'Login failed.' };
     } catch (err) {
-      // Fallback local login if backend is unreachable
-      const loggedInUser = {
-        ...DEFAULT_MOCK_USER,
-        email: email || DEFAULT_MOCK_USER.email,
-        name: email ? email.split('@')[0] : DEFAULT_MOCK_USER.name
-      };
-      setUser(loggedInUser);
-      localStorage.setItem('hs_user', JSON.stringify(loggedInUser));
-      return { success: true, message: 'LoggedIn (Offline Mode)' };
+      console.error('[AuthContext.login error]', err.message);
+      return { success: false, message: err.message || 'Invalid email or password.' };
     }
   };
 
+  // ── Register ────────────────────────────────────────────
   const register = async (userData) => {
     try {
       const data = await api.register({
@@ -91,19 +90,32 @@ export function AuthProvider({ children }) {
         localStorage.setItem('hs_user', JSON.stringify(newUser));
         return { success: true, message: data.message };
       }
+      return { success: false, message: data.message || 'Registration failed.' };
     } catch (err) {
-      const newUser = {
-        ...DEFAULT_MOCK_USER,
-        name: userData.name || DEFAULT_MOCK_USER.name,
-        email: userData.email || DEFAULT_MOCK_USER.email,
-        phone: userData.phone || DEFAULT_MOCK_USER.phone
-      };
-      setUser(newUser);
-      localStorage.setItem('hs_user', JSON.stringify(newUser));
-      return { success: true, message: 'Registered (Offline Mode)' };
+      console.error('[AuthContext.register error]', err.message);
+      return { success: false, message: err.message || 'Registration failed.' };
     }
   };
 
+  // ── Google Login ────────────────────────────────────────
+  const googleLogin = async (googleData) => {
+    try {
+      const data = await api.googleLogin(googleData);
+      if (data.success && data.token) {
+        localStorage.setItem('hs_token', data.token);
+        const googleUser = { ...DEFAULT_MOCK_USER, ...data.user };
+        setUser(googleUser);
+        localStorage.setItem('hs_user', JSON.stringify(googleUser));
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message || 'Google Sign-In failed.' };
+    } catch (err) {
+      console.error('[AuthContext.googleLogin error]', err.message);
+      return { success: false, message: err.message || 'Google Sign-In failed.' };
+    }
+  };
+
+  // ── Logout ──────────────────────────────────────────────
   const logout = () => {
     setUser(null);
     localStorage.removeItem('hs_token');
@@ -125,6 +137,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         login,
         register,
+        googleLogin,
         logout,
         updateProfile
       }}

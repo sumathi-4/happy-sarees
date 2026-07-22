@@ -47,6 +47,7 @@ export const api = {
   // Authentication APIs
   register: (userData) => axiosInstance.post('/auth/register', userData),
   login: (credentials) => axiosInstance.post('/auth/login', credentials),
+  googleLogin: (googleData) => axiosInstance.post('/auth/google', googleData),
   getProfile: () => axiosInstance.get('/auth/me'),
 
   // Products APIs

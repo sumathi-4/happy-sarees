@@ -748,110 +748,7 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
-const INITIAL_CUSTOMERS = [
-  {
-    id: 1,
-    name: 'Sumathi A',
-    email: 'sumathi@mail.com',
-    phone: '98765 43210',
-    totalOrders: 12,
-    totalSpent: 18450,
-    status: 'Active',
-    joinedDate: '15 Jun 2026',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
-    address: '123, Green Street, Anna Nagar, Chennai, Tamil Nadu - 600040, India',
-    spentTrend: '+8% this month',
-    ordersTrend: '+3 this month',
-    lastOrder: { id: 'HS10012', status: 'Delivered', date: '12 May 2026', amount: 6999 },
-    notes: 'Good customer. Prefers silk and organza sarees. Loyal customer.',
-    lastLogin: '22 Jul 2026, 10:15 AM'
-  },
-  {
-    id: 2,
-    name: 'Priya Sharma',
-    email: 'priya@mail.com',
-    phone: '91234 56780',
-    totalOrders: 8,
-    totalSpent: 9230,
-    status: 'Active',
-    joinedDate: '21 Jun 2026',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-    address: '56, Landmark Residency, Adyar, Chennai, Tamil Nadu - 600020, India',
-    spentTrend: '+12% this month',
-    ordersTrend: '+1 this month',
-    lastOrder: { id: 'HS10001', status: 'Shipped', date: '12 May 2026', amount: 6999 },
-    notes: 'Inquired about corporate custom gifts.',
-    lastLogin: '21 Jul 2026, 04:30 PM'
-  },
-  {
-    id: 3,
-    name: 'Kavya Reddy',
-    email: 'kavya@mail.com',
-    phone: '99887 66554',
-    totalOrders: 2,
-    totalSpent: 2189,
-    status: 'Blocked',
-    joinedDate: '02 Jul 2026',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-    address: 'Jubilee Hills Road No 10, Hyderabad, Telangana - 500033, India',
-    spentTrend: '0% change',
-    ordersTrend: '0 this month',
-    lastOrder: { id: 'HS10002', status: 'Pending', date: '12 May 2026', amount: 3499 },
-    notes: 'Blocked due to multiple fake COD checkout attempts.',
-    lastLogin: '18 Jul 2026, 09:00 AM'
-  },
-  {
-    id: 4,
-    name: 'Anitha Iyer',
-    email: 'anitha@mail.com',
-    phone: '90123 44567',
-    totalOrders: 18,
-    totalSpent: 32890,
-    status: 'Active',
-    joinedDate: '05 Jul 2026',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
-    address: 'Malleshwaram 18th Cross, Bangalore, Karnataka - 560003, India',
-    spentTrend: '+15% this month',
-    ordersTrend: '+4 this month',
-    lastOrder: { id: 'HS10003', status: 'Delivered', date: '11 May 2026', amount: 5299 },
-    notes: 'Our top reseller client. VIP status.',
-    lastLogin: '22 Jul 2026, 11:50 AM'
-  },
-  {
-    id: 5,
-    name: 'Meena Joshi',
-    email: 'meena@mail.com',
-    phone: '99001 22334',
-    totalOrders: 6,
-    totalSpent: 7650,
-    status: 'Active',
-    joinedDate: '07 Jul 2026',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80',
-    address: 'Andheri Link Road, Mumbai, Maharashtra - 400053, India',
-    spentTrend: '+5% this month',
-    ordersTrend: '+1 this month',
-    lastOrder: { id: 'HS10004', status: 'Packed', date: '11 May 2026', amount: 2899 },
-    notes: 'Prefers cotton collections.',
-    lastLogin: '19 Jul 2026, 02:22 PM'
-  },
-  {
-    id: 6,
-    name: 'Lakshmi N',
-    email: 'lakshmi@mail.com',
-    phone: '98701 23456',
-    totalOrders: 4,
-    totalSpent: 4990,
-    status: 'Active',
-    joinedDate: '08 Jul 2026',
-    avatar: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=150&q=80',
-    address: 'Sector 6, Dwarka, New Delhi - 110075, India',
-    spentTrend: '+20% this month',
-    ordersTrend: '+2 this month',
-    lastOrder: { id: 'HS10008', status: 'Confirmed', date: '09 May 2026', amount: 3299 },
-    notes: 'Responds well to seasonal coupons.',
-    lastLogin: '21 Jul 2026, 06:12 PM'
-  }
-];
+const INITIAL_CUSTOMERS = [];
 
 const INITIAL_COUPONS = [
   {
@@ -984,10 +881,116 @@ export function AdminDataProvider({ children }) {
     return saved ? JSON.parse(saved) : INITIAL_ORDERS;
   });
 
-  const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_customers');
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
+  const [customers, setCustomers] = useState([]);
+
+  // Live Database Fetchers (Neon PostgreSQL Single Source of Truth)
+  const refreshCustomers = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/customers', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawList = data.data || data.customers || [];
+      if (data.success && Array.isArray(rawList)) {
+        const formatted = rawList.map(c => ({
+          id: c.id,
+          name: c.name || 'Customer',
+          email: c.email,
+          phone: c.phone || 'N/A',
+          totalOrders: c.orderCount || 0,
+          totalSpent: c.totalSpent || 0,
+          status: c.isBlocked ? 'Blocked' : 'Active',
+          joinedDate: new Date(c.joinedAt || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          avatar: c.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+          address: c.address || 'Address registered on checkout',
+          notes: c.blockReason ? `Blocked reason: ${c.blockReason}` : 'Registered customer',
+          isBlocked: !!c.isBlocked
+        }));
+
+        setCustomers(formatted);
+        return formatted;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch customers error:', err.message);
+    }
+  };
+
+  const refreshProducts = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/products', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawList = data.data || data.products || [];
+      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+        setProducts(rawList);
+        return rawList;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch products error:', err.message);
+    }
+  };
+
+  const refreshOrders = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/orders', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawList = data.data || data.orders || [];
+      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+        setOrders(rawList);
+        return rawList;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch orders error:', err.message);
+    }
+  };
+
+  const refreshCoupons = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/coupons', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawList = data.data || data.coupons || [];
+      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+        setCoupons(rawList);
+        return rawList;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch coupons error:', err.message);
+    }
+  };
+
+  const refreshNotifications = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/notifications', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawList = data.data || data.notifications || [];
+      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+        setNotifications(rawList);
+        return rawList;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch notifications error:', err.message);
+    }
+  };
+
+  useEffect(() => {
+    refreshCustomers();
+    refreshProducts();
+    refreshOrders();
+    refreshCoupons();
+    refreshNotifications();
+  }, []);
 
   const [coupons, setCoupons] = useState(() => {
     const saved = localStorage.getItem('hs_admin_coupons');
@@ -1014,10 +1017,6 @@ export function AdminDataProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('hs_admin_orders', JSON.stringify(orders));
   }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_customers', JSON.stringify(customers));
-  }, [customers]);
 
   useEffect(() => {
     localStorage.setItem('hs_admin_coupons', JSON.stringify(coupons));
@@ -1110,17 +1109,22 @@ export function AdminDataProvider({ children }) {
       value={{
         products,
         setProducts,
+        refreshProducts,
         masterData,
         cmsData,
         setCmsData,
         orders,
         setOrders,
+        refreshOrders,
         customers,
         setCustomers,
+        refreshCustomers,
         coupons,
         setCoupons,
+        refreshCoupons,
         notifications,
         setNotifications,
+        refreshNotifications,
         addProduct,
         updateProduct,
         deleteProduct,

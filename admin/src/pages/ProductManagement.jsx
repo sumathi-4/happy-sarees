@@ -274,13 +274,32 @@ function ProductManagement() {
           <button 
             className={styles.exportBtn}
             onClick={() => {
-              const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+              if (!filteredProducts || filteredProducts.length === 0) {
+                triggerToast("No products to export.");
+                return;
+              }
+              const headers = ['ID', 'Product Name', 'SKU', 'Fabric', 'Occasion', 'Price (INR)', 'MRP (INR)', 'Stock', 'Status'];
+              const rows = filteredProducts.map(p => [
+                p.id,
+                `"${(p.name || '').replace(/"/g, '""')}"`,
+                `"${p.sku || ''}"`,
+                `"${p.fabric || ''}"`,
+                `"${p.occasion || ''}"`,
+                p.price || 0,
+                p.mrp || 0,
+                p.stock || 0,
+                p.status || 'Published'
+              ]);
+              const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
               const url = URL.createObjectURL(blob);
               const link = document.createElement('a');
               link.href = url;
-              link.download = `happy_sarees_all_products_${Date.now()}.json`;
+              link.setAttribute('download', `happy_sarees_products_catalog_${new Date().toISOString().split('T')[0]}.csv`);
+              document.body.appendChild(link);
               link.click();
-              triggerToast('Exported entire catalog.');
+              document.body.removeChild(link);
+              triggerToast('Exported product catalog successfully to CSV!');
             }}
           >
             <FiDownload /> Export
