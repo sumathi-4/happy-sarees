@@ -1,11 +1,13 @@
-# Tasks - Navigation, Home Page, and Filter Updates
+# Tasks - Modular Multi-App Reorganisation
 
-- [x] Navigation Bar Updates (`src/home/Header/Header.jsx`):
-  - [x] Removed `Collections` menu item from the top navigation bar
-- [x] Home Page Updates (`src/pages/Home.jsx` & `src/home/SignatureCollections/SignatureCollections.jsx`):
-  - [x] Renamed `SIGNATURE COLLECTIONS` section to `SHOP BY OCCASION`
-  - [x] Updated sub-tagline to `DRAPED IN GRANDEUR`
-  - [x] Removed `<Categories />` section from the home page
-- [x] Shop Filter Updates (`src/shop/FilterSidebar/FilterSidebar.jsx`):
-  - [x] Removed `Collections` filter accordion from the sidebar
-- [x] Verified Production Build (`npm run build` in 1.31s with 0 errors)
+- [x] Create Independent React Apps:
+  - [x] Moved customer storefront codebase into `user/` subdirectory with its own `package.json`, `vite.config.js`, and build directories
+  - [x] Created separate admin portal React app under `admin/` subdirectory with its own `package.json`, `vite.config.js`, and assets
+- [x] Configure Routing:
+  - [x] Restored `user/src/routes/AppRoutes.jsx` to its clean, customer-only routing configuration
+  - [x] Setup `admin/src/App.jsx` with isolated root-level admin routing rules
+- [x] Root Orchestration:
+  - [x] Created root-level `package.json` with dev/build workspace scripts for `user/`, `admin/`, and `server/`
+- [x] Verification:
+  - [x] Storefront builds successfully in 1.05s with 0 errors
+  - [x] Admin builds successfully in 465ms on port 5175 with 0 errors

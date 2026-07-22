@@ -1,0 +1,570 @@
+.layoutWrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.sidebarCollapsed {
+  width: 76px;
+}
+
+.sidebarHeader {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logoImg {
+  height: 40px;
+  object-fit: contain;
+}
+
+.logoText {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2b2b2b;
+  white-space: nowrap;
+}
+
+.adminProfileBox {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adminAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d11b69;
+}
+
+.adminInfoText {
+  display: flex;
+  flex-direction: column;
+}
+
+.adminName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.adminRole {
+  font-size: 11px;
+  color: #d11b69;
+  font-weight: 500;
+}
+
+/* Sidebar Menu List */
+.sidebarMenu {
+  flex: 1;
+  padding: 20px 12px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #666666;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.menuItemLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.menuIcon {
+  font-size: 18px;
+  color: #666666;
+  transition: color 0.2s ease;
+}
+
+.menuItemText {
+  white-space: nowrap;
+}
+
+.menuItem:hover {
+  background-color: rgba(209, 27, 105, 0.04);
+  color: #d11b69;
+}
+
+.menuItem:hover .menuIcon {
+  color: #d11b69;
+}
+
+.menuActive {
+  background-color: #d11b69 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.15);
+}
+
+.menuActive .menuIcon {
+  color: #ffffff !important;
+}
+
+.menuChevron {
+  font-size: 12px;
+  color: #999999;
+}
+
+/* Sidebar Premium Plan */
+.planCard {
+  background: linear-gradient(135deg, rgba(209, 27, 105, 0.04), rgba(6, 31, 235, 0.04));
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.planIcon {
+  font-size: 24px;
+  color: #d11b69;
+}
+
+.planTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+.planDesc {
+  font-size: 11px;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.planBtn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: #ffffff;
+  border: 1px solid rgba(209, 27, 105, 0.2);
+  color: #d11b69;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.planBtn:hover {
+  background: #d11b69;
+  color: #ffffff;
+}
+
+/* Bottom Sidebar User Info */
+.sidebarFooter {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+}
+
+.footerUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footerMenuBtn {
+  background: none;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.footerMenuBtn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Main Content Area Styling */
+.mainContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 260px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  min-width: 0;
+}
+
+.mainContainerCollapsed {
+  margin-left: 76px;
+}
+
+/* Topbar Header styling */
+.topbar {
+  height: 70px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.toggleBtn:hover {
+  color: #d11b69;
+  background-color: rgba(209, 27, 105, 0.04);
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 8px 16px;
+  border-radius: 20px;
+  width: 280px;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+  color: #2b2b2b;
+}
+
+.searchIcon {
+  color: #999999;
+  font-size: 15px;
+}
+
+/* Topbar Actions Right */
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.actionIconBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666666;
+  cursor: pointer;
+  position: relative;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.actionIconBtn:hover {
+  background-color: rgba(209, 27, 105, 0.04);
+  color: #d11b69;
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: #d11b69;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
+.userDropdownTrigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.userDropdownTrigger:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.headerAdminText {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.headerAdminName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.headerAdminRole {
+  font-size: 11px;
+  color: #999999;
+}
+
+.dropdownArrow {
+  font-size: 12px;
+  color: #666666;
+}
+
+/* Dropdown Menu Box */
+.profileDropdownMenu {
+  position: absolute;
+  top: 60px;
+  right: 30px;
+  width: 200px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: dropdownFade 0.2s ease;
+  z-index: 1000;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #666666;
+  border-radius: 6px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background-color: rgba(209, 27, 105, 0.04);
+  color: #d11b69;
+}
+
+.logoutItem {
+  color: #d32f2f;
+}
+
+.logoutItem:hover {
+  background-color: #fdf2f2;
+  color: #c81e1e;
+}
+
+/* Notifications Panel */
+.notificationsPanel {
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: dropdownFade 0.2s ease;
+}
+
+.panelHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+.clearAllBtn {
+  background: none;
+  border: none;
+  color: #d11b69;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.panelList {
+  max-height: 280px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.notifItem {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.notifItem:hover {
+  background-color: rgba(209, 27, 105, 0.02);
+}
+
+.notifDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d11b69;
+  margin-top: 5px;
+}
+
+.notifContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notifMessage {
+  font-size: 12px;
+  color: #2b2b2b;
+}
+
+.notifTime {
+  font-size: 10px;
+  color: #999999;
+}
+
+.panelFooter {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.viewAllNotifLink {
+  color: #d11b69;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Page Content View */
+.contentView {
+  flex: 1;
+  padding: 30px;
+}
+
+/* Responsive Mobile Styles */
+.mobileLogoArea {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .sidebar {
+    left: -260px;
+  }
+  .sidebarMobileOpen {
+    left: 0;
+  }
+  .mainContainer {
+    margin-left: 0 !important;
+  }
+  .mobileLogoArea {
+    display: flex;
+    align-items: center;
+  }
+  .searchBar {
+    display: none;
+  }
+}
