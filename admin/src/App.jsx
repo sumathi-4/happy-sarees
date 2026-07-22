@@ -11,6 +11,11 @@ import ProductForm from './pages/ProductForm';
 import ProductPreview from './pages/ProductPreview';
 import MasterDataManagement from './pages/MasterDataManagement';
 import HomepageCMS from './pages/HomepageCMS';
+import OrdersManagement from './pages/OrdersManagement';
+import Customers from './pages/Customers';
+import Coupons from './pages/Coupons';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 const router = createBrowserRouter([
@@ -54,24 +59,45 @@ const router = createBrowserRouter([
           },
           {
             path: '/orders',
-            element: <PlaceholderPage />,
+            element: <OrdersManagement />,
           },
           {
             path: '/customers',
-            element: <PlaceholderPage />,
+            element: <Customers />,
           },
           {
             path: '/coupons',
-            element: <PlaceholderPage />,
+            element: <Coupons />,
           },
           {
             path: '/reports',
-            element: <PlaceholderPage />,
+            element: <Reports />,
           },
           {
-            path: '/settings',
-            element: <PlaceholderPage />,
+            path: '/reports/sales',
+            element: <Reports />,
           },
+          {
+            path: '/reports/products',
+            element: <Reports />,
+          },
+          {
+            path: '/reports/customers',
+            element: <Reports />,
+          },
+          {
+            path: '/reports/orders',
+            element: <Reports />,
+          },
+          { path: '/settings',           element: <Settings /> },
+          { path: '/settings/website',    element: <Settings /> },
+          { path: '/settings/payments',   element: <Settings /> },
+          { path: '/settings/shipping',   element: <Settings /> },
+          { path: '/settings/tax',        element: <Settings /> },
+          { path: '/settings/email',      element: <Settings /> },
+          { path: '/settings/system',     element: <Settings /> },
+          { path: '/settings/backup',     element: <Settings /> },
+          { path: '/settings/admin',      element: <Settings /> },
         ],
       },
     ],

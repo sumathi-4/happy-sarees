@@ -6,6 +6,7 @@ import {
   FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX 
 } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/AdminLayout.module.css';
 import logoImg from '../../../user/src/assets/logo.jpg';
 
@@ -19,14 +20,11 @@ function AdminLayout() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: 'New order #ORD-1256 placed by Sneha Reddy', time: '5 mins ago' },
-    { id: 2, message: 'Stock alert: Banarasi Silk Saree is below threshold (2 items left)', time: '12 mins ago' },
-    { id: 3, message: 'New customer registration: Priya Sharma', time: '1 hour ago' },
-    { id: 4, message: 'Review submitted for Organza Pink Saree - 5 Stars', time: '3 hours ago' }
-  ]);
+  const { notifications, setNotifications } = useAdminData();
 
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
+  const [isReportsExpanded, setIsReportsExpanded] = useState(false);
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   const handleLogout = () => {
     adminLogout();
@@ -41,7 +39,7 @@ function AdminLayout() {
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
     { label: 'Reports', path: '/reports', icon: <FiBarChart2 />, hasDropdown: true },
-    { label: 'Settings', path: '/settings', icon: <FiSettings /> }
+    { label: 'Settings', path: '/settings', icon: <FiSettings />, hasDropdown: true }
   ];
 
   const getBreadcrumbs = () => {
@@ -158,6 +156,200 @@ function AdminLayout() {
               );
             }
 
+            if (item.label === 'Reports') {
+              const isActive = location.pathname.startsWith('/reports');
+              return (
+                <li key={i}>
+                  <div 
+                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
+                    onClick={() => setIsReportsExpanded(!isReportsExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.menuItemLink}>
+                      <span className={styles.menuIcon}>{item.icon}</span>
+                      {(!isSidebarCollapsed || isMobileOpen) && (
+                        <span className={styles.menuItemText}>{item.label}</span>
+                      )}
+                    </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      isReportsExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />
+                    )}
+                  </div>
+                  {isReportsExpanded && (!isSidebarCollapsed || isMobileOpen) && (
+                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li>
+                        <Link 
+                          to="/reports" 
+                          className={`${styles.menuItem} ${location.pathname === '/reports' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Overview
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/reports/sales" 
+                          className={`${styles.menuItem} ${location.pathname === '/reports/sales' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Sales Report
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/reports/products" 
+                          className={`${styles.menuItem} ${location.pathname === '/reports/products' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Products Report
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/reports/customers" 
+                          className={`${styles.menuItem} ${location.pathname === '/reports/customers' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Customers Report
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/reports/orders" 
+                          className={`${styles.menuItem} ${location.pathname === '/reports/orders' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Orders Report
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
+            if (item.label === 'Settings') {
+              const isActive = location.pathname.startsWith('/settings');
+              return (
+                <li key={i}>
+                  <div 
+                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
+                    onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.menuItemLink}>
+                      <span className={styles.menuIcon}>{item.icon}</span>
+                      {(!isSidebarCollapsed || isMobileOpen) && (
+                        <span className={styles.menuItemText}>{item.label}</span>
+                      )}
+                    </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      isSettingsExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />
+                    )}
+                  </div>
+                  {isSettingsExpanded && (!isSidebarCollapsed || isMobileOpen) && (
+                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li>
+                        <Link 
+                          to="/settings" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Store Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/website" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/website' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Website Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/admin" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/admin' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Admin Management
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/payments" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/payments' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Payment Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/shipping" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/shipping' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Shipping Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/tax" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/tax' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Tax Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/email" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/email' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Email Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/system" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/system' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> System Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/settings/backup" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/backup' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Backup & Restore
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
             const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
             return (
               <li key={i}>
@@ -231,7 +423,11 @@ function AdminLayout() {
               title="Notifications"
             >
               <FiBell />
-              {notifications.length > 0 && <span className={styles.badge}>{notifications.length}</span>}
+              {notifications.filter(n => !n.read).length > 0 && (
+                <span className={styles.badge}>
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
             </button>
 
             <div 
@@ -265,8 +461,8 @@ function AdminLayout() {
             <ul className={styles.panelList}>
               {notifications.length > 0 ? (
                 notifications.map((n) => (
-                  <li key={n.id} className={styles.notifItem}>
-                    <span className={styles.notifDot} />
+                  <li key={n.id} className={`${styles.notifItem} ${n.read ? styles.notifRead : ''}`}>
+                    <span className={`${styles.notifDot} ${!n.read ? styles.notifDotActive : ''}`} />
                     <div className={styles.notifContent}>
                       <span className={styles.notifMessage}>{n.message}</span>
                       <span className={styles.notifTime}>{n.time}</span>
@@ -280,7 +476,7 @@ function AdminLayout() {
               )}
             </ul>
             <div className={styles.panelFooter}>
-              <Link to="/dashboard" className={styles.viewAllNotifLink} onClick={() => setIsNotifOpen(false)}>
+              <Link to="/coupons" className={styles.viewAllNotifLink} onClick={() => setIsNotifOpen(false)}>
                 View All Notifications
               </Link>
             </div>

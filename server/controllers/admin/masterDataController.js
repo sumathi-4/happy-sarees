@@ -1,0 +1,49 @@
+// controllers/admin/masterDataController.js
+const masterDataService = require('../../services/admin/masterDataService');
+const { success, error, paginated } = require('../../utils/response');
+
+exports.getAllTypes = async (req, res, next) => {
+  try { return success(res, { types: await masterDataService.getAllTypes() }); } catch (e) { next(e); }
+};
+
+exports.getItems = async (req, res, next) => {
+  try {
+    const result = await masterDataService.getItems(req.params.type, req.query);
+    return paginated(res, result.items, result.total, result.page, result.limit);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.createItem = async (req, res, next) => {
+  try {
+    const item = await masterDataService.createItem(req.params.type, req.body);
+    return success(res, { item }, 'Item created.', 201);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.updateItem = async (req, res, next) => {
+  try {
+    const item = await masterDataService.updateItem(req.params.type, req.params.id, req.body);
+    return success(res, { item }, 'Item updated.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.deleteItem = async (req, res, next) => {
+  try {
+    await masterDataService.deleteItem(req.params.type, req.params.id);
+    return success(res, {}, 'Item deleted.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.toggleItem = async (req, res, next) => {
+  try {
+    const item = await masterDataService.toggleItem(req.params.type, req.params.id);
+    return success(res, { item }, `Item ${item.is_active ? 'activated' : 'deactivated'}.`);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.reorderItems = async (req, res, next) => {
+  try {
+    await masterDataService.reorderItems(req.body.items);
+    return success(res, {}, 'Items reordered.');
+  } catch (e) { next(e); }
+};

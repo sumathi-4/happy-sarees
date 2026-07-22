@@ -172,6 +172,328 @@ const INITIAL_CMS_DATA = {
   }
 };
 
+const INITIAL_ORDERS = [
+  {
+    id: 'HS10001',
+    customerName: 'Priya Sharma',
+    customerEmail: 'priya.sharma@example.com',
+    customerPhone: '+91 98765 43210',
+    shippingAddress: '123, MG Road, Anna Nagar, Chennai, Tamil Nadu - 600040, India',
+    billingAddress: '123, MG Road, Anna Nagar, Chennai, Tamil Nadu - 600040, India',
+    products: [
+      { id: 1, name: 'Royal Kanchipuram Silk Saree', fabric: 'Kanchipuram Silk', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80', qty: 1, price: 6999, discount: 250, total: 6749, sku: 'HS-KANC-001' },
+      { id: 2, name: 'Organza Floral Saree', fabric: 'Organza', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80', qty: 1, price: 2199, discount: 200, total: 1999, sku: 'HS-ORG-002' },
+      { id: 3, name: 'Cotton Daily Wear Saree', fabric: 'Cotton', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80', qty: 1, price: 1499, discount: 150, total: 1349, sku: 'HS-COT-003' }
+    ],
+    subtotal: 6197,
+    discount: 619.70,
+    shipping: 120,
+    gst: 301.70,
+    totalAmount: 6999,
+    paymentMethod: 'Razorpay',
+    paymentStatus: 'Paid',
+    transactionId: 'pay_J3K8dK2L09nQ1B',
+    paidOn: '12 May 2026, 10:31 AM',
+    orderStatus: 'Shipped',
+    deliveryStatus: 'In Transit',
+    orderDate: '12 May 2026, 10:30 AM',
+    courier: 'Delhivery',
+    trackingNumber: '149875698745',
+    dispatchDate: '12 May 2026',
+    deliveryDate: '14 May 2026 (Expected)',
+    timeline: [
+      { status: 'Order Placed', time: '12 May 2026, 10:30 AM', completed: true },
+      { status: 'Payment Received', time: '12 May 2026, 10:31 AM', completed: true },
+      { status: 'Packed', time: '12 May 2026, 01:45 PM', completed: true },
+      { status: 'Shipped', time: '12 May 2026, 06:15 PM', completed: true },
+      { status: 'Delivered', time: '14 May 2026 (Expected)', completed: false }
+    ],
+    adminNotes: 'Customer requested gift wrapping.',
+    activityLog: [
+      'Order placed by client.',
+      'Payment verified via Razorpay.',
+      'Packed at main warehouse.',
+      'Assigned to Delhivery with AWB 149875698745.'
+    ]
+  },
+  {
+    id: 'HS10002',
+    customerName: 'Kavya Reddy',
+    customerEmail: 'kavya.reddy@example.com',
+    customerPhone: '+91 91234 56789',
+    shippingAddress: '45, Jubilee Hills, Road No 5, Hyderabad, Telangana - 500033, India',
+    billingAddress: '45, Jubilee Hills, Road No 5, Hyderabad, Telangana - 500033, India',
+    products: [
+      { id: 4, name: 'Tissue Silk Saree', fabric: 'Tissue', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80', qty: 1, price: 3499, discount: 0, total: 3499, sku: 'HS-TIS-004' }
+    ],
+    subtotal: 3499,
+    discount: 0,
+    shipping: 0,
+    gst: 175,
+    totalAmount: 3499,
+    paymentMethod: 'COD',
+    paymentStatus: 'COD',
+    transactionId: '-',
+    paidOn: '-',
+    orderStatus: 'Pending',
+    deliveryStatus: 'Not Processed',
+    orderDate: '12 May 2026, 09:15 AM',
+    courier: 'Not Assigned',
+    trackingNumber: '-',
+    dispatchDate: '-',
+    deliveryDate: '-',
+    timeline: [
+      { status: 'Order Placed', time: '12 May 2026, 09:15 AM', completed: true },
+      { status: 'Payment Confirmed', time: '-', completed: false },
+      { status: 'Packed', time: '-', completed: false },
+      { status: 'Shipped', time: '-', completed: false },
+      { status: 'Delivered', time: '-', completed: false }
+    ],
+    adminNotes: 'Call to confirm address before shipping.',
+    activityLog: [
+      'Order placed via Cash on Delivery.'
+    ]
+  },
+  {
+    id: 'HS10003',
+    customerName: 'Anitha Iyer',
+    customerEmail: 'anitha.iyer@example.com',
+    customerPhone: '+91 99887 66554',
+    shippingAddress: '78, Malleshwaram 15th Cross, Bangalore, Karnataka - 560003, India',
+    billingAddress: '78, Malleshwaram 15th Cross, Bangalore, Karnataka - 560003, India',
+    products: [
+      { id: 2, name: 'Organza Floral Saree', fabric: 'Organza', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80', qty: 2, price: 2649, discount: 0, total: 5298, sku: 'HS-ORG-002' }
+    ],
+    subtotal: 5298,
+    discount: 0,
+    shipping: 0,
+    gst: 265,
+    totalAmount: 5299,
+    paymentMethod: 'Razorpay',
+    paymentStatus: 'Paid',
+    transactionId: 'pay_K8dK2L09nQ1B3X',
+    paidOn: '11 May 2026, 03:46 PM',
+    orderStatus: 'Delivered',
+    deliveryStatus: 'Delivered',
+    orderDate: '11 May 2026, 03:45 PM',
+    courier: 'BlueDart',
+    trackingNumber: '789562314',
+    dispatchDate: '11 May 2026',
+    deliveryDate: '13 May 2026',
+    timeline: [
+      { status: 'Order Placed', time: '11 May 2026, 03:45 PM', completed: true },
+      { status: 'Payment Received', time: '11 May 2026, 03:46 PM', completed: true },
+      { status: 'Packed', time: '11 May 2026, 05:00 PM', completed: true },
+      { status: 'Shipped', time: '12 May 2026, 10:00 AM', completed: true },
+      { status: 'Delivered', time: '13 May 2026, 04:30 PM', completed: true }
+    ],
+    adminNotes: 'Leave at front desk if unavailable.',
+    activityLog: [
+      'Order placed.',
+      'Payment verified.',
+      'Shipped via BlueDart.',
+      'Delivered successfully. Signature received.'
+    ]
+  },
+  {
+    id: 'HS10004',
+    customerName: 'Meena Joshi',
+    customerEmail: 'meena.joshi@example.com',
+    customerPhone: '+91 90011 22334',
+    shippingAddress: 'A-402, Shanti Vihar, Andheri West, Mumbai, Maharashtra - 400053, India',
+    billingAddress: 'A-402, Shanti Vihar, Andheri West, Mumbai, Maharashtra - 400053, India',
+    products: [
+      { id: 3, name: 'Cotton Daily Wear Saree', fabric: 'Cotton', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80', qty: 2, price: 1449, discount: 0, total: 2898, sku: 'HS-COT-003' }
+    ],
+    subtotal: 2898,
+    discount: 0,
+    shipping: 0,
+    gst: 145,
+    totalAmount: 2899,
+    paymentMethod: 'UPI',
+    paymentStatus: 'Paid',
+    transactionId: 'upi_985623147856@okaxis',
+    paidOn: '11 May 2026, 05:21 PM',
+    orderStatus: 'Packed',
+    deliveryStatus: 'Ready to Ship',
+    orderDate: '11 May 2026, 05:20 PM',
+    courier: 'Delhivery',
+    trackingNumber: '895632145',
+    dispatchDate: '-',
+    deliveryDate: '-',
+    timeline: [
+      { status: 'Order Placed', time: '11 May 2026, 05:20 PM', completed: true },
+      { status: 'Payment Received', time: '11 May 2026, 05:21 PM', completed: true },
+      { status: 'Packed', time: '12 May 2026, 09:30 AM', completed: true },
+      { status: 'Shipped', time: '-', completed: false },
+      { status: 'Delivered', time: '-', completed: false }
+    ],
+    adminNotes: '',
+    activityLog: [
+      'Order placed.',
+      'UPI payment verified.',
+      'Packed and ready for pickup.'
+    ]
+  },
+  {
+    id: 'HS10005',
+    customerName: 'Sneha Menon',
+    customerEmail: 'sneha.menon@example.com',
+    customerPhone: '+91 93456 77890',
+    shippingAddress: '12, Marine Drive, Kochi, Kerala - 682031, India',
+    billingAddress: '12, Marine Drive, Kochi, Kerala - 682031, India',
+    products: [
+      { id: 1, name: 'Royal Kanchipuram Silk Saree', fabric: 'Kanchipuram Silk', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80', qty: 1, price: 6999, discount: 0, total: 6999, sku: 'HS-KANC-001' },
+      { id: 3, name: 'Cotton Daily Wear Saree', fabric: 'Cotton', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80', qty: 2, price: 1400, discount: 0, total: 2800, sku: 'HS-COT-003' }
+    ],
+    subtotal: 9799,
+    discount: 0,
+    shipping: 0,
+    gst: 490,
+    totalAmount: 9799,
+    paymentMethod: 'Razorpay',
+    paymentStatus: 'Paid',
+    transactionId: 'pay_M9dK2L09nQ1B5Y',
+    paidOn: '10 May 2026, 03:11 PM',
+    orderStatus: 'Out for Delivery',
+    deliveryStatus: 'Out for Delivery',
+    orderDate: '10 May 2026, 03:10 PM',
+    courier: 'Delhivery',
+    trackingNumber: '149875698888',
+    dispatchDate: '11 May 2026',
+    deliveryDate: '12 May 2026',
+    timeline: [
+      { status: 'Order Placed', time: '10 May 2026, 03:10 PM', completed: true },
+      { status: 'Payment Received', time: '10 May 2026, 03:11 PM', completed: true },
+      { status: 'Packed', time: '10 May 2026, 06:00 PM', completed: true },
+      { status: 'Shipped', time: '11 May 2026, 09:00 AM', completed: true },
+      { status: 'Delivered', time: 'Out for Delivery', completed: false }
+    ],
+    adminNotes: 'Call before delivery.',
+    activityLog: [
+      'Order placed.',
+      'Payment verified.',
+      'Shipped.',
+      'Out for delivery from local Kochi hub.'
+    ]
+  },
+  {
+    id: 'HS10006',
+    customerName: 'Pooja Singh',
+    customerEmail: 'pooja.singh@example.com',
+    customerPhone: '+91 87654 32109',
+    shippingAddress: 'Sector 15, Vasundhara, Ghaziabad, Uttar Pradesh - 201012, India',
+    billingAddress: 'Sector 15, Vasundhara, Ghaziabad, Uttar Pradesh - 201012, India',
+    products: [
+      { id: 2, name: 'Organza Floral Saree', fabric: 'Organza', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80', qty: 1, price: 1999, discount: 0, total: 1999, sku: 'HS-ORG-002' }
+    ],
+    subtotal: 1999,
+    discount: 0,
+    shipping: 0,
+    gst: 100,
+    totalAmount: 1999,
+    paymentMethod: 'COD',
+    paymentStatus: 'COD',
+    transactionId: '-',
+    paidOn: '-',
+    orderStatus: 'Cancelled',
+    deliveryStatus: 'Cancelled',
+    orderDate: '10 May 2026, 11:05 AM',
+    courier: 'Not Assigned',
+    trackingNumber: '-',
+    dispatchDate: '-',
+    deliveryDate: '-',
+    timeline: [
+      { status: 'Order Placed', time: '10 May 2026, 11:05 AM', completed: true },
+      { status: 'Cancelled', time: '10 May 2026, 12:00 PM', completed: true }
+    ],
+    adminNotes: 'Customer cancelled via support call.',
+    activityLog: [
+      'Order placed via COD.',
+      'Cancelled by customer due to double order.'
+    ]
+  },
+  {
+    id: 'HS10007',
+    customerName: 'Nandhini K',
+    customerEmail: 'nandhini.k@example.com',
+    customerPhone: '+91 96876 54321',
+    shippingAddress: 'Flat 102, Gokulam Apartments, Mysore, Karnataka - 570002, India',
+    billingAddress: 'Flat 102, Gokulam Apartments, Mysore, Karnataka - 570002, India',
+    products: [
+      { id: 4, name: 'Tissue Silk Saree', fabric: 'Tissue', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80', qty: 1, price: 4499, discount: 0, total: 4499, sku: 'HS-TIS-004' }
+    ],
+    subtotal: 4499,
+    discount: 0,
+    shipping: 0,
+    gst: 225,
+    totalAmount: 4499,
+    paymentMethod: 'Razorpay',
+    paymentStatus: 'Refunded',
+    transactionId: 'pay_N9dK2L09nQ1B5Z',
+    paidOn: '09 May 2026, 07:30 PM',
+    orderStatus: 'Returned',
+    deliveryStatus: 'Returned',
+    orderDate: '09 May 2026, 07:30 PM',
+    courier: 'BlueDart',
+    trackingNumber: '789563214',
+    dispatchDate: '10 May 2026',
+    deliveryDate: '12 May 2026',
+    timeline: [
+      { status: 'Order Placed', time: '09 May 2026, 07:30 PM', completed: true },
+      { status: 'Payment Received', time: '09 May 2026, 07:30 PM', completed: true },
+      { status: 'Shipped', time: '10 May 2026', completed: true },
+      { status: 'Delivered', time: '12 May 2026', completed: true },
+      { status: 'Returned', time: '14 May 2026', completed: true }
+    ],
+    adminNotes: 'Returned due to shade mismatch. Refund initiated.',
+    activityLog: [
+      'Order placed.',
+      'Payment verified.',
+      'Delivered.',
+      'Return request approved.',
+      'Refund processed for ₹4,499.'
+    ]
+  },
+  {
+    id: 'HS10008',
+    customerName: 'Lakshmi B',
+    customerEmail: 'lakshmi.b@example.com',
+    customerPhone: '+91 78901 23456',
+    shippingAddress: 'Sector 4, Dwarka, New Delhi - 110075, India',
+    billingAddress: 'Sector 4, Dwarka, New Delhi - 110075, India',
+    products: [
+      { id: 3, name: 'Cotton Daily Wear Saree', fabric: 'Cotton', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80', qty: 2, price: 1649, discount: 0, total: 3298, sku: 'HS-COT-003' }
+    ],
+    subtotal: 3298,
+    discount: 0,
+    shipping: 0,
+    gst: 165,
+    totalAmount: 3299,
+    paymentMethod: 'UPI',
+    paymentStatus: 'Paid',
+    transactionId: 'upi_785623147856@okicici',
+    paidOn: '09 May 2026, 05:00 PM',
+    orderStatus: 'Confirmed',
+    deliveryStatus: 'Not Processed',
+    orderDate: '09 May 2026, 05:00 PM',
+    courier: 'Not Assigned',
+    trackingNumber: '-',
+    dispatchDate: '-',
+    deliveryDate: '-',
+    timeline: [
+      { status: 'Order Placed', time: '09 May 2026, 05:00 PM', completed: true },
+      { status: 'Confirmed', time: '09 May 2026, 06:30 PM', completed: true },
+      { status: 'Packed', time: '-', completed: false }
+    ],
+    adminNotes: '',
+    activityLog: [
+      'Order placed.',
+      'UPI payment verified.',
+      'Order confirmed by staff.'
+    ]
+  }
+];
 const INITIAL_PRODUCTS = [
   {
     id: 1,
@@ -426,6 +748,221 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
+const INITIAL_CUSTOMERS = [
+  {
+    id: 1,
+    name: 'Sumathi A',
+    email: 'sumathi@mail.com',
+    phone: '98765 43210',
+    totalOrders: 12,
+    totalSpent: 18450,
+    status: 'Active',
+    joinedDate: '15 Jun 2026',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    address: '123, Green Street, Anna Nagar, Chennai, Tamil Nadu - 600040, India',
+    spentTrend: '+8% this month',
+    ordersTrend: '+3 this month',
+    lastOrder: { id: 'HS10012', status: 'Delivered', date: '12 May 2026', amount: 6999 },
+    notes: 'Good customer. Prefers silk and organza sarees. Loyal customer.',
+    lastLogin: '22 Jul 2026, 10:15 AM'
+  },
+  {
+    id: 2,
+    name: 'Priya Sharma',
+    email: 'priya@mail.com',
+    phone: '91234 56780',
+    totalOrders: 8,
+    totalSpent: 9230,
+    status: 'Active',
+    joinedDate: '21 Jun 2026',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    address: '56, Landmark Residency, Adyar, Chennai, Tamil Nadu - 600020, India',
+    spentTrend: '+12% this month',
+    ordersTrend: '+1 this month',
+    lastOrder: { id: 'HS10001', status: 'Shipped', date: '12 May 2026', amount: 6999 },
+    notes: 'Inquired about corporate custom gifts.',
+    lastLogin: '21 Jul 2026, 04:30 PM'
+  },
+  {
+    id: 3,
+    name: 'Kavya Reddy',
+    email: 'kavya@mail.com',
+    phone: '99887 66554',
+    totalOrders: 2,
+    totalSpent: 2189,
+    status: 'Blocked',
+    joinedDate: '02 Jul 2026',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    address: 'Jubilee Hills Road No 10, Hyderabad, Telangana - 500033, India',
+    spentTrend: '0% change',
+    ordersTrend: '0 this month',
+    lastOrder: { id: 'HS10002', status: 'Pending', date: '12 May 2026', amount: 3499 },
+    notes: 'Blocked due to multiple fake COD checkout attempts.',
+    lastLogin: '18 Jul 2026, 09:00 AM'
+  },
+  {
+    id: 4,
+    name: 'Anitha Iyer',
+    email: 'anitha@mail.com',
+    phone: '90123 44567',
+    totalOrders: 18,
+    totalSpent: 32890,
+    status: 'Active',
+    joinedDate: '05 Jul 2026',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+    address: 'Malleshwaram 18th Cross, Bangalore, Karnataka - 560003, India',
+    spentTrend: '+15% this month',
+    ordersTrend: '+4 this month',
+    lastOrder: { id: 'HS10003', status: 'Delivered', date: '11 May 2026', amount: 5299 },
+    notes: 'Our top reseller client. VIP status.',
+    lastLogin: '22 Jul 2026, 11:50 AM'
+  },
+  {
+    id: 5,
+    name: 'Meena Joshi',
+    email: 'meena@mail.com',
+    phone: '99001 22334',
+    totalOrders: 6,
+    totalSpent: 7650,
+    status: 'Active',
+    joinedDate: '07 Jul 2026',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80',
+    address: 'Andheri Link Road, Mumbai, Maharashtra - 400053, India',
+    spentTrend: '+5% this month',
+    ordersTrend: '+1 this month',
+    lastOrder: { id: 'HS10004', status: 'Packed', date: '11 May 2026', amount: 2899 },
+    notes: 'Prefers cotton collections.',
+    lastLogin: '19 Jul 2026, 02:22 PM'
+  },
+  {
+    id: 6,
+    name: 'Lakshmi N',
+    email: 'lakshmi@mail.com',
+    phone: '98701 23456',
+    totalOrders: 4,
+    totalSpent: 4990,
+    status: 'Active',
+    joinedDate: '08 Jul 2026',
+    avatar: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=150&q=80',
+    address: 'Sector 6, Dwarka, New Delhi - 110075, India',
+    spentTrend: '+20% this month',
+    ordersTrend: '+2 this month',
+    lastOrder: { id: 'HS10008', status: 'Confirmed', date: '09 May 2026', amount: 3299 },
+    notes: 'Responds well to seasonal coupons.',
+    lastLogin: '21 Jul 2026, 06:12 PM'
+  }
+];
+
+const INITIAL_COUPONS = [
+  {
+    code: 'HAPPY10',
+    type: 'Percentage',
+    discount: '10% OFF',
+    discountValue: 10,
+    minOrder: 1500,
+    maxDiscount: 500,
+    usageLimit: 100,
+    usageCount: 82,
+    perUserLimit: 1,
+    startDate: '01 Jan 2026',
+    expiryDate: '30 Dec 2026',
+    status: 'Active'
+  },
+  {
+    code: 'FESTIVE500',
+    type: 'Flat',
+    discount: '₹500 OFF',
+    discountValue: 500,
+    minOrder: 3000,
+    maxDiscount: 500,
+    usageLimit: 200,
+    usageCount: 31,
+    perUserLimit: 1,
+    startDate: '10 May 2026',
+    expiryDate: '20 Nov 2026',
+    status: 'Active'
+  },
+  {
+    code: 'FIRSTORDER',
+    type: 'Percentage',
+    discount: '15% OFF',
+    discountValue: 15,
+    minOrder: 999,
+    maxDiscount: 300,
+    usageLimit: 500,
+    usageCount: 15,
+    perUserLimit: 1,
+    startDate: '01 Jan 2026',
+    expiryDate: '31 Dec 2026',
+    status: 'Active'
+  },
+  {
+    code: 'WELCOME20',
+    type: 'Percentage',
+    discount: '20% OFF',
+    discountValue: 20,
+    minOrder: 2000,
+    maxDiscount: 400,
+    usageLimit: 150,
+    usageCount: 12,
+    perUserLimit: 2,
+    startDate: '01 Jun 2026',
+    expiryDate: '15 Aug 2026',
+    status: 'Inactive'
+  }
+];
+
+const INITIAL_NOTIFS = [
+  {
+    id: 1,
+    type: 'order',
+    title: 'New Order Received',
+    message: 'Order HS10015 has been placed.',
+    time: '09:15 AM',
+    read: false
+  },
+  {
+    id: 2,
+    type: 'stock',
+    title: 'Low Stock Alert',
+    message: 'Soft Silk Saree stock is low (5 left).',
+    time: 'Yesterday',
+    read: false
+  },
+  {
+    id: 3,
+    type: 'coupon',
+    title: 'Coupon Expiring Soon',
+    message: 'Coupon FESTIVE500 will expire in 3 days.',
+    time: 'Yesterday',
+    read: false
+  },
+  {
+    id: 4,
+    type: 'customer',
+    title: 'New Customer Registered',
+    message: 'Anusha Reddy has registered.',
+    time: 'Yesterday',
+    read: true
+  },
+  {
+    id: 5,
+    type: 'payment',
+    title: 'Payment Failed',
+    message: 'Payment failed for Order HS10014.',
+    time: 'Yesterday',
+    read: true
+  },
+  {
+    id: 6,
+    type: 'cancel',
+    title: 'Order Cancelled',
+    message: 'Order HS10013 has been cancelled.',
+    time: '2 days ago',
+    read: true
+  }
+];
+
 export function AdminDataProvider({ children }) {
   const [products, setProducts] = useState(() => {
     const saved = localStorage.getItem('hs_admin_products');
@@ -442,6 +979,26 @@ export function AdminDataProvider({ children }) {
     return saved ? JSON.parse(saved) : INITIAL_CMS_DATA;
   });
 
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem('hs_admin_orders');
+    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+  });
+
+  const [customers, setCustomers] = useState(() => {
+    const saved = localStorage.getItem('hs_admin_customers');
+    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
+  });
+
+  const [coupons, setCoupons] = useState(() => {
+    const saved = localStorage.getItem('hs_admin_coupons');
+    return saved ? JSON.parse(saved) : INITIAL_COUPONS;
+  });
+
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('hs_admin_notifications');
+    return saved ? JSON.parse(saved) : INITIAL_NOTIFS;
+  });
+
   useEffect(() => {
     localStorage.setItem('hs_admin_products', JSON.stringify(products));
   }, [products]);
@@ -453,6 +1010,22 @@ export function AdminDataProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('hs_admin_cms_data', JSON.stringify(cmsData));
   }, [cmsData]);
+
+  useEffect(() => {
+    localStorage.setItem('hs_admin_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('hs_admin_customers', JSON.stringify(customers));
+  }, [customers]);
+
+  useEffect(() => {
+    localStorage.setItem('hs_admin_coupons', JSON.stringify(coupons));
+  }, [coupons]);
+
+  useEffect(() => {
+    localStorage.setItem('hs_admin_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // Product CRUD
   const addProduct = (product) => {
@@ -540,6 +1113,14 @@ export function AdminDataProvider({ children }) {
         masterData,
         cmsData,
         setCmsData,
+        orders,
+        setOrders,
+        customers,
+        setCustomers,
+        coupons,
+        setCoupons,
+        notifications,
+        setNotifications,
         addProduct,
         updateProduct,
         deleteProduct,

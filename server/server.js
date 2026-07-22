@@ -12,6 +12,20 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 
+// ── Admin Routes ──────────────────────────────────────────
+const adminAuthRoutes         = require('./routes/admin/adminAuthRoutes');
+const adminDashboardRoutes    = require('./routes/admin/adminDashboardRoutes');
+const adminProductRoutes      = require('./routes/admin/adminProductRoutes');
+const adminMasterDataRoutes   = require('./routes/admin/adminMasterDataRoutes');
+const adminCmsRoutes          = require('./routes/admin/adminCmsRoutes');
+const adminOrderRoutes        = require('./routes/admin/adminOrderRoutes');
+const adminCustomerRoutes     = require('./routes/admin/adminCustomerRoutes');
+const adminCouponRoutes       = require('./routes/admin/adminCouponRoutes');
+const adminReportRoutes       = require('./routes/admin/adminReportRoutes');
+const adminSettingsRoutes     = require('./routes/admin/adminSettingsRoutes');
+const adminNotificationRoutes = require('./routes/admin/adminNotificationRoutes');
+const adminUploadRoutes       = require('./routes/admin/adminUploadRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -36,8 +50,9 @@ app.use(cors({
 }));
 
 // 3. Request Body Size Limits & Parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Increased to 50mb to support base64-encoded images stored in Neon PostgreSQL
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // 4. Rate Limiting for Auth Endpoints (100 requests per 15 mins)
 const authLimiter = rateLimit({
@@ -52,20 +67,45 @@ const authLimiter = rateLimit({
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: '✨ Happy Sarees Express.js Backend API is Running!',
+    message: '✨ Happy Sarees Backend API is Running! (Customer + Admin)',
     environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    apis: {
+      customer: '/api/*',
+      admin:    '/api/admin/*',
+    }
   });
 });
 
-// API Routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/reviews', reviewRoutes);
+// ── Customer API Routes (UNCHANGED) ────────────────────────
+app.use('/api/auth',      authLimiter, authRoutes);
+app.use('/api/products',  productRoutes);
+app.use('/api/orders',    orderRoutes);
+app.use('/api/wishlist',  wishlistRoutes);
+app.use('/api/reviews',   reviewRoutes);
 app.use('/api/addresses', addressRoutes);
-app.use('/api/cart', cartRoutes);
+app.use('/api/cart',      cartRoutes);
+
+// ── Admin API Routes (NEW — all under /api/admin/*) ─────────
+// Admin auth has its own rate limiter
+const adminAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, message: 'Too many admin login attempts. Please try again after 15 minutes.' }
+});
+
+app.use('/api/admin/auth',          adminAuthLimiter, adminAuthRoutes);
+app.use('/api/admin/dashboard',     adminDashboardRoutes);
+app.use('/api/admin/products',      adminProductRoutes);
+app.use('/api/admin/master',        adminMasterDataRoutes);
+app.use('/api/admin/cms',           adminCmsRoutes);
+app.use('/api/admin/orders',        adminOrderRoutes);
+app.use('/api/admin/customers',     adminCustomerRoutes);
+app.use('/api/admin/coupons',       adminCouponRoutes);
+app.use('/api/admin/reports',       adminReportRoutes);
+app.use('/api/admin/settings',      adminSettingsRoutes);
+app.use('/api/admin/notifications', adminNotificationRoutes);
+app.use('/api/admin/upload',        adminUploadRoutes);
 
 // Global Production Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -87,7 +127,8 @@ app.use((req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`===================================================`);
   console.log(`🌸 Happy Sarees Backend API Running on Port ${PORT}`);
-  console.log(`🔗 URL: http://localhost:${PORT}`);
+  console.log(`🔗 Customer API: http://localhost:${PORT}/api/*`);
+  console.log(`🔐 Admin API:    http://localhost:${PORT}/api/admin/*`);
   console.log(`🛡 Security: Helmet, Rate Limiter, and CORS Enabled`);
   console.log(`===================================================`);
 });
