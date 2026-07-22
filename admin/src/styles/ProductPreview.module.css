@@ -1,0 +1,495 @@
+.wrapper {
+  animation: fadeIn 0.4s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Device Simulator Control Bar */
+.simulatorBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  margin-bottom: 24px;
+  position: sticky;
+  top: 70px;
+  z-index: 80;
+}
+
+.backBtn {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.1);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.viewportToggles {
+  display: flex;
+  background-color: #f5f5f5;
+  padding: 4px;
+  border-radius: 8px;
+  gap: 4px;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #666666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.toggleBtnActive {
+  background-color: #ffffff;
+  color: #d11b69;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.editBtn {
+  background: #d11b69;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background-color: #b21457;
+}
+
+/* Viewport emulator frames */
+.viewportFrame {
+  background-color: #ffffff;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  min-height: 600px;
+}
+
+.desktop {
+  width: 100%;
+}
+
+.tablet {
+  width: 768px;
+  border: 8px solid #2b2b2b;
+  border-radius: 24px;
+}
+
+.mobile {
+  width: 390px;
+  border: 10px solid #2b2b2b;
+  border-radius: 36px;
+  min-height: 700px;
+}
+
+/* Mock Storefront headers */
+.storefrontHeaderMock {
+  background-color: #2b2b2b;
+  color: #ffffff;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 6px 12px;
+  letter-spacing: 1px;
+}
+
+.productDetailContainer {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  background-color: #ffffff;
+}
+
+/* Mobile responsive within the frame */
+@media (max-width: 767px) {
+  .productDetailContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tablet .productDetailContainer {
+  grid-template-columns: 1fr;
+  padding: 20px;
+}
+
+.mobile .productDetailContainer {
+  grid-template-columns: 1fr;
+  padding: 16px;
+}
+
+/* Media Column styles */
+.mediaColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mainImageFrame {
+  width: 100%;
+  aspect-ratio: 4/5;
+  background-color: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.mainDisplayImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bestsellerTag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: #e65100;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.thumbGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.thumbFrame {
+  aspect-ratio: 4/5;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #fafafa;
+}
+
+.thumbFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbActive {
+  border-color: #d11b69;
+}
+
+/* Details Column styles */
+.detailsColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryBreadcrumb {
+  font-size: 11px;
+  color: #999999;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.productName {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2b2b2b;
+  margin-bottom: 6px;
+  font-family: 'Playfair Display', serif;
+  line-height: 1.3;
+}
+
+.skuRow {
+  font-size: 12px;
+  color: #666666;
+  margin-bottom: 12px;
+}
+
+.reviewsMock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stars {
+  display: flex;
+  color: #ffb300;
+  font-size: 14px;
+}
+
+.starFilled, .starHalf {
+  margin-right: 2px;
+}
+
+.reviewsText {
+  font-size: 12px;
+  color: #666666;
+  font-weight: 600;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sellingPrice {
+  font-size: 22px;
+  font-weight: 700;
+  color: #d11b69;
+  font-family: 'Playfair Display', serif;
+}
+
+.mrpPrice {
+  font-size: 15px;
+  text-decoration: line-through;
+  color: #999999;
+}
+
+.discountBadge {
+  background-color: rgba(46, 125, 50, 0.08);
+  color: #2e7d32;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.taxLabel {
+  font-size: 11px;
+  color: #999999;
+  margin-bottom: 20px;
+}
+
+.quickSpecsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background-color: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.04);
+  margin-bottom: 20px;
+}
+
+.specBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.specBox strong {
+  font-size: 10px;
+  color: #999999;
+  text-transform: uppercase;
+}
+
+.specBox span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.inventoryStatusBox {
+  margin-bottom: 20px;
+}
+
+.inStockDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2e7d32;
+}
+
+.outOfStockDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d32f2f;
+}
+
+.purchaseControls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.quantityPicker {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.quantityPicker button {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 36px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.quantityPicker button:hover {
+  background-color: #f5f5f5;
+}
+
+.quantityPicker span {
+  width: 32px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.addToCartBtn {
+  flex: 1;
+  background-color: #d11b69;
+  color: #ffffff;
+  border: none;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.addToCartBtn:hover {
+  background-color: #b21457;
+}
+
+.wishlistBtn {
+  width: 40px;
+  height: 38px;
+  background-color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wishlistBtn:hover {
+  color: #d32f2f;
+  border-color: #f8b4b4;
+}
+
+/* Tabs section styling */
+.tabsSection {
+  border-top: 1px solid rgba(0,0,0,0.06);
+  padding-top: 20px;
+}
+
+.tabHeaders {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1.5px solid rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+}
+
+.tabHeaderBtn {
+  background: transparent;
+  border: none;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #999999;
+  cursor: pointer;
+  position: relative;
+}
+
+.tabHeaderActive {
+  color: #d11b69;
+}
+
+.tabHeaderActive::after {
+  content: '';
+  position: absolute;
+  bottom: -2.5px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background-color: #d11b69;
+  border-radius: 2px;
+}
+
+.tabPane {
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.specsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.specsTable th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #999999;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+  width: 150px;
+}
+
+.specsTable td {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2b2b2b;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}

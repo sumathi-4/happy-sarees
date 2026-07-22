@@ -26,6 +26,8 @@ function AdminLayout() {
     { id: 4, message: 'Review submitted for Organza Pink Saree - 5 Stars', time: '3 hours ago' }
   ]);
 
+  const [isProductsExpanded, setIsProductsExpanded] = useState(true);
+
   const handleLogout = () => {
     adminLogout();
     navigate('/login');
@@ -34,7 +36,7 @@ function AdminLayout() {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: <FiLayout /> },
     { label: 'Products', path: '/products', icon: <FiPackage />, hasDropdown: true },
-    { label: 'Homepage', path: '/homepage', icon: <FiHome /> },
+    { label: 'Homepage CMS', path: '/homepage', icon: <FiHome /> },
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag />, hasDropdown: true },
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
@@ -46,6 +48,7 @@ function AdminLayout() {
     const path = location.pathname;
     if (path.includes('dashboard')) return ['Home', 'Dashboard'];
     if (path.includes('products')) return ['Home', 'Products'];
+    if (path.includes('master-data')) return ['Home', 'Master Data'];
     if (path.includes('homepage')) return ['Home', 'Homepage'];
     if (path.includes('orders')) return ['Home', 'Orders'];
     if (path.includes('customers')) return ['Home', 'Customers'];
@@ -59,6 +62,7 @@ function AdminLayout() {
     const path = location.pathname;
     if (path.includes('dashboard')) return 'Dashboard';
     if (path.includes('products')) return 'Products Management';
+    if (path.includes('master-data')) return 'Master Data Management';
     if (path.includes('homepage')) return 'Homepage Curation';
     if (path.includes('orders')) return 'Orders Overview';
     if (path.includes('customers')) return 'Customers Directory';
@@ -107,6 +111,53 @@ function AdminLayout() {
 
         <ul className={styles.sidebarMenu}>
           {navItems.map((item, i) => {
+            if (item.label === 'Products') {
+              const isActive = location.pathname.startsWith('/products') || location.pathname === '/master-data';
+              return (
+                <li key={i}>
+                  <div 
+                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
+                    onClick={() => setIsProductsExpanded(!isProductsExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.menuItemLink}>
+                      <span className={styles.menuIcon}>{item.icon}</span>
+                      {(!isSidebarCollapsed || isMobileOpen) && (
+                        <span className={styles.menuItemText}>{item.label}</span>
+                      )}
+                    </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      isProductsExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />
+                    )}
+                  </div>
+                  {isProductsExpanded && (!isSidebarCollapsed || isMobileOpen) && (
+                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li>
+                        <Link 
+                          to="/products" 
+                          className={`${styles.menuItem} ${location.pathname === '/products' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Products
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/master-data" 
+                          className={`${styles.menuItem} ${location.pathname === '/master-data' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Master Data
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
             const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
             return (
               <li key={i}>
@@ -129,15 +180,6 @@ function AdminLayout() {
             );
           })}
         </ul>
-
-        {!isSidebarCollapsed && (
-          <div className={styles.planCard}>
-            <FiAward className={styles.planIcon} />
-            <span className={styles.planTitle}>Premium Plan</span>
-            <span className={styles.planDesc}>Unlock all premium features and grow your business.</span>
-            <button className={styles.planBtn}>Upgrade Now</button>
-          </div>
-        )}
 
         <div className={styles.sidebarFooter}>
           {(!isSidebarCollapsed || isMobileOpen) ? (
