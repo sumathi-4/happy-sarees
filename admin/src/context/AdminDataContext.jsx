@@ -861,27 +861,13 @@ const INITIAL_NOTIFS = [
 ];
 
 export function AdminDataProvider({ children }) {
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [masterData, setMasterData] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_master_data');
-    return saved ? JSON.parse(saved) : INITIAL_MASTER_DATA;
-  });
-
-  const [cmsData, setCmsData] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_cms_data');
-    return saved ? JSON.parse(saved) : INITIAL_CMS_DATA;
-  });
-
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
-
+  const [products, setProducts] = useState([]);
+  const [masterData, setMasterData] = useState(INITIAL_MASTER_DATA);
+  const [cmsData, setCmsData] = useState(INITIAL_CMS_DATA);
+  const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [coupons, setCoupons] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   // Live Database Fetchers (Neon PostgreSQL Single Source of Truth)
   const refreshCustomers = async () => {
@@ -991,16 +977,6 @@ export function AdminDataProvider({ children }) {
     refreshCoupons();
     refreshNotifications();
   }, []);
-
-  const [coupons, setCoupons] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_coupons');
-    return saved ? JSON.parse(saved) : INITIAL_COUPONS;
-  });
-
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('hs_admin_notifications');
-    return saved ? JSON.parse(saved) : INITIAL_NOTIFS;
-  });
 
   useEffect(() => {
     localStorage.setItem('hs_admin_products', JSON.stringify(products));

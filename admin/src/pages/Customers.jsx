@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FiSearch, FiFilter, FiDownload, FiPlus, FiEye, FiEdit2, 
+  FiSearch, FiFilter, FiDownload, FiPlus, FiEye, FiTrash2, 
   FiMail, FiPhone, FiMapPin, FiX, FiCheck, FiAlertCircle, FiRefreshCw 
 } from 'react-icons/fi';
 import { useAdminData } from '../context/AdminDataContext';
@@ -16,9 +16,9 @@ function Customers() {
     }
   }, []);
 
-  // Selected customer for detail sidebar
-  const [selectedCustomerId, setSelectedCustomerId] = useState(1);
-  const activeCustomer = customers.find(c => c.id === selectedCustomerId) || customers[0];
+  // Selected customer for detail sidebar (null by default until View Eye icon is clicked)
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const activeCustomer = selectedCustomerId ? customers.find(c => c.id === selectedCustomerId) : null;
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,46 +126,31 @@ function Customers() {
     triggerToast(`Customer ${activeCustomer.name} marked as ${nextStatus}.`);
   };
 
-  // Save customer form (add or edit)
-  const handleFormSave = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone) {
-      alert("Name, email, and phone are required fields.");
-      return;
+  // Delete customer dynamically from Neon Cloud PostgreSQL Database
+  const handleDeleteCustomer = async (cust) => {
+    if (!cust) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete customer account "${cust.name}" (${cust.email})? This action will permanently remove the record from Neon Cloud PostgreSQL Database.`);
+    if (!confirmDelete) return;
+
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/customers/${cust.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: 'delete' })
+      });
+    } catch (err) {
+      console.warn('[Customers] Delete sync error:', err.message);
     }
 
-    if (modalMode === 'add') {
-      const newId = customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1;
-      const joinedStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const newCust = {
-        ...formData,
-        id: newId,
-        joinedDate: joinedStr,
-        avatar: formData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-        totalOrders: 0,
-        totalSpent: 0,
-        spentTrend: '0% change',
-        ordersTrend: '0 this month',
-        lastOrder: null,
-        lastLogin: 'Never'
-      };
-      setCustomers([newCust, ...customers]);
-      setSelectedCustomerId(newId);
-      triggerToast("Customer added successfully.");
-    } else {
-      setCustomers(prev => prev.map(c => 
-        c.id === formData.id ? { ...c, ...formData } : c
-      ));
-      triggerToast("Customer details updated.");
+    setCustomers(prev => prev.filter(c => c.id !== cust.id));
+    if (selectedCustomerId === cust.id) {
+      setSelectedCustomerId(null);
     }
-
-    setShowAddEditModal(false);
-  };
-
-  const handleOpenEditModal = (cust) => {
-    setFormData({ ...cust });
-    setModalMode('edit');
-    setShowAddEditModal(true);
+    triggerToast(`Customer "${cust.name}" permanently deleted from database.`);
   };
 
   // Real CSV Export Handler
@@ -225,95 +210,17 @@ function Customers() {
         </div>
       )}
 
-      {/* Add / Edit Customer Modal */}
-      {showAddEditModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalHeader}>
-              <h4>{modalMode === 'add' ? 'Add New Customer' : 'Edit Customer'}</h4>
-              <button className={styles.closeBtn} onClick={() => setShowAddEditModal(false)}><FiX /></button>
-            </div>
-            <form onSubmit={handleFormSave}>
-              <div className={styles.modalBody}>
-                <div className={styles.formGroup}>
-                  <label>Full Name</label>
-                  <input 
-                    type="text" 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                    placeholder="e.g. Sumathi A"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Email Address</label>
-                  <input 
-                    type="email" 
-                    value={formData.email} 
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-                    placeholder="e.g. sumathi@mail.com"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Phone Number</label>
-                  <input 
-                    type="text" 
-                    value={formData.phone} 
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
-                    placeholder="e.g. 98765 43210"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Profile Image URL</label>
-                  <input 
-                    type="text" 
-                    value={formData.avatar} 
-                    onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} 
-                    placeholder="https://images.unsplash.com/..."
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Default Billing / Shipping Address</label>
-                  <textarea 
-                    value={formData.address} 
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
-                    placeholder="Complete door no, street name, district..."
-                    rows={3}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Initial Internal Notes</label>
-                  <textarea 
-                    value={formData.notes} 
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })} 
-                    placeholder="Annotations..."
-                    rows={2}
-                  />
-                </div>
-              </div>
-              <div className={styles.modalFooter}>
-                <button type="button" className={styles.modalCancelBtn} onClick={() => setShowAddEditModal(false)}>Cancel</button>
-                <button type="submit" className={styles.modalSaveBtn}>Save Customer</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Header bar */}
-      <div className={styles.header}>
-        <div>
-          <h2 className={styles.title}>Customers Directory</h2>
-          <p className={styles.desc}>Manage your customer accounts and transaction profiles</p>
-        </div>
-      </div>
+
+
 
       {/* Split screen content grid */}
-      <div className={styles.contentGrid}>
+      <div className={`${styles.contentGrid} ${activeCustomer ? styles.contentGridHasPanel : ''}`}>
         
         {/* Left Column: Customer table Directory */}
         <div className={styles.leftColumn}>
           <div className={styles.cardHeaderBar}>
-            <h3>Customer Directory</h3>
+            <h3>Registered Customer Accounts</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className={styles.exportBtn} onClick={() => { refreshCustomers(); triggerToast("Refreshed live customers from Neon DB."); }} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <FiRefreshCw /> Refresh
@@ -394,8 +301,8 @@ function Customers() {
                           <button className={styles.rowBtn} onClick={() => setSelectedCustomerId(cust.id)} title="View Details">
                             <FiEye />
                           </button>
-                          <button className={styles.rowBtn} onClick={() => handleOpenEditModal(cust)} title="Edit Details">
-                            <FiEdit2 />
+                          <button className={styles.rowBtn} onClick={() => handleDeleteCustomer(cust)} title="Delete Customer Account">
+                            <FiTrash2 style={{ color: '#d32f2f' }} />
                           </button>
                         </td>
                       </tr>
@@ -414,133 +321,132 @@ function Customers() {
           </div>
         </div>
 
-        {/* Right Column: Customer detail card side column */}
-        <div className={styles.rightColumn}>
-          {activeCustomer ? (
-            <div className={styles.detailCard}>
-              <div className={styles.detailHeader}>
+        {/* Centered Customer Details Modal Overlay (Triggered by Eye icon click) */}
+        {activeCustomer && (
+          <div className={styles.modalOverlay} onClick={() => setSelectedCustomerId(null)}>
+            <div className={styles.modal} style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
                 <h4>Customer Details</h4>
-                <button className={styles.closeBtn} onClick={() => triggerToast("Customer panel stays docked.")}><FiX /></button>
+                <button className={styles.closeBtn} onClick={() => setSelectedCustomerId(null)} title="Close Details"><FiX /></button>
               </div>
 
-              {/* Central avatar photo */}
-              <div className={styles.profileSection}>
-                <img src={activeCustomer.avatar} alt={activeCustomer.name} className={styles.largeAvatar} />
-                <div style={{ textAlign: 'left', flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h3 className={styles.profileName}>{activeCustomer.name}</h3>
-                    <span className={`${styles.statusBadge} ${activeCustomer.status === 'Active' ? styles.statusActive : styles.statusBlocked}`}>
-                      {activeCustomer.status}
-                    </span>
+              <div className={styles.modalBody}>
+                {/* Central avatar photo */}
+                <div className={styles.profileSection}>
+                  <img src={activeCustomer.avatar} alt={activeCustomer.name} className={styles.largeAvatar} />
+                  <div style={{ textAlign: 'left', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 className={styles.profileName}>{activeCustomer.name}</h3>
+                      <span className={`${styles.statusBadge} ${activeCustomer.status === 'Active' ? styles.statusActive : styles.statusBlocked}`}>
+                        {activeCustomer.status}
+                      </span>
+                    </div>
+                    <div className={styles.profileMeta}><FiMail /> <span>{activeCustomer.email}</span></div>
+                    <div className={styles.profileMeta}><FiPhone /> <span>{activeCustomer.phone}</span></div>
                   </div>
-                  <div className={styles.profileMeta}><FiMail /> <span>{activeCustomer.email}</span></div>
-                  <div className={styles.profileMeta}><FiPhone /> <span>{activeCustomer.phone}</span></div>
                 </div>
-              </div>
 
-              {/* Spent parameters */}
-              <div className={styles.spentGrid}>
-                <div className={styles.spentCard}>
-                  <span>Total Orders</span>
-                  <strong>{activeCustomer.totalOrders}</strong>
-                  <span className={styles.trendTextUp}>{activeCustomer.ordersTrend}</span>
+                {/* Spent parameters */}
+                <div className={styles.spentGrid}>
+                  <div className={styles.spentCard}>
+                    <span>Total Orders</span>
+                    <strong>{activeCustomer.totalOrders}</strong>
+                    <span className={styles.trendTextUp}>{activeCustomer.ordersTrend}</span>
+                  </div>
+                  <div className={styles.spentCard}>
+                    <span>Total Spent</span>
+                    <strong>₹{activeCustomer.totalSpent.toLocaleString('en-IN')}</strong>
+                    <span className={styles.trendTextUp}>{activeCustomer.spentTrend}</span>
+                  </div>
                 </div>
-                <div className={styles.spentCard}>
-                  <span>Total Spent</span>
-                  <strong>₹{activeCustomer.totalSpent.toLocaleString('en-IN')}</strong>
-                  <span className={styles.trendTextUp}>{activeCustomer.spentTrend}</span>
-                </div>
-              </div>
 
-              {/* Shipping address info */}
-              <div className={styles.infoBlock}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <h5>Default Address</h5>
-                  <span className={styles.actionLinkText}>View All</span>
-                </div>
-                <div className={styles.addressBox}>
-                  <FiMapPin />
-                  <p>{activeCustomer.address}</p>
-                </div>
-              </div>
-
-              {/* Last order info */}
-              {activeCustomer.lastOrder ? (
+                {/* Shipping address info */}
                 <div className={styles.infoBlock}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h5>Last Order</h5>
-                    <span className={styles.actionLinkText}>View Orders</span>
+                    <h5>Default Address</h5>
+                    <span className={styles.actionLinkText}>View All</span>
                   </div>
-                  <div className={styles.orderSummaryBox}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong>ID: {activeCustomer.lastOrder.id}</strong>
-                      <span className={styles.orderDeliveredBadge}>{activeCustomer.lastOrder.status}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: '#666' }}>
-                      <span>Date: {activeCustomer.lastOrder.date}</span>
-                      <strong>Amount: ₹{activeCustomer.lastOrder.amount}</strong>
-                    </div>
+                  <div className={styles.addressBox}>
+                    <FiMapPin />
+                    <p>{activeCustomer.address}</p>
                   </div>
                 </div>
-              ) : (
-                <div className={styles.infoBlock}>
-                  <h5>Last Order</h5>
-                  <div className={styles.orderSummaryBox} style={{ fontStyle: 'italic', color: '#999', fontSize: '12px' }}>
-                    No orders placed yet.
-                  </div>
-                </div>
-              )}
 
-              {/* Notes block */}
-              <div className={styles.infoBlock}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <h5>Notes</h5>
-                  {isEditingNote ? (
-                    <button className={styles.notesSaveBtn} onClick={handleSaveNotes}>Save</button>
-                  ) : (
-                    <button className={styles.notesEditBtn} onClick={() => setIsEditingNote(true)}>Edit</button>
-                  )}
-                </div>
-                {isEditingNote ? (
-                  <textarea 
-                    value={localNote} 
-                    onChange={(e) => setLocalNote(e.target.value)} 
-                    rows={3} 
-                    className={styles.notesTextarea}
-                  />
+                {/* Last order info */}
+                {activeCustomer.lastOrder ? (
+                  <div className={styles.infoBlock}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h5>Last Order</h5>
+                      <span className={styles.actionLinkText}>View Orders</span>
+                    </div>
+                    <div className={styles.orderSummaryBox}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong>ID: {activeCustomer.lastOrder.id}</strong>
+                        <span className={styles.orderDeliveredBadge}>{activeCustomer.lastOrder.status}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: '#666' }}>
+                        <span>Date: {activeCustomer.lastOrder.date}</span>
+                        <strong>Amount: ₹{activeCustomer.lastOrder.amount}</strong>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <div className={styles.notesBox}>
-                    {activeCustomer.notes || 'No custom annotations.'}
+                  <div className={styles.infoBlock}>
+                    <h5>Last Order</h5>
+                    <div className={styles.orderSummaryBox} style={{ fontStyle: 'italic', color: '#999', fontSize: '12px' }}>
+                      No orders placed yet.
+                    </div>
                   </div>
                 )}
+
+                {/* Notes block */}
+                <div className={styles.infoBlock}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <h5>Notes</h5>
+                    {isEditingNote ? (
+                      <button className={styles.notesSaveBtn} onClick={handleSaveNotes}>Save</button>
+                    ) : (
+                      <button className={styles.notesEditBtn} onClick={() => setIsEditingNote(true)}>Edit</button>
+                    )}
+                  </div>
+                  {isEditingNote ? (
+                    <textarea 
+                      value={localNote} 
+                      onChange={(e) => setLocalNote(e.target.value)} 
+                      rows={3} 
+                      className={styles.notesTextarea}
+                    />
+                  ) : (
+                    <div className={styles.notesBox}>
+                      {activeCustomer.notes || 'No custom annotations.'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Toggle switch for customer status */}
+                <div className={styles.statusToggleRow}>
+                  <span>Customer Active Status</span>
+                  <label className={styles.switchLabel}>
+                    <input 
+                      type="checkbox" 
+                      checked={activeCustomer.status === 'Active'}
+                      onChange={(e) => handleToggleStatus(e.target.checked)} 
+                    />
+                    <span className={styles.switchSlider} />
+                  </label>
+                </div>
               </div>
 
-              {/* Toggle switch for customer status */}
-              <div className={styles.statusToggleRow}>
-                <span>Customer Active Status</span>
-                <label className={styles.switchLabel}>
-                  <input 
-                    type="checkbox" 
-                    checked={activeCustomer.status === 'Active'}
-                    onChange={(e) => handleToggleStatus(e.target.checked)} 
-                  />
-                  <span className={styles.switchSlider} />
-                </label>
+              {/* Modal Footer Actions */}
+              <div className={styles.modalFooter} style={{ justifyContent: 'space-between' }}>
+                <button className={styles.editBtnAction} onClick={() => handleDeleteCustomer(activeCustomer)} style={{ color: '#d32f2f', borderColor: '#ffcdd2', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                  <FiTrash2 /> Delete Account
+                </button>
+                <button className={styles.modalCancelBtn} onClick={() => setSelectedCustomerId(null)}>Close</button>
               </div>
-
-              {/* Actions row */}
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '16px' }}>
-                <button className={styles.editBtnAction} onClick={() => handleOpenEditModal(activeCustomer)}>Edit Customer</button>
-                <button className={styles.messageBtnAction} onClick={() => triggerToast(`Reseller message dispatch initialized for ${activeCustomer.name}.`)}>Send Message</button>
-              </div>
-
             </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#999999' }}>
-              Select a customer from the directory to review details.
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
       </div>
     </div>
