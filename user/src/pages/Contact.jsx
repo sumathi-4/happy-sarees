@@ -14,9 +14,11 @@ import {
 import { FaWhatsapp, FaInstagram, FaFacebookF, FaPinterestP } from 'react-icons/fa';
 import { MOCK_FAQS } from '../data/mockData';
 import { PATHS } from '../routes/paths';
+import { useStoreSettings } from '../context/StoreSettingsContext';
 import styles from './Contact.module.css';
 
 function Contact() {
+  const { storeSettings } = useStoreSettings();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -100,7 +102,7 @@ function Contact() {
                   </div>
                   <div>
                     <h5 className={styles.infoLabel}>Phone & WhatsApp</h5>
-                    <p className={styles.infoValue}>+91 98765 43210 / +91 422 2345678</p>
+                    <p className={styles.infoValue}>{storeSettings.phone || '+91 98765 43210'} / {storeSettings.whatsapp || '+91 91234 56789'}</p>
                   </div>
                 </div>
 
@@ -110,7 +112,7 @@ function Contact() {
                   </div>
                   <div>
                     <h5 className={styles.infoLabel}>Email</h5>
-                    <p className={styles.infoValue}>support@happysarees.com / contact@happysarees.com</p>
+                    <p className={styles.infoValue}>{storeSettings.email || 'support@happysarees.com'}</p>
                   </div>
                 </div>
 
@@ -121,8 +123,7 @@ function Contact() {
                   <div>
                     <h5 className={styles.infoLabel}>Business Hours</h5>
                     <p className={styles.infoValue}>
-                      Mon - Sat: 10:00 AM - 8:30 PM<br />
-                      Sun: 11:00 AM - 6:00 PM
+                      {storeSettings.workingHours || 'Mon - Sat: 9:00 AM - 7:00 PM IST'}
                     </p>
                   </div>
                 </div>
@@ -132,18 +133,26 @@ function Contact() {
               <div className={styles.socialBlock}>
                 <h5 className={styles.socialTitle}>Connect With Us</h5>
                 <div className={styles.socialRow}>
-                  <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className={styles.socialBtn} title="WhatsApp">
-                    <FaWhatsapp />
-                  </a>
-                  <a href="https://instagram.com" target="_blank" rel="noreferrer" className={styles.socialBtn} title="Instagram">
-                    <FaInstagram />
-                  </a>
-                  <a href="https://facebook.com" target="_blank" rel="noreferrer" className={styles.socialBtn} title="Facebook">
-                    <FaFacebookF />
-                  </a>
-                  <a href="https://pinterest.com" target="_blank" rel="noreferrer" className={styles.socialBtn} title="Pinterest">
-                    <FaPinterestP />
-                  </a>
+                  {storeSettings.whatsappLink && (
+                    <a href={storeSettings.whatsappLink} target="_blank" rel="noreferrer" className={styles.socialBtn} title="WhatsApp">
+                      <FaWhatsapp />
+                    </a>
+                  )}
+                  {storeSettings.instagram && (
+                    <a href={storeSettings.instagram} target="_blank" rel="noreferrer" className={styles.socialBtn} title="Instagram">
+                      <FaInstagram />
+                    </a>
+                  )}
+                  {storeSettings.facebook && (
+                    <a href={storeSettings.facebook} target="_blank" rel="noreferrer" className={styles.socialBtn} title="Facebook">
+                      <FaFacebookF />
+                    </a>
+                  )}
+                  {storeSettings.pinterest && (
+                    <a href={storeSettings.pinterest} target="_blank" rel="noreferrer" className={styles.socialBtn} title="Pinterest">
+                      <FaPinterestP />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

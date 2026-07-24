@@ -1,9 +1,2 @@
-function AnnouncementBar() {
-  return (
-    <div>
-      <p>Announcement Bar</p>
-    </div>
-  );
-}
-
+import AnnouncementBar from '../home/AnnouncementBar/AnnouncementBar';
 export default AnnouncementBar;

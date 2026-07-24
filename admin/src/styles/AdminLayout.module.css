@@ -25,7 +25,7 @@
 }
 
 .sidebarHeader {
-  height: 70px;
+  height: 85px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -41,14 +41,14 @@
 }
 
 .logoImg {
-  height: 40px;
+  height: 65px;
   object-fit: contain;
 }
 
 .logoText {
   font-family: 'Playfair Display', serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
   color: #2b2b2b;
   white-space: nowrap;
 }

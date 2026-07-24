@@ -61,6 +61,22 @@ class SettingsService {
     return this.updateSetting('store_seo', data, adminUserId, 'seo');
   }
 
+  async updateContact(data, adminUserId) {
+    return this.updateSetting('store_contact', data, adminUserId, 'contact');
+  }
+
+  async updatePolicies(data, adminUserId) {
+    return this.updateSetting('store_policies', data, adminUserId, 'policies');
+  }
+
+  async updateSocial(data, adminUserId) {
+    return this.updateSetting('store_social', data, adminUserId, 'social');
+  }
+
+  async updateIntegrations(data, adminUserId) {
+    return this.updateSetting('store_integrations', data, adminUserId, 'integrations');
+  }
+
   async uploadLogo(imageData, adminUserId) {
     const existing = await db.query(`SELECT setting_value FROM store_settings WHERE setting_key = 'store_general'`);
     const current = existing.rows[0]?.setting_value || {};

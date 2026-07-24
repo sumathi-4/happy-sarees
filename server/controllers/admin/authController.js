@@ -63,3 +63,10 @@ exports.changePassword = async (req, res, next) => {
     return success(res, {}, result.message);
   } catch (err) { return err.status ? error(res, err.message, err.status) : next(err); }
 };
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const updated = await authService.updateProfile(req.adminUser.adminId, req.body);
+    return success(res, { admin: updated }, 'Profile updated successfully.');
+  } catch (err) { return err.status ? error(res, err.message, err.status) : next(err); }
+};

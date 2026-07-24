@@ -12,8 +12,8 @@ import styles from './Shop.module.css';
 function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Products state (populated from API)
-  const [productsList, setProductsList] = useState(PRODUCTS);
+  // Products state (populated live from Neon PostgreSQL DB)
+  const [productsList, setProductsList] = useState([]);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,12 +48,12 @@ function Shop() {
 
     api.getProducts()
       .then((data) => {
-        if (isMounted && data.success && data.products.length > 0) {
-          setProductsList(data.products);
+        if (isMounted && data.success) {
+          setProductsList(data.products || []);
         }
       })
       .catch((err) => {
-        console.log('[Shop] Operating in offline mode with preloaded products:', err.message);
+        console.warn('[Shop] Live products fetch warning:', err.message);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

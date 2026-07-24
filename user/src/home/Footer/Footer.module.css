@@ -31,7 +31,8 @@
 }
 
 .logoImg {
-  height: 80px;
+  height: 125px;
+  max-height: 125px;
   object-fit: contain;
   display: block;
   mix-blend-mode: multiply;

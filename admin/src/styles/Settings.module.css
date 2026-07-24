@@ -55,6 +55,45 @@
   margin: 0;
 }
 
+/* ─── Horizontal 8-Tab Navigation Bar ─── */
+.tabsRow {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tabItem:hover {
+  color: #d11b69;
+  background: #fdf2f8;
+}
+
+.tabItemActive {
+  color: #d11b69;
+  background: #ffffff;
+  border-bottom: 3px solid #d11b69;
+  box-shadow: 0 -2px 8px rgba(209, 27, 105, 0.08);
+}
+
 /* ─── Save / Action Buttons ──────────── */
 .saveBtn {
   display: flex;

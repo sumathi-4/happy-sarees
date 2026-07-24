@@ -5,10 +5,11 @@ import {
   FiCheck, FiRefreshCw, FiEye, FiUpload, FiTrash2, FiPlus, FiChevronDown, FiChevronUp
 } from 'react-icons/fi';
 import { useAdminData } from '../context/AdminDataContext';
+import AnnouncementManager from '../components/AnnouncementManager';
 import styles from '../styles/HomepageCMS.module.css';
 
 function HomepageCMS() {
-  const { cmsData, setCmsData, products, masterData } = useAdminData();
+  const { cmsData, setCmsData, updateCmsSection, refreshCms, products, masterData } = useAdminData();
 
   // Active highlighted section state
   const [selectedSection, setSelectedSection] = useState('heroBanner');
@@ -21,6 +22,9 @@ function HomepageCMS() {
   // If selection changes, sync local state
   React.useEffect(() => {
     setLocalSectionData({ ...cmsData[selectedSection] });
+    if (selectedSection === 'announcementBar') {
+      setActiveSubTab('content');
+    }
   }, [selectedSection, cmsData]);
 
   // Toast alert
@@ -56,12 +60,16 @@ function HomepageCMS() {
     setLocalSectionData(prev => ({ ...prev, [name]: finalVal }));
   };
 
-  // Save current highlighted section changes
+  // Save current highlighted section changes to database & state
   const handleSaveSection = () => {
-    setCmsData(prev => ({
-      ...prev,
-      [selectedSection]: { ...localSectionData }
-    }));
+    if (updateCmsSection) {
+      updateCmsSection(selectedSection, localSectionData);
+    } else {
+      setCmsData(prev => ({
+        ...prev,
+        [selectedSection]: { ...localSectionData }
+      }));
+    }
     triggerToast(`Changes saved for ${sectionsList.find(s => s.key === selectedSection)?.name.substring(3)}.`);
   };
 
@@ -447,26 +455,28 @@ function HomepageCMS() {
             </div>
 
             {/* Inner sub-tabs headers */}
-            <div className={styles.subTabHeaders}>
-              <button 
-                className={`${styles.subTabBtn} ${activeSubTab === 'content' ? styles.subTabActive : ''}`}
-                onClick={() => setActiveSubTab('content')}
-              >
-                Content
-              </button>
-              <button 
-                className={`${styles.subTabBtn} ${activeSubTab === 'media' ? styles.subTabActive : ''}`}
-                onClick={() => setActiveSubTab('media')}
-              >
-                Media / Images
-              </button>
-              <button 
-                className={`${styles.subTabBtn} ${activeSubTab === 'settings' ? styles.subTabActive : ''}`}
-                onClick={() => setActiveSubTab('settings')}
-              >
-                Settings
-              </button>
-            </div>
+            {selectedSection !== 'announcementBar' && (
+              <div className={styles.subTabHeaders}>
+                <button 
+                  className={`${styles.subTabBtn} ${activeSubTab === 'content' ? styles.subTabActive : ''}`}
+                  onClick={() => setActiveSubTab('content')}
+                >
+                  Content
+                </button>
+                <button 
+                  className={`${styles.subTabBtn} ${activeSubTab === 'media' ? styles.subTabActive : ''}`}
+                  onClick={() => setActiveSubTab('media')}
+                >
+                  Media / Images
+                </button>
+                <button 
+                  className={`${styles.subTabBtn} ${activeSubTab === 'settings' ? styles.subTabActive : ''}`}
+                  onClick={() => setActiveSubTab('settings')}
+                >
+                  Settings
+                </button>
+              </div>
+            )}
 
             {/* Form details based on highlighted tab */}
             <div className={styles.editFormBody}>
@@ -515,16 +525,15 @@ function HomepageCMS() {
 
                   {/* ANNOUNCEMENT BAR SECTION FIELDS */}
                   {selectedSection === 'announcementBar' && (
-                    <div className={styles.cmsFormGroup}>
-                      <div className={styles.fieldRow}>
-                        <label>Announcement Text</label>
-                        <input type="text" name="text" value={localSectionData.text || ''} onChange={handleFieldChange} />
-                      </div>
-                      <div className={styles.fieldRow}>
-                        <label>Destination link</label>
-                        <input type="text" name="link" value={localSectionData.link || ''} onChange={handleFieldChange} />
-                      </div>
-                    </div>
+                    <AnnouncementManager 
+                      sectionData={localSectionData}
+                      onUpdate={(nextData) => setLocalSectionData(nextData)}
+                      onSave={(nextData) => {
+                        if (updateCmsSection) {
+                          updateCmsSection('announcementBar', nextData);
+                        }
+                      }}
+                    />
                   )}
 
                   {/* SHOP BY OCCASION SECTION FIELDS */}
@@ -1019,12 +1028,15 @@ function HomepageCMS() {
             <FiRefreshCw /> Reset All Sections
           </button>
           <button className={styles.globalSaveBtn} onClick={() => {
-            // Save current section state
-            setCmsData(prev => ({
-              ...prev,
-              [selectedSection]: { ...localSectionData }
-            }));
-            triggerToast("All homepage configurations saved successfully!");
+            if (updateCmsSection) {
+              updateCmsSection(selectedSection, localSectionData);
+            } else {
+              setCmsData(prev => ({
+                ...prev,
+                [selectedSection]: { ...localSectionData }
+              }));
+            }
+            triggerToast("All homepage configurations saved successfully to database!");
           }}>
             Save Changes
           </button>

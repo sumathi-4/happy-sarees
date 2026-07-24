@@ -11,6 +11,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const cmsRoutes = require('./routes/cmsRoutes');
 
 // ── Admin Routes ──────────────────────────────────────────
 const adminAuthRoutes         = require('./routes/admin/adminAuthRoutes');
@@ -85,6 +86,18 @@ app.use('/api/wishlist',  wishlistRoutes);
 app.use('/api/reviews',   reviewRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/cart',      cartRoutes);
+app.use('/api/cms',       cmsRoutes);
+
+// Public Store Settings Route (for Customer Website & Footer/Header)
+app.get('/api/settings', async (req, res, next) => {
+  try {
+    const settingsService = require('./services/admin/settingsService');
+    const settings = await settingsService.getAll();
+    res.json({ success: true, settings });
+  } catch (e) {
+    next(e);
+  }
+});
 
 // ── Admin API Routes (NEW — all under /api/admin/*) ─────────
 // Admin auth has its own rate limiter

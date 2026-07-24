@@ -970,12 +970,75 @@ export function AdminDataProvider({ children }) {
     }
   };
 
+  const refreshCms = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/cms/sections', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const rawSections = data.sections || [];
+      if (data.success && Array.isArray(rawSections) && rawSections.length > 0) {
+        setCmsData(prev => {
+          const nextCms = { ...prev };
+          rawSections.forEach(sec => {
+            const key = sec.section_key;
+            let camelKey = key;
+            if (key === 'announcement_bar') camelKey = 'announcementBar';
+            else if (key === 'hero_banner') camelKey = 'heroBanner';
+            else if (key === 'shop_by_occasion') camelKey = 'shopByOccasion';
+            else if (key === 'new_arrivals') camelKey = 'newArrivals';
+            else if (key === 'featured_collection') camelKey = 'featuredCollection';
+            else if (key === 'best_sellers') camelKey = 'bestSellers';
+            else if (key === 'shop_by_fabric') camelKey = 'shopByFabric';
+            else if (key === 'why_happy_sarees') camelKey = 'whyHappySarees';
+            else if (key === 'customer_reviews') camelKey = 'customerReviews';
+            else if (key === 'watch_and_buy') camelKey = 'watchAndBuy';
+
+            const configObj = sec.config || {};
+            nextCms[camelKey] = {
+              ...nextCms[camelKey],
+              ...configObj,
+              enabled: sec.is_active !== undefined ? sec.is_active : (sec.enabled ?? true)
+            };
+          });
+          return nextCms;
+        });
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch CMS error:', err.message);
+    }
+  };
+
+  const updateCmsSection = async (sectionKey, sectionData) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const snakeKey = sectionKey.replace(/([A-Z])/g, "_$1").toLowerCase();
+      await fetch(`http://localhost:5001/api/admin/cms/sections/${snakeKey}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(sectionData)
+      });
+    } catch (err) {
+      console.log('[AdminDataContext] Update CMS section error:', err.message);
+    }
+
+    setCmsData(prev => ({
+      ...prev,
+      [sectionKey]: { ...sectionData }
+    }));
+  };
+
   useEffect(() => {
     refreshCustomers();
     refreshProducts();
     refreshOrders();
     refreshCoupons();
     refreshNotifications();
+    refreshCms();
   }, []);
 
   useEffect(() => {
@@ -1002,30 +1065,74 @@ export function AdminDataProvider({ children }) {
     localStorage.setItem('hs_admin_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  // Product CRUD
-  const addProduct = (product) => {
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const formatted = {
-      ...product,
-      id: newId,
-      createdAt: dateStr,
-      updatedAt: dateStr
-    };
-    setProducts([formatted, ...products]);
-    return formatted;
+  // Product CRUD (Connected to Neon Cloud PostgreSQL DB)
+  const addProduct = async (productData) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch('http://localhost:5001/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(productData)
+      });
+      const data = await res.json();
+      await refreshProducts();
+      return data.data?.product;
+    } catch (err) {
+      console.log('[AdminDataContext] Add product API error:', err.message);
+    }
   };
 
-  const updateProduct = (id, updatedProduct) => {
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    setProducts(products.map(p => p.id === Number(id) ? { ...p, ...updatedProduct, updatedAt: dateStr } : p));
+  const updateProduct = async (id, updatedProductData) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedProductData)
+      });
+      await refreshProducts();
+    } catch (err) {
+      console.log('[AdminDataContext] Update product API error:', err.message);
+    }
   };
 
-  const deleteProduct = (id) => {
-    setProducts(products.filter(p => p.id !== Number(id)));
+  const deleteProduct = async (id) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await refreshProducts();
+    } catch (err) {
+      console.log('[AdminDataContext] Delete product API error:', err.message);
+    }
   };
 
-  const duplicateProduct = (id) => {
+  const bulkActionProducts = async (ids, action) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch('http://localhost:5001/api/admin/products/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ ids, action })
+      });
+      await refreshProducts();
+    } catch (err) {
+      console.log('[AdminDataContext] Bulk action API error:', err.message);
+    }
+  };
+
+  const duplicateProduct = async (id) => {
     const target = products.find(p => p.id === Number(id));
     if (target) {
       const copy = {
@@ -1034,7 +1141,7 @@ export function AdminDataProvider({ children }) {
         sku: `${target.sku}-COPY`,
         slug: `${target.slug}-copy`
       };
-      addProduct(copy);
+      await addProduct(copy);
     }
   };
 
@@ -1089,6 +1196,8 @@ export function AdminDataProvider({ children }) {
         masterData,
         cmsData,
         setCmsData,
+        refreshCms,
+        updateCmsSection,
         orders,
         setOrders,
         refreshOrders,
@@ -1105,6 +1214,7 @@ export function AdminDataProvider({ children }) {
         updateProduct,
         deleteProduct,
         duplicateProduct,
+        bulkActionProducts,
         addMasterItem,
         updateMasterItem,
         deleteMasterItem,

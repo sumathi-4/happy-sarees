@@ -66,6 +66,7 @@ function ProductManagement() {
     let matchesTag = true;
     if (selectedTag === 'New Arrival') matchesTag = p.newArrival;
     else if (selectedTag === 'Best Seller') matchesTag = p.bestSeller;
+    else if (selectedTag === 'Trending Product') matchesTag = p.trendingProduct || p.isTrending;
     else if (selectedTag === 'Featured Collection') matchesTag = p.featuredCollection;
     else if (selectedTag === 'Sale Product') matchesTag = p.saleProduct;
 
@@ -397,6 +398,7 @@ function ProductManagement() {
                 <option value="All">All Tags</option>
                 <option value="New Arrival">New Arrival</option>
                 <option value="Best Seller">Bestseller</option>
+                <option value="Trending Product">Trending</option>
                 <option value="Featured Collection">Featured</option>
                 <option value="Sale Product">Sale</option>
               </select>
@@ -502,9 +504,10 @@ function ProductManagement() {
                     <div className={styles.tagsContainer}>
                       {p.newArrival && <span className={`${styles.tagPill} ${styles.tagNew}`}>New Arrival</span>}
                       {p.bestSeller && <span className={`${styles.tagPill} ${styles.tagBest}`}>Bestseller</span>}
+                      {(p.trendingProduct || p.isTrending) && <span className={`${styles.tagPill} ${styles.tagFeatured}`} style={{ backgroundColor: '#f3e5f5', color: '#7b1fa2' }}>Trending</span>}
                       {p.featuredCollection && <span className={`${styles.tagPill} ${styles.tagFeatured}`}>Featured</span>}
                       {p.saleProduct && <span className={`${styles.tagPill} ${styles.tagSale}`}>Sale</span>}
-                      {!p.newArrival && !p.bestSeller && !p.featuredCollection && !p.saleProduct && (
+                      {!p.newArrival && !p.bestSeller && !p.trendingProduct && !p.isTrending && !p.featuredCollection && !p.saleProduct && (
                         <span style={{ color: '#999999' }}>-</span>
                       )}
                     </div>

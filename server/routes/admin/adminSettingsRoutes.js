@@ -15,6 +15,10 @@ router.put('/payment',           ...manage, ctrl.updatePayment);
 router.put('/shipping',          ...manage, ctrl.updateShipping);
 router.put('/tax',               ...manage, ctrl.updateTax);
 router.put('/seo',               ...manage, ctrl.updateSeo);
+router.put('/contact',           ...manage, ctrl.updateContact);
+router.put('/policies',          ...manage, ctrl.updatePolicies);
+router.put('/social',            ...manage, ctrl.updateSocial);
+router.put('/integrations',      ...manage, ctrl.updateIntegrations);
 router.post('/logo',             ...manage, ctrl.uploadLogo);
 router.post('/favicon',          ...manage, ctrl.uploadFavicon);
 

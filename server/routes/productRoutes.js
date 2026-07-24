@@ -37,7 +37,10 @@ function formatProductRow(row, imagesMap = {}) {
     isBestSeller: row.is_best_seller,
     isNewArrival: row.is_new_arrival,
     rating: Number(row.rating || 4.8),
-    reviewCount: Number(row.review_count || 24)
+    reviewCount: Number(row.review_count || 24),
+    videoUrl: row.video_url || null,
+    videoData: row.video_data || null,
+    video: row.video_data || row.video_url || null
   };
 }
 

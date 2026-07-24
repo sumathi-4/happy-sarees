@@ -134,6 +134,10 @@ export const settingsApi = {
   updateShipping:(data)    => api.put('/settings/shipping', data),
   updateTax:     (data)    => api.put('/settings/tax', data),
   updateSeo:     (data)    => api.put('/settings/seo', data),
+  updateContact: (data)    => api.put('/settings/contact', data),
+  updatePolicies:(data)    => api.put('/settings/policies', data),
+  updateSocial:  (data)    => api.put('/settings/social', data),
+  updateIntegrations:(data)=> api.put('/settings/integrations', data),
   uploadLogo:    (imageData) => api.post('/settings/logo', { imageData }),
   uploadFavicon: (imageData) => api.post('/settings/favicon', { imageData }),
   // Admin users

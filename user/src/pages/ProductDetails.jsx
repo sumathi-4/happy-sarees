@@ -16,10 +16,10 @@ function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(() => getProductById(id));
-  const [loading, setLoading] = useState(false);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Scroll to top and fetch product by ID from Neon API
+  // Scroll to top and fetch product by ID from Neon PostgreSQL DB
   useEffect(() => {
     window.scrollTo(0, 0);
     let isMounted = true;
@@ -32,8 +32,7 @@ function ProductDetails() {
         }
       })
       .catch((err) => {
-        console.log('[ProductDetails] Operating with local fallback product data:', err.message);
-        setProduct(getProductById(id));
+        console.warn('[ProductDetails] Live fetch warning:', err.message);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -113,6 +112,44 @@ function ProductDetails() {
 
         {/* Mid Section: Tabbed Information & Specifications */}
         <ProductTabs product={product} />
+
+        {/* Product Video Feature (Uploaded Video File or YouTube/Vimeo Embed) */}
+        {(product.videoData || product.videoUrl || product.video) && (
+          <div style={{ marginTop: '32px', padding: '24px', background: '#ffffff', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#2b2b2b' }}>
+              🎥 Product Draping Video
+            </h3>
+            {product.videoData ? (
+              <video 
+                src={product.videoData} 
+                controls 
+                style={{ width: '100%', maxHeight: '480px', borderRadius: '8px', backgroundColor: '#000000' }} 
+              />
+            ) : product.videoUrl?.includes('youtube') || product.videoUrl?.includes('youtu.be') ? (
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
+                <iframe 
+                  src={`https://www.youtube.com/embed/${(product.videoUrl.match(/(?:v=|\/)([a-zA-Z0-9_-]{11})/) || [])[1] || ''}`}
+                  title="Product Video"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                  allowFullScreen
+                />
+              </div>
+            ) : product.videoUrl?.includes('vimeo') ? (
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
+                <iframe 
+                  src={`https://player.vimeo.com/video/${(product.videoUrl.match(/vimeo\.com\/(\d+)/) || [])[1] || ''}`}
+                  title="Product Video"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video controls style={{ width: '100%', maxHeight: '480px', borderRadius: '8px' }}>
+                <source src={product.videoUrl || product.video} />
+              </video>
+            )}
+          </div>
+        )}
 
         {/* Watch & Buy Section */}
         <WatchAndBuySection videos={product.videos} />

@@ -219,8 +219,21 @@ class AuthService {
       `UPDATE admin_users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
       [hash, adminId]
     );
-
     return { message: 'Password changed successfully.' };
+  }
+
+  async updateProfile(adminId, data) {
+    const res = await db.query(
+      `UPDATE admin_users SET
+        name = COALESCE($1, name),
+        email = COALESCE($2, email),
+        phone = COALESCE($3, phone),
+        updated_at = NOW()
+       WHERE id = $4 RETURNING id, name, email, phone, status`,
+      [data.name, data.email ? data.email.toLowerCase() : null, data.phone, adminId]
+    );
+    if (res.rows.length === 0) throw { status: 404, message: 'Admin user not found.' };
+    return res.rows[0];
   }
 }
 

@@ -257,7 +257,7 @@ function AdminLayout() {
                       <li>
                         <Link 
                           to="/settings" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings' ? styles.menuActive : ''}`}
+                          className={`${styles.menuItem} ${location.pathname === '/settings' || location.pathname === '/settings/store' ? styles.menuActive : ''}`}
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
@@ -266,82 +266,12 @@ function AdminLayout() {
                       </li>
                       <li>
                         <Link 
-                          to="/settings/website" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/website' ? styles.menuActive : ''}`}
+                          to="/settings/profile" 
+                          className={`${styles.menuItem} ${location.pathname === '/settings/profile' ? styles.menuActive : ''}`}
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Website Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/admin" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/admin' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Admin Management
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/payments" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/payments' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Payment Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/shipping" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/shipping' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Shipping Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/tax" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/tax' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Tax Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/email" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/email' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Email Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/system" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/system' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> System Settings
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/settings/backup" 
-                          className={`${styles.menuItem} ${location.pathname === '/settings/backup' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Backup & Restore
+                          <span style={{ marginRight: '8px' }}>•</span> Profile Settings
                         </Link>
                       </li>
                     </ul>
@@ -485,11 +415,11 @@ function AdminLayout() {
 
         {isProfileOpen && (
           <div className={styles.profileDropdownMenu}>
-            <div className={styles.dropdownItem} onClick={() => { setIsProfileOpen(false); alert('My Profile details configuration coming soon.'); }}>
-              <FiUser /> Profile details
-            </div>
+            <Link to="/settings/profile" className={styles.dropdownItem} onClick={() => setIsProfileOpen(false)}>
+              <FiUser /> Profile Settings
+            </Link>
             <Link to="/settings" className={styles.dropdownItem} onClick={() => setIsProfileOpen(false)}>
-              <FiSettings /> Settings
+              <FiSettings /> Store Settings
             </Link>
             <div className={styles.dropdownItem} onClick={() => { setIsProfileOpen(false); alert('For support, contact support@happysarees.com'); }}>
               <FiHelpCircle /> Help Support

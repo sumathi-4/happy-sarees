@@ -2,34 +2,49 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi';
 import { PATHS } from '../../routes/paths';
+import { useStoreSettings } from '../../context/StoreSettingsContext';
 import styles from './Footer.module.css';
 import logoImg from '../../assets/logo.jpg';
 
 function Footer() {
+  const { storeSettings } = useStoreSettings();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         {/* Brand/About block */}
         <div className={styles.brandBlock}>
           <div className={styles.logoContainer}>
-            <img src={logoImg} alt="Happy Sarees" className={styles.logoImg} />
+            {storeSettings.logoData ? (
+              <img src={storeSettings.logoData} alt={storeSettings.storeName} className={styles.logoImg} />
+            ) : (
+              <img src={logoImg} alt={storeSettings.storeName} className={styles.logoImg} />
+            )}
           </div>
           <p className={styles.brandDesc}>
-            Your premium destination for handloomed elegance, bridal magnificence, and contemporary saree silhouettes.
+            {storeSettings.tagline || 'Your premium destination for handloomed elegance, bridal magnificence, and contemporary saree silhouettes.'}
           </p>
           <div className={styles.socials}>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Instagram">
-              <FiInstagram />
-            </a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Facebook">
-              <FiFacebook />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Twitter">
-              <FiTwitter />
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Youtube">
-              <FiYoutube />
-            </a>
+            {storeSettings.instagram && (
+              <a href={storeSettings.instagram} target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Instagram">
+                <FiInstagram />
+              </a>
+            )}
+            {storeSettings.facebook && (
+              <a href={storeSettings.facebook} target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Facebook">
+                <FiFacebook />
+              </a>
+            )}
+            {storeSettings.twitter && (
+              <a href={storeSettings.twitter} target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Twitter">
+                <FiTwitter />
+              </a>
+            )}
+            {storeSettings.youtube && (
+              <a href={storeSettings.youtube} target="_blank" rel="noreferrer" className={styles.socialLink} aria-label="Youtube">
+                <FiYoutube />
+              </a>
+            )}
           </div>
         </div>
 
@@ -82,13 +97,13 @@ function Footer() {
       <div className={styles.footerBottom}>
         <div className={styles.bottomContainer}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} Happy Sarees Private Limited. All Rights Reserved.
+            © {new Date().getFullYear()} {storeSettings.businessName || 'Happy Sarees Private Limited'}. All Rights Reserved.
           </p>
           <div className={styles.payments}>
             <span className={styles.paymentBadge}>VISA</span>
             <span className={styles.paymentBadge}>MASTERCARD</span>
             <span className={styles.paymentBadge}>UPI</span>
-            <span className={styles.paymentBadge}>COD</span>
+            {storeSettings.codEnabled && <span className={styles.paymentBadge}>COD</span>}
           </div>
         </div>
       </div>

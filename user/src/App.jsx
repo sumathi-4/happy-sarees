@@ -1,10 +1,13 @@
 import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthContext';
+import { StoreSettingsProvider } from './context/StoreSettingsContext';
 
 function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <StoreSettingsProvider>
+        <AppRoutes />
+      </StoreSettingsProvider>
     </AuthProvider>
   );
 }

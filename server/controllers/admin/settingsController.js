@@ -23,6 +23,18 @@ exports.updateTax = async (req, res, next) => {
 exports.updateSeo = async (req, res, next) => {
   try { await settingsService.updateSeo(req.body, req.adminUser.adminId); return success(res, {}, 'SEO settings updated.'); } catch (e) { next(e); }
 };
+exports.updateContact = async (req, res, next) => {
+  try { await settingsService.updateContact(req.body, req.adminUser.adminId); return success(res, {}, 'Contact & Business settings updated.'); } catch (e) { next(e); }
+};
+exports.updatePolicies = async (req, res, next) => {
+  try { await settingsService.updatePolicies(req.body, req.adminUser.adminId); return success(res, {}, 'Policy settings updated.'); } catch (e) { next(e); }
+};
+exports.updateSocial = async (req, res, next) => {
+  try { await settingsService.updateSocial(req.body, req.adminUser.adminId); return success(res, {}, 'Social Media settings updated.'); } catch (e) { next(e); }
+};
+exports.updateIntegrations = async (req, res, next) => {
+  try { await settingsService.updateIntegrations(req.body, req.adminUser.adminId); return success(res, {}, 'Integrations settings updated.'); } catch (e) { next(e); }
+};
 exports.uploadLogo = async (req, res, next) => {
   try {
     const { imageData } = req.body;

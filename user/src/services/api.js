@@ -77,7 +77,12 @@ export const api = {
   // Cart APIs
   getCart: () => axiosInstance.get('/cart'),
   addToCart: (productId, quantity) => axiosInstance.post('/cart', { productId, quantity }),
-  removeFromCart: (productId) => axiosInstance.delete(`/cart/${productId}`)
+  removeFromCart: (productId) => axiosInstance.delete(`/cart/${productId}`),
+
+  // CMS & Announcement Bar APIs
+  getAnnouncementBar: () => axiosInstance.get('/cms/announcement-bar'),
+  getCmsSections: () => axiosInstance.get('/cms/sections'),
+  getNavigationMenu: () => axiosInstance.get('/cms/navigation')
 };
 
 export default api;

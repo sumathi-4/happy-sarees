@@ -16,6 +16,7 @@ import Customers from './pages/Customers';
 import Coupons from './pages/Coupons';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import ProfileSettings from './pages/ProfileSettings';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 const router = createBrowserRouter([
@@ -89,15 +90,25 @@ const router = createBrowserRouter([
             path: '/reports/orders',
             element: <Reports />,
           },
-          { path: '/settings',           element: <Settings /> },
-          { path: '/settings/website',    element: <Settings /> },
-          { path: '/settings/payments',   element: <Settings /> },
-          { path: '/settings/shipping',   element: <Settings /> },
-          { path: '/settings/tax',        element: <Settings /> },
-          { path: '/settings/email',      element: <Settings /> },
-          { path: '/settings/system',     element: <Settings /> },
-          { path: '/settings/backup',     element: <Settings /> },
-          { path: '/settings/admin',      element: <Settings /> },
+          { path: '/settings',              element: <Settings /> },
+          { path: '/settings/general',      element: <Settings /> },
+          { path: '/settings/contact',      element: <Settings /> },
+          { path: '/settings/tax',          element: <Settings /> },
+          { path: '/settings/shipping',     element: <Settings /> },
+          { path: '/settings/policies',     element: <Settings /> },
+          { path: '/settings/seo',          element: <Settings /> },
+          { path: '/settings/social',       element: <Settings /> },
+          { path: '/settings/integrations', element: <Settings /> },
+          { path: '/settings/store',        element: <Settings /> },
+          { path: '/admin/settings/store',  element: <Settings /> },
+          { path: '/settings/profile',      element: <ProfileSettings /> },
+          { path: '/admin/settings/profile',element: <ProfileSettings /> },
+          { path: '/settings/website',       element: <Settings /> },
+          { path: '/settings/payments',      element: <Settings /> },
+          { path: '/settings/email',         element: <Settings /> },
+          { path: '/settings/system',        element: <Settings /> },
+          { path: '/settings/backup',        element: <Settings /> },
+          { path: '/settings/admin',         element: <Settings /> },
         ],
       },
     ],

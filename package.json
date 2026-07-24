@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start:server": "cd server && npm start",
+    "start:user": "cd user && npm run dev",
+    "start:admin": "cd admin && npm run dev",
     "dev:user": "npm run dev --prefix user",
     "dev:admin": "npm run dev --prefix admin",
     "dev:server": "npm run dev --prefix server",
