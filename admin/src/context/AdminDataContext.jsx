@@ -1032,6 +1032,48 @@ export function AdminDataProvider({ children }) {
     }));
   };
 
+  const refreshMasterData = async () => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const typesRes = await fetch('http://localhost:5001/api/admin/master-data/types', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const typesData = await typesRes.json();
+      const typesList = typesData.data?.types || typesData.types || [];
+
+      if (Array.isArray(typesList)) {
+        const newMasterData = {};
+        for (const typeObj of typesList) {
+          const key = typeObj.slug.replace(/-/g, '_');
+          try {
+            const itemsRes = await fetch(`http://localhost:5001/api/admin/master-data/${typeObj.slug}?limit=200`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const itemsData = await itemsRes.json();
+            const rawList = Array.isArray(itemsData.data)
+              ? itemsData.data
+              : (Array.isArray(itemsData.items) ? itemsData.items : (itemsData.data?.items || []));
+
+            newMasterData[key] = rawList.map(item => ({
+              id: item.id,
+              name: item.name,
+              status: item.is_active ? 'Active' : 'Inactive',
+              isActive: item.is_active,
+              sortOrder: item.sort_order || 0
+            }));
+          } catch (e) {
+            newMasterData[key] = [];
+          }
+        }
+
+        setMasterData(newMasterData);
+        return newMasterData;
+      }
+    } catch (err) {
+      console.log('[AdminDataContext] Fetch master data error:', err.message);
+    }
+  };
+
   useEffect(() => {
     refreshCustomers();
     refreshProducts();
@@ -1039,6 +1081,7 @@ export function AdminDataProvider({ children }) {
     refreshCoupons();
     refreshNotifications();
     refreshCms();
+    refreshMasterData();
   }, []);
 
   useEffect(() => {
@@ -1191,13 +1234,70 @@ export function AdminDataProvider({ children }) {
     }
   };
 
-  const addMasterType = (typeName) => {
-    const key = typeName.toLowerCase().replace(/\s+/g, '_');
-    if (!masterData[key]) {
-      setMasterData({
-        ...masterData,
-        [key]: []
+  const addMasterType = async (typeName, options = {}) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch('http://localhost:5001/api/admin/master-data/types', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ name: typeName, ...options })
       });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Add master type error:', err.message);
+      const key = typeName.toLowerCase().trim().replace(/\s+/g, '_');
+      if (!masterData[key]) {
+        setMasterData({ ...masterData, [key]: [] });
+      }
+    }
+  };
+
+  const updateMasterType = async (typeKey, updatedData) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedData)
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Update master type error:', err.message);
+    }
+  };
+
+  const deleteMasterType = async (typeKey) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Delete master type error:', err.message);
+      const updated = { ...masterData };
+      delete updated[typeKey];
+      setMasterData(updated);
+    }
+  };
+
+  const toggleMasterType = async (typeKey) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}/toggle`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Toggle master type error:', err.message);
     }
   };
 
@@ -1232,7 +1332,11 @@ export function AdminDataProvider({ children }) {
         addMasterItem,
         updateMasterItem,
         deleteMasterItem,
-        addMasterType
+        addMasterType,
+        updateMasterType,
+        deleteMasterType,
+        toggleMasterType,
+        refreshMasterData
       }}
     >
       {children}

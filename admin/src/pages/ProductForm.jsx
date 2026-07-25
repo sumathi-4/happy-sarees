@@ -523,78 +523,52 @@ function ProductForm() {
                     All dropdown options are loaded dynamically from Master Data.
                   </p>
                   <div className={styles.formGrid}>
-                    <div className={styles.formGroupHalf}>
-                      <label>Fabric</label>
-                      <select name="fabric" value={formData.fabric} onChange={handleInputChange}>
-                        {masterData.fabrics?.map(f => (
-                          <option key={f.id} value={f.name}>{f.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {Object.keys(masterData || {}).map((typeKey) => {
+                      const typeLabel = typeKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                      const items = masterData[typeKey] || [];
+                      // Map standard singular names for backend compatibility
+                      const fieldNameMap = {
+                        fabrics: 'fabric',
+                        occasions: 'occasion',
+                        colors: 'color',
+                        patterns: 'pattern',
+                        weaves: 'weave',
+                        borders: 'border',
+                        brands: 'brand',
+                        collections: 'collection'
+                      };
+                      const nameAttr = fieldNameMap[typeKey] || typeKey;
+                      const selectedVal = formData[nameAttr] || formData[typeKey] || formData.customMasterData?.[typeKey] || '';
 
-                    <div className={styles.formGroupHalf}>
-                      <label>Occasion</label>
-                      <select name="occasion" value={formData.occasion} onChange={handleInputChange}>
-                        {masterData.occasions?.map(o => (
-                          <option key={o.id} value={o.name}>{o.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Color</label>
-                      <select name="color" value={formData.color} onChange={handleInputChange}>
-                        {masterData.colors?.map(c => (
-                          <option key={c.id} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Pattern</label>
-                      <select name="pattern" value={formData.pattern} onChange={handleInputChange}>
-                        {masterData.patterns?.map(p => (
-                          <option key={p.id} value={p.name}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Weave Type</label>
-                      <select name="weave" value={formData.weave} onChange={handleInputChange}>
-                        {masterData.weaves?.map(w => (
-                          <option key={w.id} value={w.name}>{w.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Border Style</label>
-                      <select name="border" value={formData.border} onChange={handleInputChange}>
-                        {masterData.borders?.map(b => (
-                          <option key={b.id} value={b.name}>{b.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Brand</label>
-                      <select name="brand" value={formData.brand} onChange={handleInputChange}>
-                        {masterData.brands?.map(b => (
-                          <option key={b.id} value={b.name}>{b.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroupHalf}>
-                      <label>Collection (Optional)</label>
-                      <select name="collection" value={formData.collection} onChange={handleInputChange}>
-                        <option value="">None</option>
-                        {masterData.collections?.map(col => (
-                          <option key={col.id} value={col.name}>{col.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                      return (
+                        <div className={styles.formGroupHalf} key={typeKey}>
+                          <label>{typeLabel}</label>
+                          <select 
+                            name={nameAttr} 
+                            value={selectedVal} 
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleInputChange(e);
+                              setFormData(prev => ({
+                                ...prev,
+                                [typeKey]: val,
+                                [nameAttr]: val,
+                                customMasterData: {
+                                  ...(prev.customMasterData || {}),
+                                  [typeKey]: val,
+                                  [nameAttr]: val
+                                }
+                              }));
+                            }}
+                          >
+                            <option value="">Select {typeLabel}</option>
+                            {items.map(item => (
+                              <option key={item.id || item.name} value={item.name}>{item.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

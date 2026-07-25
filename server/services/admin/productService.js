@@ -74,59 +74,73 @@ class ProductService {
       imagesMap[img.product_id].push(img.image_data || img.image_url);
     });
 
-    const products = data.rows.map(r => ({
-      id:           r.id,
-      name:         r.name,
-      slug:         r.slug,
-      sku:          r.sku,
-      shortDescription: r.short_description || '',
-      fullDescription: r.description || '',
-      description:  r.description || '',
-      seoTitle:     r.meta_title || `${r.name} | Happy Sarees`,
-      metaDescription: r.meta_description || r.short_description || r.description || '',
-      washCare:     r.wash_care || 'Dry Clean Only',
-      wash_care:    r.wash_care || 'Dry Clean Only',
-      price:        Number(r.price),
-      originalPrice: r.original_price ? Number(r.original_price) : null,
-      mrp:          r.original_price ? Number(r.original_price) : Number(r.price),
-      fabric:       r.fabric,
-      color:        r.color,
-      pattern:      r.pattern,
-      weave:        r.weave,
-      border:       r.border,
-      occasion:     r.occasion,
-      blouseIncluded: r.blouse_included,
-      blouseSize:   r.blouse_size,
-      brand:        r.brand || 'Happy Sarees',
-      collection:   r.collection,
-      category:     r.category_name,
-      categoryId:   r.category_id,
-      status:       r.status || 'published',
-      inStock:      r.in_stock,
-      stockCount:   r.stock_count,
-      stock:        r.stock_count,
-      lowStockAlert: r.low_stock_alert || 3,
-      isBestSeller: r.is_best_seller,
-      bestSeller:   r.is_best_seller,
-      isNewArrival: r.is_new_arrival,
-      newArrival:   r.is_new_arrival,
-      isTrending:   r.is_trending || false,
-      trendingProduct: r.is_trending || false,
-      featuredOnHomepage: r.featured_on_homepage,
-      showOnHomepage: r.featured_on_homepage,
-      rating:       Number(r.rating || 4.8),
-      reviewCount:  r.review_count,
-      totalSold:    Number(r.total_sold || 0),
-      image:        (imagesMap[r.id] || [])[0] || null,
-      images:       imagesMap[r.id] || [],
-      galleryImages: imagesMap[r.id] || [],
-      videoUrl:     r.video_url || null,
-      videoData:    r.video_data || null,
-      video_url:    r.video_url || null,
-      video_data:   r.video_data || null,
-      createdAt:    r.created_at,
-      updatedAt:    r.updated_at,
-    }));
+    const products = data.rows.map(r => {
+      let customData = {};
+      if (r.custom_master_data) {
+        if (typeof r.custom_master_data === 'string') {
+          try { customData = JSON.parse(r.custom_master_data); } catch(e) { customData = {}; }
+        } else if (typeof r.custom_master_data === 'object') {
+          customData = r.custom_master_data;
+        }
+      }
+
+      return {
+        ...customData,
+        id:           r.id,
+        name:         r.name,
+        slug:         r.slug,
+        sku:          r.sku,
+        shortDescription: r.short_description || '',
+        fullDescription: r.description || '',
+        description:  r.description || '',
+        seoTitle:     r.meta_title || `${r.name} | Happy Sarees`,
+        metaDescription: r.meta_description || r.short_description || r.description || '',
+        washCare:     r.wash_care || 'Dry Clean Only',
+        wash_care:    r.wash_care || 'Dry Clean Only',
+        price:        Number(r.price),
+        originalPrice: r.original_price ? Number(r.original_price) : null,
+        mrp:          r.original_price ? Number(r.original_price) : Number(r.price),
+        fabric:       r.fabric,
+        color:        r.color,
+        pattern:      r.pattern,
+        weave:        r.weave,
+        border:       r.border,
+        occasion:     r.occasion,
+        blouseIncluded: r.blouse_included,
+        blouseSize:   r.blouse_size,
+        brand:        r.brand || 'Happy Sarees',
+        collection:   r.collection,
+        category:     r.category_name,
+        categoryId:   r.category_id,
+        status:       r.status || 'published',
+        inStock:      r.in_stock,
+        stockCount:   r.stock_count,
+        stock:        r.stock_count,
+        lowStockAlert: r.low_stock_alert || 3,
+        isBestSeller: r.is_best_seller,
+        bestSeller:   r.is_best_seller,
+        isNewArrival: r.is_new_arrival,
+        newArrival:   r.is_new_arrival,
+        isTrending:   r.is_trending || false,
+        trendingProduct: r.is_trending || false,
+        featuredOnHomepage: r.featured_on_homepage,
+        showOnHomepage: r.featured_on_homepage,
+        rating:       Number(r.rating || 4.8),
+        reviewCount:  r.review_count,
+        totalSold:    Number(r.total_sold || 0),
+        image:        (imagesMap[r.id] || [])[0] || null,
+        images:       imagesMap[r.id] || [],
+        galleryImages: imagesMap[r.id] || [],
+        videoUrl:     r.video_url || null,
+        videoData:    r.video_data || null,
+        video_url:    r.video_url || null,
+        video_data:   r.video_data || null,
+        customMasterData: customData,
+        custom_master_data: customData,
+        createdAt:    r.created_at,
+        updatedAt:    r.updated_at,
+      };
+    });
 
     return { products, total: Number(count.rows[0].count), page, limit };
   }
@@ -157,8 +171,20 @@ class ProductService {
 
     const seoData = seo.rows[0] || {};
 
+    let customData = {};
+    if (p.custom_master_data) {
+      if (typeof p.custom_master_data === 'string') {
+        try { customData = JSON.parse(p.custom_master_data); } catch(e) { customData = {}; }
+      } else if (typeof p.custom_master_data === 'object') {
+        customData = p.custom_master_data;
+      }
+    }
+
     return {
+      ...customData,
       ...p,
+      customMasterData: customData,
+      custom_master_data: customData,
       mrp: p.original_price ? Number(p.original_price) : Number(p.price),
       stock: p.stock_count,
       shortDescription: p.short_description || '',
@@ -212,6 +238,8 @@ class ProductService {
 
     const washCareToSave = data.washCare || data.wash_care || 'Dry Clean Only';
 
+    const customMasterData = data.customMasterData || data.custom_master_data || {};
+
     const res = await db.query(
       `INSERT INTO products (
         name, slug, category_id, description, short_description, price, original_price,
@@ -219,9 +247,9 @@ class ProductService {
         blouse_included, blouse_size, height, width, weight, wash_care,
         sku, in_stock, stock_count, is_best_seller, is_new_arrival,
         featured_on_homepage, is_trending, status, rating, review_count,
-        video_url, video_data
+        video_url, video_data, custom_master_data
        ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
        ) RETURNING id`,
       [
         data.name, slug, data.categoryId || null,
@@ -236,7 +264,8 @@ class ProductService {
         data.isTrending ?? data.trendingProduct ?? false,
         data.status || 'published',
         data.rating || 4.8, data.reviewCount || 0,
-        data.videoUrl ?? data.video_url ?? null, data.videoData ?? data.video_data ?? null
+        data.videoUrl ?? data.video_url ?? null, data.videoData ?? data.video_data ?? null,
+        JSON.stringify(customMasterData)
       ]
     );
 
@@ -298,14 +327,19 @@ class ProductService {
       ? data.washCare
       : (data.wash_care || existing.wash_care || 'Dry Clean Only');
 
+    const customMasterData = data.customMasterData !== undefined 
+      ? data.customMasterData 
+      : (data.custom_master_data !== undefined ? data.custom_master_data : (existing.custom_master_data || {}));
+
     const res = await db.query(
       `UPDATE products SET
         name=$1, category_id=$2, description=$3, short_description=$4, price=$5, original_price=$6,
         fabric=$7, color=$8, weave=$9, border=$10, pallu=$11, occasion=$12,
         blouse_included=$13, blouse_size=$14, height=$15, width=$16, weight=$17, wash_care=$18,
         sku=$19, in_stock=$20, stock_count=$21, is_best_seller=$22, is_new_arrival=$23,
-        featured_on_homepage=$24, is_trending=$25, status=$26, video_url=$27, video_data=$28, updated_at=NOW()
-       WHERE id=$29 AND deleted_at IS NULL
+        featured_on_homepage=$24, is_trending=$25, status=$26, video_url=$27, video_data=$28,
+        custom_master_data=$29, updated_at=NOW()
+       WHERE id=$30 AND deleted_at IS NULL
        RETURNING id`,
       [
         data.name ?? existing.name,
@@ -336,6 +370,7 @@ class ProductService {
         data.status ?? existing.status,
         finalVideoUrl,
         finalVideoData,
+        JSON.stringify(customMasterData),
         id,
       ]
     );

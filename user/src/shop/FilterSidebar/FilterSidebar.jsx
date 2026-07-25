@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiChevronDown, FiChevronUp, FiRotateCcw, FiStar } from 'react-icons/fi';
+import api from '../../services/api';
 import styles from './FilterSidebar.module.css';
 
-// Filter metadata
-const FILTER_DATA = {
+// Default Fallback Filter metadata
+const DEFAULT_FILTER_DATA = {
   fabrics: ['Silk', 'Cotton', 'Linen', 'Organza', 'Georgette', 'Tissue', 'Banarasi', 'Kanchipuram'],
   occasions: ['Wedding', 'Reception', 'Party', 'Office', 'Daily Wear', 'Festive'],
   colors: [
@@ -28,6 +29,8 @@ function FilterSidebar({
   setSelectedColors,
   selectedPatterns,
   setSelectedPatterns,
+  dynamicFilters = {},
+  setDynamicFilters = () => {},
   priceRange,
   setPriceRange,
   minRating,
@@ -38,6 +41,7 @@ function FilterSidebar({
   setAvailabilityFilter,
   onResetFilters
 }) {
+  const [filterData, setFilterData] = useState(DEFAULT_FILTER_DATA);
   const [openFilters, setOpenFilters] = useState({
     fabrics: true,
     occasions: true,
@@ -48,6 +52,20 @@ function FilterSidebar({
     blouse: false,
     availability: false
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getMasterData()
+      .then(res => {
+        if (isMounted && res && res.masterData) {
+          const liveData = { ...DEFAULT_FILTER_DATA, ...res.masterData };
+          setFilterData(liveData);
+        }
+      })
+      .catch(err => console.warn('[FilterSidebar] Master data load warning:', err.message));
+
+    return () => { isMounted = false; };
+  }, []);
 
   const toggleSection = (section) => {
     setOpenFilters(prev => ({ ...prev, [section]: !prev[section] }));
@@ -66,109 +84,164 @@ function FilterSidebar({
       {/* Sidebar Header */}
       <div className={styles.header}>
         <h4 className={styles.sidebarTitle}>Filters</h4>
-        <button onClick={onResetFilters} className={styles.resetBtn} title="Reset all filters">
+        <button onClick={() => { onResetFilters(); setDynamicFilters({}); }} className={styles.resetBtn} title="Reset all filters">
           <FiRotateCcw className={styles.resetIcon} />
           Reset All
         </button>
       </div>
 
       {/* 1. Fabric Accordion */}
-      <div className={styles.accordionSection}>
-        <button className={styles.accordionHeader} onClick={() => toggleSection('fabrics')}>
-          <span>Fabric</span>
-          {openFilters.fabrics ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {openFilters.fabrics && (
-          <div className={styles.accordionBody}>
-            {FILTER_DATA.fabrics.map((item, i) => (
-              <label key={i} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={selectedFabrics.includes(item)}
-                  onChange={() => handleToggleArray(item, selectedFabrics, setSelectedFabrics)}
-                  className={styles.checkboxInput}
-                />
-                <span className={styles.checkboxText}>{item}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      {filterData.fabrics && filterData.fabrics.length > 0 && (
+        <div className={styles.accordionSection}>
+          <button className={styles.accordionHeader} onClick={() => toggleSection('fabrics')}>
+            <span>Fabric</span>
+            {openFilters.fabrics ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {openFilters.fabrics && (
+            <div className={styles.accordionBody}>
+              {filterData.fabrics.map((item, i) => (
+                <label key={i} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedFabrics.includes(item)}
+                    onChange={() => handleToggleArray(item, selectedFabrics, setSelectedFabrics)}
+                    className={styles.checkboxInput}
+                  />
+                  <span className={styles.checkboxText}>{item}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 2. Occasion Accordion */}
-      <div className={styles.accordionSection}>
-        <button className={styles.accordionHeader} onClick={() => toggleSection('occasions')}>
-          <span>Occasion</span>
-          {openFilters.occasions ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {openFilters.occasions && (
-          <div className={styles.accordionBody}>
-            {FILTER_DATA.occasions.map((item, i) => (
-              <label key={i} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={selectedOccasions.includes(item)}
-                  onChange={() => handleToggleArray(item, selectedOccasions, setSelectedOccasions)}
-                  className={styles.checkboxInput}
-                />
-                <span className={styles.checkboxText}>{item}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      {filterData.occasions && filterData.occasions.length > 0 && (
+        <div className={styles.accordionSection}>
+          <button className={styles.accordionHeader} onClick={() => toggleSection('occasions')}>
+            <span>Occasion</span>
+            {openFilters.occasions ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {openFilters.occasions && (
+            <div className={styles.accordionBody}>
+              {filterData.occasions.map((item, i) => (
+                <label key={i} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedOccasions.includes(item)}
+                    onChange={() => handleToggleArray(item, selectedOccasions, setSelectedOccasions)}
+                    className={styles.checkboxInput}
+                  />
+                  <span className={styles.checkboxText}>{item}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 3. Color Swatches Accordion */}
-      <div className={styles.accordionSection}>
-        <button className={styles.accordionHeader} onClick={() => toggleSection('colors')}>
-          <span>Color</span>
-          {openFilters.colors ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {openFilters.colors && (
-          <div className={styles.accordionBody}>
-            <div className={styles.swatchGrid}>
-              {FILTER_DATA.colors.map((color, i) => {
-                const isSelected = selectedColors.includes(color.name);
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleToggleArray(color.name, selectedColors, setSelectedColors)}
-                    className={`${styles.swatchBtn} ${isSelected ? styles.swatchSelected : ''}`}
-                    style={{ '--swatch-color': color.hex }}
-                    title={color.name}
-                    aria-label={`Select color ${color.name}`}
-                  >
-                    <span className={styles.tooltip}>{color.name}</span>
-                  </button>
-                );
-              })}
+      {filterData.colors && filterData.colors.length > 0 && (
+        <div className={styles.accordionSection}>
+          <button className={styles.accordionHeader} onClick={() => toggleSection('colors')}>
+            <span>Color</span>
+            {openFilters.colors ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {openFilters.colors && (
+            <div className={styles.accordionBody}>
+              <div className={styles.swatchGrid}>
+                {filterData.colors.map((color, i) => {
+                  const isSelected = selectedColors.includes(color.name);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleToggleArray(color.name, selectedColors, setSelectedColors)}
+                      className={`${styles.swatchBtn} ${isSelected ? styles.swatchSelected : ''}`}
+                      style={{ '--swatch-color': color.hex }}
+                      title={color.name}
+                      aria-label={`Select color ${color.name}`}
+                    >
+                      <span className={styles.tooltip}>{color.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* 4. Pattern Accordion */}
-      <div className={styles.accordionSection}>
-        <button className={styles.accordionHeader} onClick={() => toggleSection('patterns')}>
-          <span>Pattern</span>
-          {openFilters.patterns ? <FiChevronUp /> : <FiChevronDown />}
-        </button>
-        {openFilters.patterns && (
-          <div className={styles.accordionBody}>
-            {FILTER_DATA.patterns.map((item, i) => (
-              <label key={i} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={selectedPatterns.includes(item)}
-                  onChange={() => handleToggleArray(item, selectedPatterns, setSelectedPatterns)}
-                  className={styles.checkboxInput}
-                />
-                <span className={styles.checkboxText}>{item}</span>
-              </label>
-            ))}
+      {filterData.patterns && filterData.patterns.length > 0 && (
+        <div className={styles.accordionSection}>
+          <button className={styles.accordionHeader} onClick={() => toggleSection('patterns')}>
+            <span>Pattern</span>
+            {openFilters.patterns ? <FiChevronUp /> : <FiChevronDown />}
+          </button>
+          {openFilters.patterns && (
+            <div className={styles.accordionBody}>
+              {filterData.patterns.map((item, i) => (
+                <label key={i} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedPatterns.includes(item)}
+                    onChange={() => handleToggleArray(item, selectedPatterns, setSelectedPatterns)}
+                    className={styles.checkboxInput}
+                  />
+                  <span className={styles.checkboxText}>{item}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. Dynamic Custom Master Type Accordions */}
+      {Object.keys(filterData || {}).map((key) => {
+        const standardKeys = ['fabrics', 'occasions', 'colors', 'patterns'];
+        if (standardKeys.includes(key.toLowerCase())) return null;
+
+        const items = filterData[key];
+        if (!Array.isArray(items) || items.length === 0) return null;
+
+        const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const isOpen = openFilters[key] ?? true;
+        const currentSelected = dynamicFilters[key] || [];
+
+        return (
+          <div className={styles.accordionSection} key={key}>
+            <button className={styles.accordionHeader} onClick={() => toggleSection(key)}>
+              <span>{label}</span>
+              {isOpen ? <FiChevronUp /> : <FiChevronDown />}
+            </button>
+            {isOpen && (
+              <div className={styles.accordionBody}>
+                {items.map((item, i) => {
+                  const itemName = typeof item === 'string' ? item : item.name;
+                  const isChecked = currentSelected.includes(itemName);
+
+                  return (
+                    <label key={i} className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          const nextArr = isChecked
+                            ? currentSelected.filter(x => x !== itemName)
+                            : [...currentSelected, itemName];
+                          setDynamicFilters(prev => ({ ...prev, [key]: nextArr }));
+                        }}
+                        className={styles.checkboxInput}
+                      />
+                      <span className={styles.checkboxText}>{itemName}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })}
 
       {/* 5. Price Range Accordion */}
       <div className={styles.accordionSection}>

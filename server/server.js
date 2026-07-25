@@ -105,6 +105,7 @@ app.use('/api/admin/auth',          adminAuthLimiter, adminAuthRoutes);
 app.use('/api/admin/dashboard',     adminDashboardRoutes);
 app.use('/api/admin/products',      adminProductRoutes);
 app.use('/api/admin/master',        adminMasterDataRoutes);
+app.use('/api/admin/master-data',   adminMasterDataRoutes);
 app.use('/api/admin/cms',           adminCmsRoutes);
 app.use('/api/admin/orders',        adminOrderRoutes);
 app.use('/api/admin/customers',     adminCustomerRoutes);

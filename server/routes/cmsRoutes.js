@@ -113,4 +113,49 @@ router.get('/navigation', async (req, res) => {
   }
 });
 
+// 4. Get All Public Master Data (For Website Filters - Respects show_in_filters)
+router.get('/master-data', async (req, res) => {
+  try {
+    const dbRes = await db.query(
+      `SELECT mt.slug as type_slug, mi.id, mi.name, mi.color_hex
+       FROM master_items mi
+       JOIN master_types mt ON mi.type_id = mt.id
+       WHERE mi.is_active = true AND mt.is_active = true AND (mt.show_in_filters IS NULL OR mt.show_in_filters = true)
+       ORDER BY mi.sort_order ASC, mi.name ASC`
+    );
+
+    const masterData = {};
+    for (const row of dbRes.rows) {
+      const type = row.type_slug;
+      if (!masterData[type]) masterData[type] = [];
+      if (type === 'colors') {
+        masterData[type].push({ name: row.name, hex: row.color_hex || '#e0e0e0' });
+      } else {
+        masterData[type].push(row.name);
+      }
+    }
+
+    res.json({ success: true, masterData });
+  } catch (err) {
+    console.error('[cmsRoutes] Master Data fetch error:', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+// 5. Get Master Types Configured for Saree Details (Product Specifications)
+router.get('/spec-types', async (req, res) => {
+  try {
+    const dbRes = await db.query(
+      `SELECT id, name, slug, show_in_specifications, show_in_filters 
+       FROM master_types 
+       WHERE is_active = true AND (show_in_specifications IS NULL OR show_in_specifications = true)
+       ORDER BY sort_order ASC, name ASC`
+    );
+    res.json({ success: true, types: dbRes.rows });
+  } catch (err) {
+    console.error('[cmsRoutes] Spec types fetch error:', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
 module.exports = router;

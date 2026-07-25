@@ -88,6 +88,8 @@ function Shop() {
     }
   }, [searchParams]);
 
+  const [dynamicFilters, setDynamicFilters] = useState({});
+
   // Reset Filters handler
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -96,6 +98,7 @@ function Shop() {
     setSelectedOccasions([]);
     setSelectedColors([]);
     setSelectedPatterns([]);
+    setDynamicFilters({});
     setPriceRange(25000);
     setMinRating(0);
     setBlouseFilter('all');
@@ -154,7 +157,18 @@ function Shop() {
     filteredProducts = filteredProducts.filter(p => selectedPatterns.includes(p.pattern));
   }
 
-  // 7. Price limit filter
+  // 7. Dynamic Custom Master Type Filters
+  Object.keys(dynamicFilters || {}).forEach(key => {
+    const selectedVals = dynamicFilters[key];
+    if (Array.isArray(selectedVals) && selectedVals.length > 0) {
+      filteredProducts = filteredProducts.filter(p => {
+        const val = p[key] || p.customMasterData?.[key] || p.custom_master_data?.[key];
+        return val && selectedVals.includes(val);
+      });
+    }
+  });
+
+  // 8. Price limit filter
   filteredProducts = filteredProducts.filter(p => p.price <= priceRange);
 
   // 8. Rating limit filter
@@ -232,6 +246,8 @@ function Shop() {
               setSelectedColors={setSelectedColors}
               selectedPatterns={selectedPatterns}
               setSelectedPatterns={setSelectedPatterns}
+              dynamicFilters={dynamicFilters}
+              setDynamicFilters={setDynamicFilters}
               priceRange={priceRange}
               setPriceRange={setPriceRange}
               minRating={minRating}

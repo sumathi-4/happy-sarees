@@ -47,3 +47,31 @@ exports.reorderItems = async (req, res, next) => {
     return success(res, {}, 'Items reordered.');
   } catch (e) { next(e); }
 };
+
+exports.createType = async (req, res, next) => {
+  try {
+    const type = await masterDataService.createType(req.body);
+    return success(res, { type }, 'Master type created.', 201);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.updateType = async (req, res, next) => {
+  try {
+    const type = await masterDataService.updateType(req.params.id, req.body);
+    return success(res, { type }, 'Master type updated.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.deleteType = async (req, res, next) => {
+  try {
+    await masterDataService.deleteType(req.params.id);
+    return success(res, {}, 'Master type deleted.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.toggleType = async (req, res, next) => {
+  try {
+    const type = await masterDataService.toggleType(req.params.id);
+    return success(res, { type }, `Master type ${type.is_active ? 'activated' : 'deactivated'}.`);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
