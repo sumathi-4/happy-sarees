@@ -238,7 +238,21 @@ class ProductService {
 
     const washCareToSave = data.washCare || data.wash_care || 'Dry Clean Only';
 
-    const customMasterData = data.customMasterData || data.custom_master_data || {};
+    const customMasterData = { ...(data.customMasterData || data.custom_master_data || {}) };
+    const standardKeys = [
+      'id','name','slug','categoryId','category_id','description','shortDescription','short_description',
+      'price','originalPrice','mrp','fabric','color','pattern','weave','border','pallu','occasion',
+      'blouseIncluded','blouse_included','blouseSize','blouse_size','height','sareeLength','sareeWidth',
+      'width','weight','washCare','wash_care','sku','inStock','in_stock','stockCount','stock','isBestSeller',
+      'bestSeller','isNewArrival','newArrival','featuredOnHomepage','showOnHomepage','isTrending',
+      'trendingProduct','status','rating','reviewCount','totalSold','videoUrl','videoData','video_url',
+      'video_data','image','images','galleryImages','seo','seoTitle','metaDescription','customMasterData','custom_master_data'
+    ];
+    Object.keys(data || {}).forEach(k => {
+      if (!standardKeys.includes(k) && data[k] !== undefined && data[k] !== null && String(data[k]).trim() !== '') {
+        customMasterData[k] = data[k];
+      }
+    });
 
     const res = await db.query(
       `INSERT INTO products (
@@ -328,8 +342,23 @@ class ProductService {
       : (data.wash_care || existing.wash_care || 'Dry Clean Only');
 
     const customMasterData = data.customMasterData !== undefined 
-      ? data.customMasterData 
-      : (data.custom_master_data !== undefined ? data.custom_master_data : (existing.custom_master_data || {}));
+      ? { ...data.customMasterData }
+      : (data.custom_master_data !== undefined ? { ...data.custom_master_data } : { ...(existing.custom_master_data || {}) });
+
+    const standardKeysUpdate = [
+      'id','name','slug','categoryId','category_id','description','shortDescription','short_description',
+      'price','originalPrice','mrp','fabric','color','pattern','weave','border','pallu','occasion',
+      'blouseIncluded','blouse_included','blouseSize','blouse_size','height','sareeLength','sareeWidth',
+      'width','weight','washCare','wash_care','sku','inStock','in_stock','stockCount','stock','isBestSeller',
+      'bestSeller','isNewArrival','newArrival','featuredOnHomepage','showOnHomepage','isTrending',
+      'trendingProduct','status','rating','reviewCount','totalSold','videoUrl','videoData','video_url',
+      'video_data','image','images','galleryImages','seo','seoTitle','metaDescription','customMasterData','custom_master_data'
+    ];
+    Object.keys(data || {}).forEach(k => {
+      if (!standardKeysUpdate.includes(k) && data[k] !== undefined && data[k] !== null && String(data[k]).trim() !== '') {
+        customMasterData[k] = data[k];
+      }
+    });
 
     const res = await db.query(
       `UPDATE products SET

@@ -148,7 +148,7 @@ router.get('/spec-types', async (req, res) => {
     const dbRes = await db.query(
       `SELECT id, name, slug, show_in_specifications, show_in_filters 
        FROM master_types 
-       WHERE is_active = true AND (show_in_specifications IS NULL OR show_in_specifications = true)
+       WHERE is_active = true
        ORDER BY sort_order ASC, name ASC`
     );
     res.json({ success: true, types: dbRes.rows });

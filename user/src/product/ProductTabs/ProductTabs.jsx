@@ -13,7 +13,7 @@ function ProductTabs({ product }) {
     api.getSpecTypes()
       .then(res => {
         if (isMounted && res && Array.isArray(res.types)) {
-          setSpecTypes(res.types.filter(t => t.show_in_specifications !== false));
+          setSpecTypes(res.types);
         }
       })
       .catch(err => console.warn('[ProductTabs] Spec types load warning:', err.message));
@@ -25,11 +25,15 @@ function ProductTabs({ product }) {
   // Helper to format key labels
   const formatLabel = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  // Check if a master type is allowed in specifications
-  const isTypeAllowed = (slug) => {
-    if (!specTypes) return true; // default true if not loaded
-    const match = specTypes.find(t => t.slug === slug || t.slug === slug + 's' || t.slug + 's' === slug);
-    return match ? match.show_in_specifications !== false : true;
+  // Check if a master type is allowed in specifications (Display in Saree Details checkbox checked in Admin)
+  const isTypeAllowed = (keyOrSlug) => {
+    if (!specTypes) return true;
+    const clean = String(keyOrSlug).toLowerCase().trim().replace(/[_\s-]+/g, '');
+    const match = specTypes.find(t => {
+      const tSlug = String(t.slug || t.name).toLowerCase().trim().replace(/[_\s-]+/g, '');
+      return tSlug === clean || tSlug === clean + 's' || tSlug + 's' === clean;
+    });
+    return match ? (match.show_in_specifications !== false) : false;
   };
 
   return (
@@ -168,20 +172,51 @@ function ProductTabs({ product }) {
                   )}
 
                   {/* Render any Custom Master Types dynamically */}
-                  {Object.entries(product.customMasterData || {}).map(([key, val]) => {
-                    if (!val || String(val).trim() === '') return null;
-                    const standardKeys = ['fabric','weave','border','pattern','color','occasion','brand','collection','fabrics','weaves','borders','patterns','colors','occasions','brands','collections'];
-                    if (standardKeys.includes(key.toLowerCase())) return null;
-                    if (!isTypeAllowed(key)) return null;
+                  {(() => {
+                    const customEntries = { ...(product.customMasterData || {}), ...(product.custom_master_data || {}) };
+                    
+                    Object.keys(product || {}).forEach(k => {
+                      const standardProductKeys = [
+                        'id','name','slug','sku','price','originalPrice','mrp','fabric','color','pattern','weave',
+                        'border','occasion','brand','collection','category','categoryId','status','inStock','stockCount',
+                        'stock','lowStockAlert','isBestSeller','bestSeller','isNewArrival','newArrival','isTrending',
+                        'trendingProduct','featuredOnHomepage','showOnHomepage','rating','reviewCount','totalSold',
+                        'image','images','galleryImages','videoUrl','videoData','video_url','video_data','description',
+                        'shortDescription','fullDescription','washCare','wash_care','shippingReturns','blouseIncluded',
+                        'blouse_included','blouseSize','blouse_size','width','height','sareeLength','sareeWidth','weight',
+                        'countryOfOrigin','seo','seoTitle','metaDescription','customMasterData','custom_master_data','createdAt','updatedAt'
+                      ];
+                      if (!standardProductKeys.includes(k) && product[k] !== undefined && product[k] !== null && String(product[k]).trim() !== '') {
+                        customEntries[k] = product[k];
+                      }
+                    });
 
-                    return (
-                      <div className={styles.cardRow} key={key}>
-                        <span className={styles.cardLabel}>{formatLabel(key)}</span>
-                        <span className={styles.cardColon}>:</span>
-                        <span className={styles.cardVal}>{val}</span>
-                      </div>
-                    );
-                  })}
+                    return Object.entries(customEntries).map(([key, val]) => {
+                      if (val === null || val === undefined || typeof val === 'function') return null;
+                      
+                      let displayVal = val;
+                      if (typeof val === 'object') {
+                        if (val.name && typeof val.name === 'string') displayVal = val.name;
+                        else if (val.label && typeof val.label === 'string') displayVal = val.label;
+                        else return null; // Skip non-primitive objects!
+                      }
+
+                      const valStr = String(displayVal).trim();
+                      if (!valStr || valStr === '[object Object]' || valStr === 'null' || valStr === 'undefined') return null;
+
+                      const standardKeys = ['fabric','weave','border','pattern','color','occasion','brand','collection','fabrics','weaves','borders','patterns','colors','occasions','brands','collections'];
+                      if (standardKeys.includes(key.toLowerCase())) return null;
+                      if (!isTypeAllowed(key)) return null;
+
+                      return (
+                        <div className={styles.cardRow} key={key}>
+                          <span className={styles.cardLabel}>{formatLabel(key)}</span>
+                          <span className={styles.cardColon}>:</span>
+                          <span className={styles.cardVal}>{valStr}</span>
+                        </div>
+                      );
+                    });
+                  })()}
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Country of Origin</span>
                     <span className={styles.cardColon}>:</span>
