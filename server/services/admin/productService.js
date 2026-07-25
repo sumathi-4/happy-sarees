@@ -49,10 +49,11 @@ class ProductService {
 
     params.push(limit, offset);
     const dataQ = `
-      SELECT p.*, c.name as category_name,
+      SELECT p.*, c.name as category_name, s.meta_title, s.meta_description,
              (SELECT COUNT(*) FROM order_items oi WHERE oi.product_id = p.id) as total_sold
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN product_seo s ON s.product_id = p.id
       WHERE ${whereClause}
       ORDER BY ${orderBy}
       LIMIT $${params.length - 1} OFFSET $${params.length}
@@ -78,6 +79,13 @@ class ProductService {
       name:         r.name,
       slug:         r.slug,
       sku:          r.sku,
+      shortDescription: r.short_description || '',
+      fullDescription: r.description || '',
+      description:  r.description || '',
+      seoTitle:     r.meta_title || `${r.name} | Happy Sarees`,
+      metaDescription: r.meta_description || r.short_description || r.description || '',
+      washCare:     r.wash_care || 'Dry Clean Only',
+      wash_care:    r.wash_care || 'Dry Clean Only',
       price:        Number(r.price),
       originalPrice: r.original_price ? Number(r.original_price) : null,
       mrp:          r.original_price ? Number(r.original_price) : Number(r.price),
@@ -87,6 +95,8 @@ class ProductService {
       weave:        r.weave,
       border:       r.border,
       occasion:     r.occasion,
+      blouseIncluded: r.blouse_included,
+      blouseSize:   r.blouse_size,
       brand:        r.brand || 'Happy Sarees',
       collection:   r.collection,
       category:     r.category_name,
@@ -110,6 +120,10 @@ class ProductService {
       image:        (imagesMap[r.id] || [])[0] || null,
       images:       imagesMap[r.id] || [],
       galleryImages: imagesMap[r.id] || [],
+      videoUrl:     r.video_url || null,
+      videoData:    r.video_data || null,
+      video_url:    r.video_url || null,
+      video_data:   r.video_data || null,
       createdAt:    r.created_at,
       updatedAt:    r.updated_at,
     }));
@@ -137,23 +151,39 @@ class ProductService {
     if (prod.rows.length === 0) throw { status: 404, message: 'Product not found.' };
 
     const p = prod.rows[0];
+    const imgUrls = images.rows.map(img => img.image_data || img.image_url).filter(Boolean);
+    const primaryImgObj = images.rows.find(img => img.is_primary);
+    const coverImage = primaryImgObj ? (primaryImgObj.image_data || primaryImgObj.image_url) : (imgUrls[0] || null);
+
+    const seoData = seo.rows[0] || {};
+
     return {
       ...p,
       mrp: p.original_price ? Number(p.original_price) : Number(p.price),
       stock: p.stock_count,
+      shortDescription: p.short_description || '',
+      fullDescription: p.description || '',
+      description: p.description || '',
+      seoTitle: seoData.meta_title || `${p.name} | Happy Sarees`,
+      metaDescription: seoData.meta_description || p.short_description || p.description || '',
+      washCare: p.wash_care || 'Dry Clean Only',
+      wash_care: p.wash_care || 'Dry Clean Only',
+      blouseIncluded: p.blouse_included ?? true,
+      sareeLength: p.height || '5.5m',
+      sareeWidth: p.width || '1.1m',
       isTrending: p.is_trending || false,
       trendingProduct: p.is_trending || false,
       bestSeller: p.is_best_seller,
       newArrival: p.is_new_arrival,
       showOnHomepage: p.featured_on_homepage,
-      images: images.rows.map(img => ({
-        id:       img.id,
-        url:      img.image_data || img.image_url,
-        altText:  img.alt_text,
-        isPrimary: img.is_primary,
-        order:    img.display_order,
-      })),
-      seo: seo.rows[0] || {},
+      image: coverImage,
+      images: imgUrls,
+      galleryImages: imgUrls,
+      videoUrl: p.video_url || null,
+      videoData: p.video_data || null,
+      video_url: p.video_url || null,
+      video_data: p.video_data || null,
+      seo: seoData,
     };
   }
 
@@ -168,31 +198,49 @@ class ProductService {
     const stockCount = Number(data.stockCount ?? data.stock ?? 0);
     const inStock = stockCount > 0;
 
+    const autoSku = (data.sku && data.sku.trim() !== '') 
+      ? data.sku 
+      : `HS-${(data.name || 'SAREE').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'SAREE'}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const descToSave = (data.description && data.description.trim() !== '') 
+      ? data.description 
+      : ((data.fullDescription && data.fullDescription.trim() !== '') ? data.fullDescription : '');
+
+    const shortDescToSave = (data.shortDescription && data.shortDescription.trim() !== '') 
+      ? data.shortDescription 
+      : (data.short_description || '');
+
+    const washCareToSave = data.washCare || data.wash_care || 'Dry Clean Only';
+
     const res = await db.query(
       `INSERT INTO products (
-        name, slug, category_id, description, price, original_price,
+        name, slug, category_id, description, short_description, price, original_price,
         fabric, color, weave, border, pallu, occasion,
-        blouse_included, blouse_size, height, width, weight,
+        blouse_included, blouse_size, height, width, weight, wash_care,
         sku, in_stock, stock_count, is_best_seller, is_new_arrival,
         featured_on_homepage, is_trending, status, rating, review_count,
         video_url, video_data
        ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31
        ) RETURNING id`,
       [
-        data.name, slug, data.categoryId || null, data.description || data.longDescription || data.shortDescription,
+        data.name, slug, data.categoryId || null,
+        descToSave,
+        shortDescToSave,
         data.price, data.originalPrice || data.mrp || null,
         data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
-        data.blouseIncluded ?? true, data.blouseSize, data.height || data.sareeLength, data.width || data.sareeWidth, data.weight,
-        data.sku, inStock, stockCount,
+        data.blouseIncluded ?? true, data.blouseSize, data.height || data.sareeLength, data.width || data.sareeWidth, data.weight, washCareToSave,
+        autoSku, inStock, stockCount,
         data.isBestSeller ?? data.bestSeller ?? false, data.isNewArrival ?? data.newArrival ?? false,
         data.featuredOnHomepage ?? data.showOnHomepage ?? false,
         data.isTrending ?? data.trendingProduct ?? false,
         data.status || 'published',
         data.rating || 4.8, data.reviewCount || 0,
-        data.videoUrl || null, data.videoData || null
+        data.videoUrl ?? data.video_url ?? null, data.videoData ?? data.video_data ?? null
       ]
     );
+
+    const { uploadToCloudinary } = require('../cloudinaryService');
 
     const productId = res.rows[0].id;
 
@@ -201,20 +249,22 @@ class ProductService {
     if (Array.isArray(imagesList)) {
       for (let i = 0; i < imagesList.length; i++) {
         const img = imagesList[i];
-        const urlStr = typeof img === 'string' ? img : img.url;
-        const dataStr = typeof img === 'object' ? img.data : null;
+        const rawStr = typeof img === 'string' ? img : (img ? (img.url || img.image_url || img.data || img.image_data) : null);
+        if (!rawStr) continue;
+        const strVal = await uploadToCloudinary(rawStr);
+        const isCover = data.image ? (rawStr === data.image || strVal === data.image) : (i === 0);
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [productId, urlStr || null, dataStr || null, data.name, i, i === 0]
+          [productId, strVal, strVal, data.name, i, isCover]
         );
       }
     }
 
     // Insert SEO
     if (data.seo || data.seoTitle || data.metaDescription) {
-      const metaTitle = data.seoTitle || data.seo?.metaTitle || data.name;
-      const metaDesc = data.metaDescription || data.seo?.metaDescription || data.shortDescription || data.description;
+      const metaTitle = data.seoTitle || data.seo?.metaTitle || `${data.name} | Happy Sarees`;
+      const metaDesc = data.metaDescription || data.seo?.metaDescription || data.shortDescription || descToSave;
       await db.query(
         `INSERT INTO product_seo (product_id, meta_title, meta_description)
          VALUES ($1,$2,$3) ON CONFLICT (product_id) DO UPDATE
@@ -233,19 +283,35 @@ class ProductService {
     const stockCount = Number(data.stockCount ?? data.stock ?? existing.stock_count);
     const inStock = stockCount > 0;
 
+    const finalVideoUrl = data.videoUrl !== undefined ? data.videoUrl : (data.video_url !== undefined ? data.video_url : existing.video_url);
+    const finalVideoData = data.videoData !== undefined ? data.videoData : (data.video_data !== undefined ? data.video_data : existing.video_data);
+
+    const descToSave = data.description !== undefined && data.description !== null && data.description !== ''
+      ? data.description 
+      : (data.fullDescription !== undefined && data.fullDescription !== null && data.fullDescription !== '' ? data.fullDescription : existing.description);
+
+    const shortDescToSave = data.shortDescription !== undefined && data.shortDescription !== null
+      ? data.shortDescription 
+      : (data.short_description !== undefined && data.short_description !== null ? data.short_description : existing.short_description);
+
+    const washCareToSave = (data.washCare && data.washCare.trim() !== '')
+      ? data.washCare
+      : (data.wash_care || existing.wash_care || 'Dry Clean Only');
+
     const res = await db.query(
       `UPDATE products SET
-        name=$1, category_id=$2, description=$3, price=$4, original_price=$5,
-        fabric=$6, color=$7, weave=$8, border=$9, pallu=$10, occasion=$11,
-        blouse_included=$12, blouse_size=$13, height=$14, width=$15, weight=$16,
-        sku=$17, in_stock=$18, stock_count=$19, is_best_seller=$20, is_new_arrival=$21,
-        featured_on_homepage=$22, is_trending=$23, status=$24, video_url=$25, video_data=$26, updated_at=NOW()
-       WHERE id=$27 AND deleted_at IS NULL
+        name=$1, category_id=$2, description=$3, short_description=$4, price=$5, original_price=$6,
+        fabric=$7, color=$8, weave=$9, border=$10, pallu=$11, occasion=$12,
+        blouse_included=$13, blouse_size=$14, height=$15, width=$16, weight=$17, wash_care=$18,
+        sku=$19, in_stock=$20, stock_count=$21, is_best_seller=$22, is_new_arrival=$23,
+        featured_on_homepage=$24, is_trending=$25, status=$26, video_url=$27, video_data=$28, updated_at=NOW()
+       WHERE id=$29 AND deleted_at IS NULL
        RETURNING id`,
       [
         data.name ?? existing.name,
         data.categoryId ?? existing.category_id,
-        data.description ?? data.longDescription ?? existing.description,
+        descToSave,
+        shortDescToSave,
         data.price ?? existing.price,
         data.originalPrice ?? data.mrp ?? existing.original_price,
         data.fabric ?? existing.fabric,
@@ -259,6 +325,7 @@ class ProductService {
         data.height ?? data.sareeLength ?? existing.height,
         data.width ?? data.sareeWidth ?? existing.width,
         data.weight ?? existing.weight,
+        washCareToSave,
         data.sku ?? existing.sku,
         inStock,
         stockCount,
@@ -267,35 +334,57 @@ class ProductService {
         data.featuredOnHomepage ?? data.showOnHomepage ?? existing.featured_on_homepage,
         data.isTrending ?? data.trendingProduct ?? existing.is_trending ?? false,
         data.status ?? existing.status,
-        data.videoUrl ?? existing.video_url ?? null,
-        data.videoData ?? existing.video_data ?? null,
+        finalVideoUrl,
+        finalVideoData,
         id,
       ]
     );
 
     if (res.rows.length === 0) throw { status: 404, message: 'Product not found.' };
 
-    // Update images if provided
-    const imagesList = data.images || data.galleryImages;
-    if (Array.isArray(imagesList) && imagesList.length > 0) {
+    // Update images if cover image or gallery list provided
+    const rawCover = data.image;
+    let imagesList = [];
+    if (Array.isArray(data.galleryImages) && data.galleryImages.length > 0) {
+      imagesList = [...data.galleryImages];
+    } else if (Array.isArray(data.images) && data.images.length > 0) {
+      imagesList = [...data.images];
+    }
+
+    if (rawCover && !imagesList.includes(rawCover)) {
+      imagesList.unshift(rawCover);
+    }
+
+    if (imagesList.length > 0) {
       await db.query(`DELETE FROM product_images WHERE product_id = $1`, [id]);
+      const { uploadToCloudinary } = require('../cloudinaryService');
       for (let i = 0; i < imagesList.length; i++) {
         const img = imagesList[i];
-        const isCover = data.image ? (img === data.image || img.url === data.image) : (i === 0);
-        const urlStr = typeof img === 'string' ? img : img.url;
-        const dataStr = typeof img === 'object' ? img.data : null;
+        const rawStr = typeof img === 'string' ? img : (img ? (img.url || img.image_url || img.data || img.image_data) : null);
+        if (!rawStr || typeof rawStr !== 'string' || rawStr.trim() === '') continue;
+
+        let strVal = rawStr;
+        try {
+          strVal = await uploadToCloudinary(rawStr);
+        } catch (cErr) {
+          console.error('[productService.update] Cloudinary upload error:', cErr.message);
+        }
+
+        if (!strVal) continue;
+
+        const isCover = (rawCover && (rawStr === rawCover || strVal === rawCover)) || (i === 0);
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [id, urlStr || null, dataStr || null, data.name || existing.name, i, isCover]
+          [id, strVal, strVal, data.name || existing.name, i, isCover]
         );
       }
     }
 
     // Update SEO
     if (data.seo || data.seoTitle || data.metaDescription) {
-      const metaTitle = data.seoTitle || data.seo?.metaTitle || data.name || existing.name;
-      const metaDesc = data.metaDescription || data.seo?.metaDescription || data.shortDescription || data.description || existing.description;
+      const metaTitle = data.seoTitle || data.seo?.metaTitle || existing.seoTitle || `${data.name || existing.name} | Happy Sarees`;
+      const metaDesc = data.metaDescription || data.seo?.metaDescription || existing.metaDescription || data.shortDescription || data.fullDescription || '';
       await db.query(
         `INSERT INTO product_seo (product_id, meta_title, meta_description)
          VALUES ($1,$2,$3) ON CONFLICT (product_id) DO UPDATE
@@ -307,10 +396,12 @@ class ProductService {
     return this.getById(id);
   }
 
-  // ── Soft Delete ────────────────────────────────────────────
+  // ── Permanent Hard Delete ──────────────────────────────────
   async delete(id) {
+    await db.query(`DELETE FROM product_images WHERE product_id = $1`, [id]);
+    await db.query(`DELETE FROM product_seo WHERE product_id = $1`, [id]);
     const res = await db.query(
-      `UPDATE products SET deleted_at = NOW(), status = 'archived' WHERE id = $1 AND deleted_at IS NULL RETURNING id`,
+      `DELETE FROM products WHERE id = $1 RETURNING id`,
       [id]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Product not found.' };
@@ -324,7 +415,9 @@ class ProductService {
     const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
 
     if (action === 'delete') {
-      await db.query(`UPDATE products SET deleted_at = NOW(), status = 'archived' WHERE id IN (${placeholders})`, ids);
+      await db.query(`DELETE FROM product_images WHERE product_id IN (${placeholders})`, ids);
+      await db.query(`DELETE FROM product_seo WHERE product_id IN (${placeholders})`, ids);
+      await db.query(`DELETE FROM products WHERE id IN (${placeholders})`, ids);
     } else if (action === 'publish') {
       await db.query(`UPDATE products SET status = 'published', updated_at = NOW() WHERE id IN (${placeholders})`, ids);
     } else if (action === 'draft') {

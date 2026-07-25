@@ -7,26 +7,26 @@ import styles from './BestSellers.module.css';
 
 function BestSellers() {
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [bestsellerList, setBestsellerList] = useState(() => PRODUCTS.filter(p => p.isBestSeller));
+  const [bestsellerList, setBestsellerList] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
     api.getBestsellers()
       .then((data) => {
-        if (isMounted && data.success && data.products.length > 0) {
+        if (isMounted && data.success && Array.isArray(data.products)) {
           setBestsellerList(data.products);
         }
       })
       .catch((err) => {
-        console.log('[BestSellers] Operating with preloaded fallback products:', err.message);
+        console.warn('[BestSellers] Live fetch warning:', err.message);
       });
 
     return () => { isMounted = false; };
   }, []);
 
-  const featured = bestsellerList.find((p) => p.isFeaturedBestSeller) || bestsellerList[0] || PRODUCTS[0];
-  const others = bestsellerList.filter((p) => p.id !== featured.id);
+  const featured = bestsellerList.find((p) => p.isFeaturedBestSeller) || bestsellerList[0];
+  const others = bestsellerList.filter((p) => p.id !== (featured ? featured.id : null));
 
   const toggleWishlist = (id) => {
     if (wishlist.includes(id)) {
@@ -35,6 +35,8 @@ function BestSellers() {
       setWishlist([...wishlist, id]);
     }
   };
+
+  if (!featured) return null;
 
   return (
     <section className={styles.section}>

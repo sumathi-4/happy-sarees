@@ -73,31 +73,72 @@ function ProductForm() {
 
   // Load product if edit mode & pre-fill dynamic Master Data
   useEffect(() => {
-    if (isEditMode) {
-      const match = products.find(p => Number(p.id) === Number(id));
-      if (match) {
-        const gallery = Array.isArray(match.galleryImages) && match.galleryImages.length > 0
-          ? match.galleryImages
-          : (Array.isArray(match.images) && match.images.length > 0 ? match.images : (match.image ? [match.image] : []));
-
-        setFormData(prev => ({
-          ...prev,
-          ...match,
-          sareeLength: match.sareeLength || match.height || '5.5m',
-          sareeWidth: match.sareeWidth || match.width || '1.1m',
-          mrp: match.mrp || match.originalPrice || match.price || '',
-          videoUrl: match.videoUrl || match.video_url || '',
-          videoData: match.videoData || match.video_data || '',
-          galleryImages: gallery,
-          image: match.image || gallery[0] || prev.image || ''
-        }));
-
-        if (match.videoData || match.video_data) {
-          setVideoMode('upload');
-        } else if (match.videoUrl || match.video_url) {
-          setVideoMode('url');
+    let isMounted = true;
+    if (isEditMode && id) {
+      const loadProduct = async () => {
+        let match = products.find(p => Number(p.id) === Number(id));
+        if (!match) {
+          try {
+            const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+            const res = await fetch(`http://localhost:5001/api/admin/products/${id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const resData = await res.json();
+            if (resData.success && resData.data?.product) {
+              match = resData.data.product;
+            }
+          } catch (e) {
+            console.log('[ProductForm] Direct fetch error:', e.message);
+          }
         }
-      }
+
+        if (match && isMounted) {
+          const rawGallery = Array.isArray(match.galleryImages) && match.galleryImages.length > 0
+            ? match.galleryImages
+            : (Array.isArray(match.images) && match.images.length > 0 ? match.images : (match.image ? [match.image] : []));
+
+          const gallery = rawGallery.map(img => typeof img === 'string' ? img : (img ? (img.url || img.image_data || img.image_url) : '')).filter(Boolean);
+          const coverImage = match.image ? (typeof match.image === 'string' ? match.image : (match.image.url || match.image.image_data)) : (gallery[0] || '');
+
+          const mrpNum = Number(match.mrp || match.originalPrice || match.price || 0);
+          const priceNum = Number(match.price || 0);
+          const calcDisc = mrpNum > priceNum && mrpNum > 0
+            ? Math.round(((mrpNum - priceNum) / mrpNum) * 100)
+            : '';
+
+          const longDescVal = match.description || match.fullDescription || match.longDescription || match.full_description || '';
+
+          setFormData(prev => ({
+            ...prev,
+            ...match,
+            shortDescription: match.shortDescription || match.short_description || '',
+            fullDescription: longDescVal,
+            description: longDescVal,
+            longDescription: longDescVal,
+            seoTitle: match.seoTitle || match.meta_title || `${match.name} | Happy Sarees`,
+            metaDescription: match.metaDescription || match.meta_description || match.shortDescription || longDescVal || '',
+            washCare: match.washCare || match.wash_care || 'Dry Clean Only',
+            sareeLength: match.sareeLength || match.height || '5.5m',
+            sareeWidth: match.sareeWidth || match.width || '1.1m',
+            mrp: mrpNum || '',
+            price: priceNum || '',
+            discountType: 'percentage',
+            discountValue: match.discountValue !== undefined && match.discountValue !== '' ? match.discountValue : calcDisc,
+            videoUrl: match.videoUrl || match.video_url || '',
+            videoData: match.videoData || match.video_data || '',
+            galleryImages: gallery,
+            image: coverImage
+          }));
+
+          if (match.videoData || match.video_data) {
+            setVideoMode('upload');
+          } else if (match.videoUrl || match.video_url) {
+            setVideoMode('url');
+          }
+        }
+      };
+
+      loadProduct();
     } else {
       // Pre-fill first options of master data dynamically in create mode
       setFormData(prev => ({
@@ -113,7 +154,9 @@ function ProductForm() {
         collection: masterData.collections?.[0]?.name || prev.collection || ''
       }));
     }
-  }, [id, isEditMode, products, masterData]);
+
+    return () => { isMounted = false; };
+  }, [id, isEditMode, products]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -123,13 +166,38 @@ function ProductForm() {
     setFormData(prev => {
       const updated = { ...prev, [name]: finalVal };
 
-      // Auto Generate Slug from Name
+      if (name === 'longDescription' || name === 'fullDescription' || name === 'description') {
+        updated.description = value;
+        updated.fullDescription = value;
+        updated.longDescription = value;
+      }
+      if (name === 'shortDescription' || name === 'short_description') {
+        updated.shortDescription = value;
+        updated.short_description = value;
+      }
+
+      // Auto Generate Slug, SKU, and SEO from Name
       if (name === 'name') {
-        updated.slug = value
+        const slugVal = value
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)+/g, '');
-        updated.seoTitle = `${value} | Happy Sarees`;
+        updated.slug = slugVal;
+
+        // Auto Generate SEO Title & Meta Description if empty or not customized
+        if (!prev.seoTitle || prev.seoTitle.includes('| Happy Sarees') || isNaN(id)) {
+          updated.seoTitle = `${value} | Happy Sarees`;
+        }
+        if (!prev.metaDescription || isNaN(id)) {
+          updated.metaDescription = `Buy authentic ${value} online at Happy Sarees. Crafted in premium ${updated.fabric || 'silk'} for weddings and festive occasions. ${updated.shortDescription || ''}`;
+        }
+
+        // Auto Generate SKU if empty or not set
+        if (!prev.sku || prev.sku.startsWith('HS-') || isNaN(id)) {
+          const code = value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'SAREE';
+          const num = Math.floor(1000 + Math.random() * 9000);
+          updated.sku = `HS-${code}-${num}`;
+        }
       }
 
       // Auto update selling price based on discount type & mrp
@@ -149,27 +217,53 @@ function ProductForm() {
     });
   };
 
+  // Helper: In-browser Canvas Image Compressor (Reduces 10MB uploads to lightweight ~50KB)
+  const compressImageFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxWidth = 800;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.75);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(e.target.result);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Image Upload Handler (JPG, PNG, WEBP)
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        setFormData(prev => {
-          const isDefaultCover = (prev.image && prev.image.includes('unsplash.com')) || !prev.image || prev.image === '';
-          const updatedGallery = [...(prev.galleryImages || []), base64String];
-          return {
-            ...prev,
-            galleryImages: updatedGallery,
-            image: isDefaultCover ? base64String : prev.image
-          };
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      const base64String = await compressImageFile(file);
+      if (!base64String) continue;
+      setFormData(prev => {
+        const updatedGallery = [...(prev.galleryImages || []), base64String];
+        return {
+          ...prev,
+          galleryImages: updatedGallery,
+          image: base64String
+        };
+      });
+    }
   };
 
   // Video File Upload Handler (MP4, WEBM)
@@ -225,17 +319,28 @@ function ProductForm() {
       return;
     }
 
+    const descVal = formData.description || formData.fullDescription || formData.longDescription || '';
     const finalStatus = statusOverride || formData.status;
     const finalData = { 
       ...formData, 
+      description: descVal,
+      fullDescription: descVal,
+      longDescription: descVal,
+      shortDescription: formData.shortDescription || '',
+      washCare: formData.washCare || 'Dry Clean Only',
       status: finalStatus,
       stockCount: Number(formData.stock) || 0,
       inStock: (Number(formData.stock) || 0) > 0,
       height: formData.sareeLength,
       width: formData.sareeWidth,
       originalPrice: formData.mrp || formData.price,
+      image: formData.image,
+      galleryImages: formData.galleryImages,
+      images: formData.galleryImages,
       videoUrl: formData.videoUrl,
-      videoData: formData.videoData
+      videoData: formData.videoData,
+      video_url: formData.videoUrl,
+      video_data: formData.videoData
     };
 
     if (isEditMode) {
@@ -356,13 +461,26 @@ function ProductForm() {
                       />
                     </div>
                     <div className={styles.formGroupHalf}>
-                      <label className={styles.required}>SKU</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label className={styles.required} style={{ marginBottom: 0 }}>SKU (Auto-generated)</label>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            const nameCode = (formData.name || 'SAREE').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'SAREE';
+                            const num = Math.floor(1000 + Math.random() * 9000);
+                            setFormData(prev => ({ ...prev, sku: `HS-${nameCode}-${num}` }));
+                          }}
+                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                        >
+                          ⚡ Auto Generate SKU
+                        </button>
+                      </div>
                       <input 
                         type="text" 
                         name="sku" 
                         value={formData.sku} 
                         onChange={handleInputChange}
-                        placeholder="e.g. HS-001"
+                        placeholder="Auto-generated e.g. HS-KUTI-1001"
                       />
                     </div>
                     <div className={styles.formGroupFull}>
@@ -379,7 +497,7 @@ function ProductForm() {
                       <label>Full Description</label>
                       <textarea 
                         name="longDescription" 
-                        value={formData.longDescription} 
+                        value={formData.longDescription || formData.description || formData.fullDescription || ''} 
                         onChange={handleInputChange}
                         placeholder="Detailed information about weave, fabric craftsmanship, and drape..."
                         rows={6}
@@ -829,16 +947,79 @@ function ProductForm() {
               {/* Step 7: SEO */}
               {activeTab === 'seo' && (
                 <div className={styles.tabPanel}>
-                  <h3>SEO Settings</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ margin: 0 }}>SEO Settings</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nameStr = formData.name || 'Saree';
+                        const fabricStr = formData.fabric || 'Silk';
+                        const descStr = formData.shortDescription || formData.description || '';
+                        setFormData(prev => ({
+                          ...prev,
+                          seoTitle: `${nameStr} - Premium ${fabricStr} | Happy Sarees`,
+                          metaDescription: `Buy authentic ${nameStr} online at Happy Sarees. Crafted in pure ${fabricStr} for weddings and festive occasions. ${descStr}`
+                        }));
+                      }}
+                      style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      ⚡ Auto Generate Full SEO
+                    </button>
+                  </div>
+
                   <div className={styles.formGrid}>
                     <div className={styles.formGroupFull}>
-                      <label>Meta Title</label>
-                      <input type="text" name="seoTitle" value={formData.seoTitle} onChange={handleInputChange} placeholder="e.g. Pure Kanchipuram Silk Saree | Happy Sarees" />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label style={{ marginBottom: 0 }}>Meta Title (Auto-generated & Editable)</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nameStr = formData.name || 'Saree';
+                            const fabricStr = formData.fabric || 'Silk';
+                            setFormData(prev => ({ ...prev, seoTitle: `${nameStr} - Premium ${fabricStr} | Happy Sarees` }));
+                          }}
+                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                        >
+                          ⚡ Auto Generate Title
+                        </button>
+                      </div>
+                      <input 
+                        type="text" 
+                        name="seoTitle" 
+                        value={formData.seoTitle} 
+                        onChange={handleInputChange} 
+                        placeholder="e.g. Pure Kanchipuram Silk Saree | Happy Sarees" 
+                      />
                     </div>
+
                     <div className={styles.formGroupFull}>
-                      <label>Meta Description</label>
-                      <textarea name="metaDescription" value={formData.metaDescription} onChange={handleInputChange} rows={3} placeholder="Describe product for search engine visibility..." />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label style={{ marginBottom: 0 }}>Meta Description (Auto-generated & Editable)</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nameStr = formData.name || 'Saree';
+                            const fabricStr = formData.fabric || 'Silk';
+                            const descStr = formData.shortDescription || formData.description || '';
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              metaDescription: `Buy authentic ${nameStr} online at Happy Sarees. Crafted in pure ${fabricStr} for weddings and festive occasions. ${descStr}` 
+                            }));
+                          }}
+                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                        >
+                          ⚡ Auto Generate Description
+                        </button>
+                      </div>
+                      <textarea 
+                        name="metaDescription" 
+                        value={formData.metaDescription} 
+                        onChange={handleInputChange} 
+                        rows={3} 
+                        placeholder="Describe product for search engine visibility..." 
+                      />
                     </div>
+
                     <div className={styles.formGroupHalf}>
                       <label>Product Slug</label>
                       <input type="text" value={formData.slug} disabled style={{ backgroundColor: '#f5f5f5' }} />
@@ -893,21 +1074,29 @@ function ProductForm() {
             
             {/* Main Cover Image */}
             <div className={styles.mainCoverFrame}>
-              <img src={formData.image} alt="Cover Preview" className={styles.coverPreviewImg} />
+              {formData.image ? (
+                <img src={formData.image} alt="Cover Preview" className={styles.coverPreviewImg} />
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888', fontSize: '13px' }}>
+                  <span>No Cover Image</span>
+                </div>
+              )}
               <div className={styles.coverLabel}>Cover Image</div>
             </div>
 
             {/* Thumbnail Selector Grid */}
             <div className={styles.galleryThumbGrid}>
               {(formData.galleryImages || []).map((img, idx) => (
-                <div 
-                  key={idx} 
-                  className={`${styles.thumbFrame} ${formData.image === img ? styles.thumbFrameActive : ''}`}
-                >
-                  <img src={img} alt={`Thumb ${idx}`} className={styles.thumbImg} onClick={() => handleSetCoverImage(img)} />
-                  <button className={styles.thumbDeleteBtn} onClick={() => handleDeleteGalleryImage(idx)}>✕</button>
-                  <div className={styles.thumbActionText} onClick={() => handleSetCoverImage(img)}>Set cover</div>
-                </div>
+                img ? (
+                  <div 
+                    key={idx} 
+                    className={`${styles.thumbFrame} ${formData.image === img ? styles.thumbFrameActive : ''}`}
+                  >
+                    <img src={img} alt={`Thumb ${idx}`} className={styles.thumbImg} onClick={() => handleSetCoverImage(img)} />
+                    <button className={styles.thumbDeleteBtn} onClick={() => handleDeleteGalleryImage(idx)}>✕</button>
+                    <div className={styles.thumbActionText} onClick={() => handleSetCoverImage(img)}>Set cover</div>
+                  </div>
+                ) : null
               ))}
               <div 
                 className={styles.addThumbBox} 
@@ -976,12 +1165,28 @@ function ProductForm() {
                   {formData.featuredCollection && <span style={{ fontSize: '10px', background: '#e8f5e9', color: '#2e7d32', padding: '2px 6px', borderRadius: '4px' }}>Featured</span>}
                   {formData.saleProduct && <span style={{ fontSize: '10px', background: '#ffebee', color: '#c62828', padding: '2px 6px', borderRadius: '4px' }}>Sale</span>}
                   {!formData.newArrival && !formData.bestSeller && !formData.featuredCollection && !formData.saleProduct && (
-                    <span style={{ fontSize: '11px', color: '#999999' }}>None</span>
+                    <span style={{ fontSize: '10px', color: '#888' }}>Standard Listing</span>
                   )}
                 </div>
               </div>
 
+              {formData.shortDescription && (
+                <div style={{ marginTop: '10px', background: '#fdf8fa', padding: '8px', borderRadius: '6px', border: '1px solid #f8e1ec' }}>
+                  <strong style={{ fontSize: '11px', color: '#d11b69' }}>Short Description:</strong>
+                  <p style={{ fontSize: '12px', color: '#444444', marginTop: '2px', marginBottom: 0 }}>{formData.shortDescription}</p>
+                </div>
+              )}
+              {(formData.fullDescription || formData.description) && (
+                <div style={{ marginTop: '8px', background: '#f9f9f9', padding: '8px', borderRadius: '6px', border: '1px solid #eeeeee' }}>
+                  <strong style={{ fontSize: '11px', color: '#555555' }}>Full Description:</strong>
+                  <p style={{ fontSize: '12px', color: '#444444', marginTop: '2px', marginBottom: 0, lineHeight: '1.4' }}>
+                    {(formData.fullDescription || formData.description).slice(0, 150)}
+                    {(formData.fullDescription || formData.description).length > 150 ? '...' : ''}
+                  </p>
+                </div>
+              )}
             </div>
+
           </div>
         </div>
 

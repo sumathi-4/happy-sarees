@@ -78,19 +78,23 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Live search filtering
+  // Live search filtering via API
   useEffect(() => {
+    let isMounted = true;
     if (searchQuery.trim().length > 1) {
-      const q = searchQuery.toLowerCase();
-      const filtered = PRODUCTS.filter(
-        saree =>
-          saree.name.toLowerCase().includes(q) ||
-          saree.fabric.toLowerCase().includes(q)
-      ).slice(0, 4);
-      setSearchResults(filtered);
+      api.getProducts({ search: searchQuery.trim() })
+        .then((data) => {
+          if (isMounted && data.success && Array.isArray(data.products)) {
+            setSearchResults(data.products.slice(0, 4));
+          }
+        })
+        .catch(() => {
+          if (isMounted) setSearchResults([]);
+        });
     } else {
       setSearchResults([]);
     }
+    return () => { isMounted = false; };
   }, [searchQuery]);
 
   const handleTrendingClick = (term) => {

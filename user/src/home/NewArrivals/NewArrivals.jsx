@@ -5,18 +5,18 @@ import ProductCard from '../../components/common/ProductCard/ProductCard';
 import styles from './NewArrivals.module.css';
 
 function NewArrivals() {
-  const [newProducts, setNewProducts] = useState(() => PRODUCTS.filter((p) => p.isNew));
+  const [newProducts, setNewProducts] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
     api.getNewArrivals()
       .then((data) => {
-        if (isMounted && data.success && data.products.length > 0) {
+        if (isMounted && data.success && Array.isArray(data.products)) {
           setNewProducts(data.products);
         }
       })
       .catch((err) => {
-        console.log('[NewArrivals] Using preloaded fallback products:', err.message);
+        console.warn('[NewArrivals] Live fetch warning:', err.message);
       });
 
     return () => { isMounted = false; };

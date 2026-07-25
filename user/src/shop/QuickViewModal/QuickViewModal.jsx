@@ -91,6 +91,13 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
               )}
             </div>
 
+            {/* Dynamic Short Description */}
+            {(product.shortDescription || product.short_description) && (
+              <p style={{ fontSize: '13px', color: '#555555', marginTop: '8px', marginBottom: '12px', lineHeight: '1.5' }}>
+                {product.shortDescription || product.short_description}
+              </p>
+            )}
+
             {/* Stock Notice */}
             <div className={styles.stockNoticeRow}>
               <span className={styles.stockDot}></span>

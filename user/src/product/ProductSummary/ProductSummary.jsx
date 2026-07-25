@@ -25,6 +25,13 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
       {/* Product Name Title */}
       <h1 className={styles.productTitle}>{product.name}</h1>
 
+      {/* Short Description */}
+      {(product.shortDescription || product.short_description) && (
+        <p style={{ fontSize: '14px', color: '#444444', marginTop: '8px', marginBottom: '14px', lineHeight: '1.5', fontWeight: '500' }}>
+          {product.shortDescription || product.short_description}
+        </p>
+      )}
+
       {/* Ratings & Reviews bar */}
       <div className={styles.ratingRow}>
         <div className={styles.stars}>

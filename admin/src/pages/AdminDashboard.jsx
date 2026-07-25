@@ -165,7 +165,7 @@ function AdminDashboard() {
             {topSellingProducts.map((p) => (
               <div key={p.id} className={styles.productItem}>
                 <div className={styles.productInfoLeft}>
-                  <img src={p.image} alt={p.name} className={styles.productThumb} />
+                  <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=100'} alt={p.name} className={styles.productThumb} />
                   <div className={styles.productMeta}>
                     <span className={styles.productName} title={p.name}>{p.name}</span>
                     <span className={styles.productPrice}>{p.price}</span>
@@ -180,7 +180,7 @@ function AdminDashboard() {
             {lowStockProducts.map((p) => (
               <div key={p.id} className={styles.productItem}>
                 <div className={styles.productInfoLeft}>
-                  <img src={p.image} alt={p.name} className={styles.productThumb} />
+                  <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=100'} alt={p.name} className={styles.productThumb} />
                   <div className={styles.productMeta}>
                     <span className={styles.productName} title={p.name}>{p.name}</span>
                     <span className={styles.productPrice} style={{ color: '#c62828', fontWeight: 600 }}>Only {p.stock}</span>

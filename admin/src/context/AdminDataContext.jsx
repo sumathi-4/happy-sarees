@@ -877,7 +877,7 @@ export function AdminDataProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const rawList = data.data || data.customers || [];
+      const rawList = Array.isArray(data.data?.customers) ? data.data.customers : (Array.isArray(data.data) ? data.data : (Array.isArray(data.customers) ? data.customers : []));
       if (data.success && Array.isArray(rawList)) {
         const formatted = rawList.map(c => ({
           id: c.id,
@@ -909,8 +909,8 @@ export function AdminDataProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const rawList = data.data || data.products || [];
-      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+      const rawList = Array.isArray(data.data?.products) ? data.data.products : (Array.isArray(data.data) ? data.data : (Array.isArray(data.products) ? data.products : []));
+      if (data.success && Array.isArray(rawList)) {
         setProducts(rawList);
         return rawList;
       }
@@ -926,8 +926,8 @@ export function AdminDataProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const rawList = data.data || data.orders || [];
-      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+      const rawList = Array.isArray(data.data?.orders) ? data.data.orders : (Array.isArray(data.data) ? data.data : (Array.isArray(data.orders) ? data.orders : []));
+      if (data.success && Array.isArray(rawList)) {
         setOrders(rawList);
         return rawList;
       }
@@ -943,8 +943,8 @@ export function AdminDataProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const rawList = data.data || data.coupons || [];
-      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+      const rawList = Array.isArray(data.data?.coupons) ? data.data.coupons : (Array.isArray(data.data) ? data.data : (Array.isArray(data.coupons) ? data.coupons : []));
+      if (data.success && Array.isArray(rawList)) {
         setCoupons(rawList);
         return rawList;
       }
@@ -960,8 +960,8 @@ export function AdminDataProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      const rawList = data.data || data.notifications || [];
-      if (data.success && Array.isArray(rawList) && rawList.length > 0) {
+      const rawList = Array.isArray(data.data?.notifications) ? data.data.notifications : (Array.isArray(data.data) ? data.data : (Array.isArray(data.notifications) ? data.notifications : []));
+      if (data.success && Array.isArray(rawList)) {
         setNotifications(rawList);
         return rawList;
       }
@@ -1042,28 +1042,18 @@ export function AdminDataProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('hs_admin_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_master_data', JSON.stringify(masterData));
-  }, [masterData]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_cms_data', JSON.stringify(cmsData));
-  }, [cmsData]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_orders', JSON.stringify(orders));
-  }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_coupons', JSON.stringify(coupons));
-  }, [coupons]);
-
-  useEffect(() => {
-    localStorage.setItem('hs_admin_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+    // Clear any obsolete local storage entries to enforce Neon Cloud PostgreSQL as single source of truth
+    try {
+      localStorage.removeItem('hs_admin_products');
+      localStorage.removeItem('hs_admin_master_data');
+      localStorage.removeItem('hs_admin_cms_data');
+      localStorage.removeItem('hs_admin_orders');
+      localStorage.removeItem('hs_admin_coupons');
+      localStorage.removeItem('hs_admin_notifications');
+    } catch (e) {
+      // Ignore
+    }
+  }, []);
 
   // Product CRUD (Connected to Neon Cloud PostgreSQL DB)
   const addProduct = async (productData) => {
@@ -1145,36 +1135,60 @@ export function AdminDataProvider({ children }) {
     }
   };
 
-  // Master Data CRUD
-  const addMasterItem = (type, item) => {
-    const items = masterData[type] || [];
-    const newId = `${type.charAt(0)}${items.length + 1}_${Date.now()}`;
-    const newItem = {
-      id: newId,
-      name: item.name,
-      status: item.status || 'Active',
-      sortOrder: Number(item.sortOrder) || (items.length + 1)
-    };
-    setMasterData({
-      ...masterData,
-      [type]: [...items, newItem]
-    });
+  // Master Data CRUD (Connected to Neon Cloud PostgreSQL DB)
+  const addMasterItem = async (type, item) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(item)
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Add master item error:', err.message);
+      const items = masterData[type] || [];
+      const newId = `${type.charAt(0)}${items.length + 1}_${Date.now()}`;
+      const newItem = { id: newId, name: item.name, status: item.status || 'Active', sortOrder: Number(item.sortOrder) || (items.length + 1) };
+      setMasterData({ ...masterData, [type]: [...items, newItem] });
+    }
   };
 
-  const updateMasterItem = (type, itemId, updatedFields) => {
-    const items = masterData[type] || [];
-    setMasterData({
-      ...masterData,
-      [type]: items.map(item => item.id === itemId ? { ...item, ...updatedFields } : item)
-    });
+  const updateMasterItem = async (type, itemId, updatedFields) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedFields)
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Update master item error:', err.message);
+      const items = masterData[type] || [];
+      setMasterData({ ...masterData, [type]: items.map(item => item.id === itemId ? { ...item, ...updatedFields } : item) });
+    }
   };
 
-  const deleteMasterItem = (type, itemId) => {
-    const items = masterData[type] || [];
-    setMasterData({
-      ...masterData,
-      [type]: items.filter(item => item.id !== itemId)
-    });
+  const deleteMasterItem = async (type, itemId) => {
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await refreshMasterData();
+    } catch (err) {
+      console.log('[AdminDataContext] Delete master item error:', err.message);
+      const items = masterData[type] || [];
+      setMasterData({ ...masterData, [type]: items.filter(item => item.id !== itemId) });
+    }
   };
 
   const addMasterType = (typeName) => {

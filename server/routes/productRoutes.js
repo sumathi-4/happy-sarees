@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Helper to format database product row to frontend format
 function formatProductRow(row, imagesMap = {}) {
-  const images = imagesMap[row.id] || (row.image_url ? [row.image_url] : ['/src/assets/hero_saree_model.png']);
+  const images = imagesMap[row.id] || (row.image_url ? [row.image_url] : ['https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop']);
   const discountBadge = row.original_price && row.original_price > row.price
     ? `${Math.round(((row.original_price - row.price) / row.original_price) * 100)}% OFF`
     : null;
@@ -14,7 +14,12 @@ function formatProductRow(row, imagesMap = {}) {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    description: row.description,
+    shortDescription: row.short_description || '',
+    fullDescription: row.description || '',
+    description: row.description || '',
+    seoTitle: row.meta_title || `${row.name} | Happy Sarees`,
+    metaDescription: row.meta_description || row.short_description || row.description || '',
+    washCare: row.wash_care || 'Dry Clean Only',
     price: Number(row.price),
     originalPrice: row.original_price ? Number(row.original_price) : null,
     discountBadge,
@@ -24,7 +29,6 @@ function formatProductRow(row, imagesMap = {}) {
     color: row.color,
     weave: row.weave,
     border: row.border,
-    pallu: row.pallu,
     blouseIncluded: row.blouse_included,
     blouseSize: row.blouse_size,
     height: row.height,
@@ -50,10 +54,11 @@ router.get('/', async (req, res) => {
     const { category, fabric, color, minPrice, maxPrice, search, sort, collection } = req.query;
 
     let queryText = `
-      SELECT p.*, c.name as category_name, c.slug as category_slug
+      SELECT p.*, c.name as category_name, c.slug as category_slug, s.meta_title, s.meta_description
       FROM products p 
       LEFT JOIN categories c ON p.category_id = c.id 
-      WHERE 1=1
+      LEFT JOIN product_seo s ON s.product_id = p.id
+      WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published')
     `;
     const params = [];
 
@@ -101,11 +106,11 @@ router.get('/', async (req, res) => {
     const productsRes = await db.query(queryText, params);
 
     // Fetch images for products
-    const imagesRes = await db.query(`SELECT product_id, image_url FROM product_images ORDER BY display_order ASC`);
+    const imagesRes = await db.query(`SELECT product_id, image_url, image_data, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`);
     const imagesMap = {};
     imagesRes.rows.forEach((img) => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_url);
+      imagesMap[img.product_id].push(img.image_data || img.image_url);
     });
 
     const formattedProducts = productsRes.rows.map(row => formatProductRow(row, imagesMap));
@@ -120,12 +125,12 @@ router.get('/', async (req, res) => {
 // 2. Get Best Sellers
 router.get('/bestsellers', async (req, res) => {
   try {
-    const productsRes = await db.query(`SELECT * FROM products WHERE is_best_seller = true ORDER BY id DESC LIMIT 8`);
-    const imagesRes = await db.query(`SELECT product_id, image_url FROM product_images ORDER BY display_order ASC`);
+    const productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.is_best_seller = true ORDER BY p.id DESC LIMIT 8`);
+    const imagesRes = await db.query(`SELECT product_id, image_url, image_data, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`);
     const imagesMap = {};
     imagesRes.rows.forEach((img) => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_url);
+      imagesMap[img.product_id].push(img.image_data || img.image_url);
     });
 
     const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
@@ -138,12 +143,12 @@ router.get('/bestsellers', async (req, res) => {
 // 3. Get New Arrivals
 router.get('/new-arrivals', async (req, res) => {
   try {
-    const productsRes = await db.query(`SELECT * FROM products WHERE is_new_arrival = true ORDER BY id DESC LIMIT 8`);
-    const imagesRes = await db.query(`SELECT product_id, image_url FROM product_images ORDER BY display_order ASC`);
+    const productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.is_new_arrival = true ORDER BY p.id DESC LIMIT 8`);
+    const imagesRes = await db.query(`SELECT product_id, image_url, image_data, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`);
     const imagesMap = {};
     imagesRes.rows.forEach((img) => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_url);
+      imagesMap[img.product_id].push(img.image_data || img.image_url);
     });
 
     const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
@@ -161,13 +166,13 @@ router.get('/:id', async (req, res) => {
     const parsedId = isNum ? parseInt(id) : (parseInt(id.replace(/\D/g, '')) || 0);
 
     let productRes = await db.query(
-      `SELECT * FROM products WHERE id = $1 OR slug = $2`,
+      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.id = $1 OR p.slug = $2`,
       [parsedId > 0 ? parsedId : 0, id]
     );
 
     // Fallback: return first product if requested ID is mock format like "p1"
     if (productRes.rows.length === 0) {
-      productRes = await db.query(`SELECT * FROM products ORDER BY id ASC LIMIT 1`);
+      productRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id ORDER BY p.id ASC LIMIT 1`);
     }
 
     if (productRes.rows.length === 0) {
@@ -178,14 +183,14 @@ router.get('/:id', async (req, res) => {
 
     // Fetch images
     const imagesRes = await db.query(
-      `SELECT image_url FROM product_images WHERE product_id = $1 ORDER BY display_order ASC`,
+      `SELECT image_url, image_data, is_primary FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, display_order ASC`,
       [row.id]
     );
-    const images = imagesRes.rows.map(img => img.image_url);
+    const images = imagesRes.rows.map(img => img.image_data || img.image_url).filter(Boolean);
 
     // Fetch related products
     const relatedRes = await db.query(
-      `SELECT * FROM products WHERE category_id = $1 AND id != $2 LIMIT 4`,
+      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 LIMIT 4`,
       [row.category_id || 1, row.id]
     );
     const relatedProducts = relatedRes.rows.map(r => formatProductRow(r));

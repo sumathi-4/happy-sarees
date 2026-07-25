@@ -39,32 +39,23 @@ function ProductTabs({ product }) {
           <div className={styles.tabPanel}>
             {activeTab === 'description' && (
               <div className={styles.panelContent}>
-                <p className={styles.narrativeText}>{product.description}</p>
                 <p className={styles.narrativeText}>
-                  Designed for women who appreciate rich heritage textiles, this saree combines traditional weaving techniques with modern color palettes. Pair it with gold temple jewelry and a sleek hair bun to complete your royal ethnic look.
+                  {product.description || product.fullDescription || product.longDescription || 'No detailed description available for this product.'}
                 </p>
               </div>
             )}
 
             {activeTab === 'washcare' && (
               <div className={styles.panelContent}>
-                <ul className={styles.careList}>
-                  <li>Dry Clean Only is recommended for long-lasting vibrancy.</li>
-                  <li>Store in a breathable cotton cloth bag; avoid plastic covers.</li>
-                  <li>Do not spray perfume directly on zari work.</li>
-                  <li>Iron on low heat with a protective cotton cloth over the saree.</li>
-                </ul>
+                <p className={styles.narrativeText}>
+                  {product.washCare || product.wash_care || 'Dry Clean Only'}
+                </p>
               </div>
             )}
 
             {activeTab === 'shipping' && (
               <div className={styles.panelContent}>
-                <p className={styles.narrativeText}>{product.shippingReturns}</p>
-                <ul className={styles.careList}>
-                  <li>Dispatched within 24-48 business hours.</li>
-                  <li>Free Express Delivery across 25,000+ PIN codes in India.</li>
-                  <li>Hassle-free 7-day Return and Exchange policy.</li>
-                </ul>
+                <p className={styles.narrativeText}>{product.shippingReturns || 'Dispatched within 24-48 business hours with free shipping across India.'}</p>
               </div>
             )}
           </div>
@@ -76,74 +67,93 @@ function ProductTabs({ product }) {
             <h4 className={styles.cardTitle}>SAREE DETAILS</h4>
 
             <div className={styles.cardTable}>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Fabric</span>
-                <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>{product.fabric}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Weave</span>
-                <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>{product.weave || 'Handloom'}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Border</span>
-                <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>{product.border || 'Zari Woven'}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Pallu</span>
-                <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>{product.pallu || 'Traditional Zari Pallu'}</span>
-              </div>
+              {product.fabric && String(product.fabric).trim() !== '' && (
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Fabric</span>
+                  <span className={styles.cardColon}>:</span>
+                  <span className={styles.cardVal}>{product.fabric}</span>
+                </div>
+              )}
+              {product.weave && String(product.weave).trim() !== '' && (
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Weave</span>
+                  <span className={styles.cardColon}>:</span>
+                  <span className={styles.cardVal}>{product.weave}</span>
+                </div>
+              )}
+              {product.border && String(product.border).trim() !== '' && (
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Border</span>
+                  <span className={styles.cardColon}>:</span>
+                  <span className={styles.cardVal}>{product.border}</span>
+                </div>
+              )}
               <div className={styles.cardRow}>
                 <span className={styles.cardLabel}>Blouse</span>
                 <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>{product.blouseType || 'Running Blouse'}</span>
+                <span className={styles.cardVal}>
+                  {(product.blouseIncluded === true || product.blouse_included === true)
+                    ? `Included${product.blouseSize ? ` (${product.blouseSize})` : ''}`
+                    : 'Not Included'}
+                </span>
               </div>
 
               {isSpecsExpanded && (
                 <>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Pattern</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.pattern}</span>
-                  </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Color</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.color}</span>
-                  </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Width</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.width}</span>
-                  </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Height</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.height}</span>
-                  </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Weight</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.weight || '650 Grams'}</span>
-                  </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Occasion</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.occasion}</span>
-                  </div>
+                  {product.pattern && String(product.pattern).trim() !== '' && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Pattern</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.pattern}</span>
+                    </div>
+                  )}
+                  {product.color && String(product.color).trim() !== '' && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Color</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.color}</span>
+                    </div>
+                  )}
+                  {product.width && String(product.width).trim() !== '' && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Width</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.width}</span>
+                    </div>
+                  )}
+                  {(product.height || product.sareeLength) && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Height</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.height || product.sareeLength}</span>
+                    </div>
+                  )}
+                  {product.weight && String(product.weight).trim() !== '' && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Weight</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.weight}</span>
+                    </div>
+                  )}
+                  {product.occasion && String(product.occasion).trim() !== '' && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>Occasion</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.occasion}</span>
+                    </div>
+                  )}
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Country of Origin</span>
                     <span className={styles.cardColon}>:</span>
                     <span className={styles.cardVal}>{product.countryOfOrigin || 'India'}</span>
                   </div>
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>SKU</span>
-                    <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.sku}</span>
-                  </div>
+                  {product.sku && (
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardLabel}>SKU</span>
+                      <span className={styles.cardColon}>:</span>
+                      <span className={styles.cardVal}>{product.sku}</span>
+                    </div>
+                  )}
                 </>
               )}
             </div>

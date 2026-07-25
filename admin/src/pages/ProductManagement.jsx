@@ -13,7 +13,7 @@ import styles from '../styles/ProductManagement.module.css';
 
 function ProductManagement() {
   const navigate = useNavigate();
-  const { products, setProducts, deleteProduct, duplicateProduct, masterData } = useAdminData();
+  const { products, setProducts, deleteProduct, bulkActionProducts, duplicateProduct, masterData } = useAdminData();
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,12 +40,16 @@ function ProductManagement() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Filter products
-  const filteredProducts = products.filter(p => {
+  // Filter products defensively
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  const filteredProducts = safeProducts.filter(p => {
+    if (!p) return false;
+
     // Search filter
-    const matchesSearch = 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    const nameStr = (p.name || '').toLowerCase();
+    const skuStr = (p.sku || '').toLowerCase();
+    const matchesSearch = nameStr.includes(searchQuery.toLowerCase()) || skuStr.includes(searchQuery.toLowerCase());
 
     // Fabric filter
     const matchesFabric = selectedFabric === 'All' || p.fabric === selectedFabric;
@@ -54,27 +58,29 @@ function ProductManagement() {
     const matchesOccasion = selectedOccasion === 'All' || p.occasion === selectedOccasion;
 
     // Status filter
-    const matchesStatus = selectedStatus === 'All' || p.status === selectedStatus;
+    const matchesStatus = selectedStatus === 'All' || (p.status || 'Published').toLowerCase() === selectedStatus.toLowerCase();
 
     // Stock Status filter
+    const stockNum = Number(p.stock ?? p.stockCount ?? 0);
     let matchesStock = true;
-    if (selectedStock === 'In Stock') matchesStock = p.stock > 5;
-    else if (selectedStock === 'Low Stock') matchesStock = p.stock > 0 && p.stock <= 5;
-    else if (selectedStock === 'Out of Stock') matchesStock = p.stock === 0;
+    if (selectedStock === 'In Stock') matchesStock = stockNum > 5;
+    else if (selectedStock === 'Low Stock') matchesStock = stockNum > 0 && stockNum <= 5;
+    else if (selectedStock === 'Out of Stock') matchesStock = stockNum === 0;
 
     // Tag filter
     let matchesTag = true;
-    if (selectedTag === 'New Arrival') matchesTag = p.newArrival;
-    else if (selectedTag === 'Best Seller') matchesTag = p.bestSeller;
+    if (selectedTag === 'New Arrival') matchesTag = p.newArrival || p.isNewArrival;
+    else if (selectedTag === 'Best Seller') matchesTag = p.bestSeller || p.isBestSeller;
     else if (selectedTag === 'Trending Product') matchesTag = p.trendingProduct || p.isTrending;
-    else if (selectedTag === 'Featured Collection') matchesTag = p.featuredCollection;
+    else if (selectedTag === 'Featured Collection') matchesTag = p.featuredCollection || p.featuredOnHomepage;
     else if (selectedTag === 'Sale Product') matchesTag = p.saleProduct;
 
     // Price Range filter
+    const priceNum = Number(p.price || 0);
     let matchesPrice = true;
-    if (priceRange === 'under-3k') matchesPrice = p.price < 3000;
-    else if (priceRange === '3k-6k') matchesPrice = p.price >= 3000 && p.price <= 6000;
-    else if (priceRange === 'over-6k') matchesPrice = p.price > 6000;
+    if (priceRange === 'under-3k') matchesPrice = priceNum < 3000;
+    else if (priceRange === '3k-6k') matchesPrice = priceNum >= 3000 && priceNum <= 6000;
+    else if (priceRange === 'over-6k') matchesPrice = priceNum > 6000;
 
     return matchesSearch && matchesFabric && matchesOccasion && matchesStatus && matchesStock && matchesTag && matchesPrice;
   });
@@ -122,8 +128,8 @@ function ProductManagement() {
     }
   };
 
-  // Bulk operation triggers
-  const handleBulkAction = (action) => {
+  // Bulk operation triggers (Connected to Neon Cloud PostgreSQL DB API)
+  const handleBulkAction = async (action) => {
     if (selectedProductIds.length === 0) {
       alert('Please select at least one product first.');
       return;
@@ -135,45 +141,19 @@ function ProductManagement() {
       return;
     }
 
-    let updatedProducts = [...products];
-
     if (action === 'activate') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, status: 'Published' } : p
-      );
+      await bulkActionProducts(selectedProductIds, 'publish');
       triggerToast(`Activated ${selectedProductIds.length} products successfully.`);
     } else if (action === 'deactivate') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, status: 'Draft' } : p
-      );
+      await bulkActionProducts(selectedProductIds, 'draft');
       triggerToast(`Deactivated ${selectedProductIds.length} products successfully.`);
-    } else if (action === 'mark-new') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, newArrival: true } : p
-      );
-      triggerToast(`Marked ${selectedProductIds.length} products as New Arrival.`);
-    } else if (action === 'mark-best') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, bestSeller: true } : p
-      );
-      triggerToast(`Marked ${selectedProductIds.length} products as Bestseller.`);
-    } else if (action === 'mark-featured') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, featuredCollection: true } : p
-      );
-      triggerToast(`Marked ${selectedProductIds.length} products as Featured.`);
-    } else if (action === 'mark-sale') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, saleProduct: true } : p
-      );
-      triggerToast(`Marked ${selectedProductIds.length} products as Sale.`);
     } else if (action === 'draft') {
-      updatedProducts = products.map(p => 
-        selectedProductIds.includes(p.id) ? { ...p, status: 'Draft' } : p
-      );
+      await bulkActionProducts(selectedProductIds, 'draft');
       triggerToast(`Moved ${selectedProductIds.length} products to Draft.`);
     } else if (action === 'duplicate') {
-      selectedProductIds.forEach(id => duplicateProduct(id));
+      for (const id of selectedProductIds) {
+        await duplicateProduct(id);
+      }
       triggerToast(`Duplicated ${selectedProductIds.length} products.`);
     } else if (action === 'export') {
       const selectedData = products.filter(p => selectedProductIds.includes(p.id));
@@ -186,27 +166,30 @@ function ProductManagement() {
       triggerToast(`Exported ${selectedProductIds.length} products successfully.`);
     }
 
-    setProducts(updatedProducts);
     setSelectedProductIds([]);
     setShowBulkActions(false);
   };
 
-  // Delete handlers
+  // Delete handlers (Connected to Neon Cloud PostgreSQL DB API)
   const confirmDelete = (id) => {
     setDeleteConfirmId(id);
   };
 
-  const handleDeleteExecute = () => {
-    deleteProduct(deleteConfirmId);
-    setDeleteConfirmId(null);
-    triggerToast('Product deleted successfully.');
+  const handleDeleteExecute = async () => {
+    if (deleteConfirmId) {
+      await deleteProduct(deleteConfirmId);
+      setDeleteConfirmId(null);
+      triggerToast('Product deleted successfully.');
+    }
   };
 
-  const handleBulkDeleteExecute = () => {
-    setProducts(products.filter(p => !selectedProductIds.includes(p.id)));
-    setSelectedProductIds([]);
-    setBulkDeleteConfirm(false);
-    triggerToast('Selected products deleted successfully.');
+  const handleBulkDeleteExecute = async () => {
+    if (selectedProductIds.length > 0) {
+      await bulkActionProducts(selectedProductIds, 'delete');
+      setSelectedProductIds([]);
+      setBulkDeleteConfirm(false);
+      triggerToast('Selected products deleted successfully.');
+    }
   };
 
   const handleResetFilters = () => {
@@ -474,14 +457,20 @@ function ProductManagement() {
                     />
                   </td>
                   <td>
-                    <img src={p.image} alt={p.name} className={styles.productThumb} />
+                    <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80'} alt={p.name || 'Product'} className={styles.productThumb} />
                   </td>
-                  <td style={{ fontWeight: 600, color: '#2b2b2b', maxWidth: '200px' }}>
+                  <td style={{ fontWeight: 600, color: '#2b2b2b', maxWidth: '220px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span className={styles.productNameLink} onClick={() => navigate(`/products/edit/${p.id}`)}>
                         {p.name}
                       </span>
-                      <span style={{ fontSize: '11px', color: '#999999' }}>Created: {p.createdAt}</span>
+                      {(p.shortDescription || p.short_description) && (
+                        <span style={{ fontSize: '11px', color: '#555555', fontStyle: 'italic', marginTop: '2px' }}>
+                          {(p.shortDescription || p.short_description).slice(0, 50)}
+                          {(p.shortDescription || p.short_description).length > 50 ? '...' : ''}
+                        </span>
+                      )}
+                      <span style={{ fontSize: '10px', color: '#999999', marginTop: '2px' }}>Created: {p.createdAt ? String(p.createdAt).slice(0, 10) : '-'}</span>
                     </div>
                   </td>
                   <td><code style={{ fontSize: '12px', fontWeight: 'bold' }}>{p.sku}</code></td>

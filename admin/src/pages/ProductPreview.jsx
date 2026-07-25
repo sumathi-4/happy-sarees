@@ -124,6 +124,13 @@ function ProductPreview() {
               SKU: <code style={{ fontWeight: 'bold' }}>{product.sku}</code>
             </div>
 
+            {/* Short Description */}
+            {(product.shortDescription || product.short_description) && (
+              <p style={{ fontSize: '13px', color: '#555555', marginTop: '6px', marginBottom: '10px', fontStyle: 'italic', lineHeight: '1.4' }}>
+                {product.shortDescription || product.short_description}
+              </p>
+            )}
+
             {/* Review mock */}
             <div className={styles.reviewsMock}>
               <div className={styles.stars}>
@@ -240,9 +247,11 @@ function ProductPreview() {
               <div className={styles.tabContent}>
                 {activeTab === 'description' && (
                   <div className={styles.tabPane}>
-                    <p>{product.longDescription || product.shortDescription || 'No description provided.'}</p>
-                    <p style={{ marginTop: '10px', fontStyle: 'italic', color: '#666666' }}>
-                      * Note: Wash care: {product.washCare}.
+                    <p style={{ lineHeight: '1.6', color: '#333333' }}>
+                      {product.fullDescription || product.description || product.shortDescription || product.short_description || 'No description provided.'}
+                    </p>
+                    <p style={{ marginTop: '12px', fontStyle: 'italic', color: '#666666', fontSize: '13px' }}>
+                      * Note: Wash care: {product.washCare || product.wash_care || 'Dry Clean Only'}.
                     </p>
                   </div>
                 )}

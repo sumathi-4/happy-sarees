@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 15000
+  timeout: 30000
 });
 
 // Request Interceptor: Inject JWT Token
@@ -37,7 +37,7 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(new Error(message));
     }
     if (error.request) {
-      return Promise.reject(new Error('Network error. Backend server appears offline.'));
+      return Promise.reject(new Error(error.message || 'Backend network error.'));
     }
     return Promise.reject(error);
   }
