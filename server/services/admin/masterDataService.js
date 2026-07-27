@@ -165,9 +165,9 @@ class MasterDataService {
     const name = data.name.trim();
     const slug = slugify(name);
     const description = data.description || `Manage ${name.toLowerCase()} options`;
-    const isActive = data.isActive ?? true;
-    const showInFilters = data.showInFilters ?? true;
-    const showInSpecs = data.showInSpecs ?? true;
+    const isActive = data.isActive ?? data.is_active ?? true;
+    const showInFilters = data.showInFilters ?? data.show_in_filters ?? true;
+    const showInSpecs = data.showInSpecs ?? data.show_in_specifications ?? data.showInSpecifications ?? true;
 
     const res = await db.query(
       `INSERT INTO master_types (name, slug, description, is_active, show_in_filters, show_in_specifications)
@@ -184,7 +184,9 @@ class MasterDataService {
       ...res.rows[0],
       isActive: res.rows[0].is_active,
       showInFilters: res.rows[0].show_in_filters,
-      showInSpecs: res.rows[0].show_in_specifications
+      showInSpecs: res.rows[0].show_in_specifications,
+      show_in_specifications: res.rows[0].show_in_specifications,
+      show_in_filters: res.rows[0].show_in_filters
     };
   }
 
@@ -199,9 +201,9 @@ class MasterDataService {
     const name = data.name ? data.name.trim() : item.name;
     const slug = data.name ? slugify(data.name) : item.slug;
     const description = data.description !== undefined ? data.description : item.description;
-    const isActive = data.isActive !== undefined ? data.isActive : item.is_active;
-    const showInFilters = data.showInFilters !== undefined ? data.showInFilters : (item.show_in_filters ?? true);
-    const showInSpecs = data.showInSpecs !== undefined ? data.showInSpecs : (item.show_in_specifications ?? true);
+    const isActive = data.isActive !== undefined ? data.isActive : (data.is_active !== undefined ? data.is_active : item.is_active);
+    const showInFilters = data.showInFilters !== undefined ? data.showInFilters : (data.show_in_filters !== undefined ? data.show_in_filters : (item.show_in_filters ?? true));
+    const showInSpecs = data.showInSpecs !== undefined ? data.showInSpecs : (data.show_in_specifications !== undefined ? data.show_in_specifications : (data.showInSpecifications !== undefined ? data.showInSpecifications : (item.show_in_specifications ?? true)));
 
     const res = await db.query(
       `UPDATE master_types SET
@@ -213,7 +215,9 @@ class MasterDataService {
       ...res.rows[0],
       isActive: res.rows[0].is_active,
       showInFilters: res.rows[0].show_in_filters,
-      showInSpecs: res.rows[0].show_in_specifications
+      showInSpecs: res.rows[0].show_in_specifications,
+      show_in_specifications: res.rows[0].show_in_specifications,
+      show_in_filters: res.rows[0].show_in_filters
     };
   }
 

@@ -95,142 +95,108 @@ function ProductTabs({ product }) {
             <h4 className={styles.cardTitle}>SAREE DETAILS</h4>
 
             <div className={styles.cardTable}>
-              {isTypeAllowed('fabrics') && product.fabric && String(product.fabric).trim() !== '' && (
-                <div className={styles.cardRow}>
-                  <span className={styles.cardLabel}>Fabric</span>
-                  <span className={styles.cardColon}>:</span>
-                  <span className={styles.cardVal}>{product.fabric}</span>
-                </div>
-              )}
-              {isTypeAllowed('weaves') && product.weave && String(product.weave).trim() !== '' && (
-                <div className={styles.cardRow}>
-                  <span className={styles.cardLabel}>Weave</span>
-                  <span className={styles.cardColon}>:</span>
-                  <span className={styles.cardVal}>{product.weave}</span>
-                </div>
-              )}
-              {isTypeAllowed('borders') && product.border && String(product.border).trim() !== '' && (
-                <div className={styles.cardRow}>
-                  <span className={styles.cardLabel}>Border</span>
-                  <span className={styles.cardColon}>:</span>
-                  <span className={styles.cardVal}>{product.border}</span>
-                </div>
-              )}
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Blouse</span>
-                <span className={styles.cardColon}>:</span>
-                <span className={styles.cardVal}>
-                  {(product.blouseIncluded === true || product.blouse_included === true)
-                    ? `Included${product.blouseSize ? ` (${product.blouseSize})` : ''}`
-                    : 'Not Included'}
-                </span>
-              </div>
+              {(() => {
+                const allRows = [];
 
-              {isSpecsExpanded && (
-                <>
-                  {isTypeAllowed('patterns') && product.pattern && String(product.pattern).trim() !== '' && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Pattern</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.pattern}</span>
-                    </div>
-                  )}
-                  {isTypeAllowed('colors') && product.color && String(product.color).trim() !== '' && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Color</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.color}</span>
-                    </div>
-                  )}
-                  {product.width && String(product.width).trim() !== '' && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Width</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.width}</span>
-                    </div>
-                  )}
-                  {(product.height || product.sareeLength) && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Height</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.height || product.sareeLength}</span>
-                    </div>
-                  )}
-                  {product.weight && String(product.weight).trim() !== '' && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Weight</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.weight}</span>
-                    </div>
-                  )}
-                  {isTypeAllowed('occasions') && product.occasion && String(product.occasion).trim() !== '' && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>Occasion</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.occasion}</span>
-                    </div>
-                  )}
+                // 1. Process Master Data Types (using live DB specTypes from /api/cms/spec-types)
+                if (Array.isArray(specTypes)) {
+                  specTypes.forEach(t => {
+                    // RULE: Only display if "Show in Saree Details" (show_in_specifications / showInSpecs) is enabled in Neon DB
+                    if (t.show_in_specifications === false || t.showInSpecs === false) return;
 
-                  {/* Render any Custom Master Types dynamically */}
-                  {(() => {
-                    const customEntries = { ...(product.customMasterData || {}), ...(product.custom_master_data || {}) };
-                    
-                    Object.keys(product || {}).forEach(k => {
-                      const standardProductKeys = [
-                        'id','name','slug','sku','price','originalPrice','mrp','fabric','color','pattern','weave',
-                        'border','occasion','brand','collection','category','categoryId','status','inStock','stockCount',
-                        'stock','lowStockAlert','isBestSeller','bestSeller','isNewArrival','newArrival','isTrending',
-                        'trendingProduct','featuredOnHomepage','showOnHomepage','rating','reviewCount','totalSold',
-                        'image','images','galleryImages','videoUrl','videoData','video_url','video_data','description',
-                        'shortDescription','fullDescription','washCare','wash_care','shippingReturns','blouseIncluded',
-                        'blouse_included','blouseSize','blouse_size','width','height','sareeLength','sareeWidth','weight',
-                        'countryOfOrigin','seo','seoTitle','metaDescription','customMasterData','custom_master_data','createdAt','updatedAt'
-                      ];
-                      if (!standardProductKeys.includes(k) && product[k] !== undefined && product[k] !== null && String(product[k]).trim() !== '') {
-                        customEntries[k] = product[k];
+                    const label = t.name;
+                    const slug = (t.slug || t.name || '').toLowerCase().trim();
+                    const slugUnderscore = slug.replace(/-/g, '_');
+                    const singularSlug = slug.endsWith('s') ? slug.slice(0, -1) : slug;
+                    const singularUnderscore = singularSlug.replace(/-/g, '_');
+
+                    // Check exact ID-based match from product.specifications array first
+                    let specMatch = Array.isArray(product.specifications) 
+                      ? product.specifications.find(s => Number(s.master_type_id) === Number(t.id))
+                      : null;
+
+                    // Retrieve selected value on product
+                    let val = (specMatch && specMatch.value) ? specMatch.value : (
+                      product[t.id] ??
+                      product[singularSlug] ??
+                      product[singularUnderscore] ??
+                      product[slug] ??
+                      product[slugUnderscore] ??
+                      product[label] ??
+                      product.customMasterData?.[t.id] ??
+                      product.customMasterData?.[singularSlug] ??
+                      product.customMasterData?.[singularUnderscore] ??
+                      product.customMasterData?.[slug] ??
+                      product.customMasterData?.[slugUnderscore] ??
+                      product.customMasterData?.[label] ??
+                      product.custom_master_data?.[t.id] ??
+                      product.custom_master_data?.[singularSlug] ??
+                      product.custom_master_data?.[singularUnderscore] ??
+                      product.custom_master_data?.[slug] ??
+                      product.custom_master_data?.[slugUnderscore] ??
+                      product.custom_master_data?.[label]
+                    );
+
+                    if (val !== null && val !== undefined && typeof val !== 'function' && typeof val !== 'object') {
+                      const valStr = String(val).trim();
+                      if (valStr && valStr !== 'null' && valStr !== 'undefined' && valStr !== '[object Object]') {
+                        allRows.push({ label, value: valStr, key: slug });
                       }
-                    });
+                    }
+                  });
+                }
 
-                    return Object.entries(customEntries).map(([key, val]) => {
-                      if (val === null || val === undefined || typeof val === 'function') return null;
-                      
-                      let displayVal = val;
-                      if (typeof val === 'object') {
-                        if (val.name && typeof val.name === 'string') displayVal = val.name;
-                        else if (val.label && typeof val.label === 'string') displayVal = val.label;
-                        else return null; // Skip non-primitive objects!
-                      }
+                // 2. Process Product Specification Fields (Blouse, Width, Height, Weight, Country of Origin, SKU)
+                
+                // Blouse
+                if (product.blouseIncluded !== undefined || product.blouse_included !== undefined) {
+                  const isIncluded = product.blouseIncluded === true || product.blouse_included === true;
+                  const blouseText = isIncluded
+                    ? `Included${(product.blouseSize || product.blouse_size) ? ` (${product.blouseSize || product.blouse_size})` : ''}`
+                    : 'Not Included';
+                  allRows.push({ label: 'Blouse', value: blouseText, key: 'blouse' });
+                }
 
-                      const valStr = String(displayVal).trim();
-                      if (!valStr || valStr === '[object Object]' || valStr === 'null' || valStr === 'undefined') return null;
+                // Width
+                const widthVal = product.width || product.sareeWidth || product.saree_width;
+                if (widthVal && String(widthVal).trim()) {
+                  allRows.push({ label: 'Width', value: String(widthVal).trim(), key: 'width' });
+                }
 
-                      const standardKeys = ['fabric','weave','border','pattern','color','occasion','brand','collection','fabrics','weaves','borders','patterns','colors','occasions','brands','collections'];
-                      if (standardKeys.includes(key.toLowerCase())) return null;
-                      if (!isTypeAllowed(key)) return null;
+                // Height / Saree Length
+                const heightVal = product.height || product.sareeLength || product.saree_length;
+                if (heightVal && String(heightVal).trim()) {
+                  allRows.push({ label: 'Height', value: String(heightVal).trim(), key: 'height' });
+                }
 
-                      return (
-                        <div className={styles.cardRow} key={key}>
-                          <span className={styles.cardLabel}>{formatLabel(key)}</span>
-                          <span className={styles.cardColon}>:</span>
-                          <span className={styles.cardVal}>{valStr}</span>
-                        </div>
-                      );
-                    });
-                  })()}
-                  <div className={styles.cardRow}>
-                    <span className={styles.cardLabel}>Country of Origin</span>
+                // Weight
+                const weightVal = product.weight;
+                if (weightVal && String(weightVal).trim()) {
+                  allRows.push({ label: 'Weight', value: String(weightVal).trim(), key: 'weight' });
+                }
+
+                // Country of Origin
+                const countryVal = product.countryOfOrigin || product.country_of_origin || 'India';
+                if (countryVal && String(countryVal).trim()) {
+                  allRows.push({ label: 'Country of Origin', value: String(countryVal).trim(), key: 'country_of_origin' });
+                }
+
+                // SKU
+                if (product.sku && String(product.sku).trim()) {
+                  allRows.push({ label: 'SKU', value: String(product.sku).trim(), key: 'sku' });
+                }
+
+                // Determine visible rows based on View More / View Less toggle
+                const visibleRows = isSpecsExpanded ? allRows : allRows.slice(0, 4);
+
+                return visibleRows.map((row, idx) => (
+                  <div className={styles.cardRow} key={row.key || idx}>
+                    <span className={styles.cardLabel}>{row.label}</span>
                     <span className={styles.cardColon}>:</span>
-                    <span className={styles.cardVal}>{product.countryOfOrigin || 'India'}</span>
+                    <span className={styles.cardVal}>{row.value}</span>
                   </div>
-                  {product.sku && (
-                    <div className={styles.cardRow}>
-                      <span className={styles.cardLabel}>SKU</span>
-                      <span className={styles.cardColon}>:</span>
-                      <span className={styles.cardVal}>{product.sku}</span>
-                    </div>
-                  )}
-                </>
-              )}
+                ));
+              })()}
             </div>
 
             {/* View More / View Less Toggle */}

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { FiMapPin, FiPlus, FiCheck } from 'react-icons/fi';
 import styles from './AddressStep.module.css';
 
-function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onNextStep }) {
-  const [showAddForm, setShowAddForm] = useState(false);
+function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onAddAddress, onNextStep }) {
+  const [showAddForm, setShowAddForm] = useState(addresses.length === 0);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -34,17 +34,22 @@ function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onNex
     }
     const newAddress = {
       id: `addr_${Date.now()}`,
-      label: 'Custom Address',
+      label: 'Home',
       name: formData.name,
       phone: formData.phone,
       email: formData.email,
-      house: formData.house,
-      street: formData.street,
+      house: formData.house || '',
+      street: `${formData.street || ''} ${formData.area || ''}`.trim() || formData.house,
       city: formData.city,
       state: formData.state,
-      pincode: formData.pincode
+      pincode: formData.pincode,
+      isDefault: addresses.length === 0
     };
-    onSelectAddress(newAddress.id);
+    if (onAddAddress) {
+      onAddAddress(newAddress);
+    } else {
+      onSelectAddress(newAddress.id);
+    }
     setShowAddForm(false);
   };
 

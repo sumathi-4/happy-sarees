@@ -1,98 +1,159 @@
 import React, { useState, useEffect } from 'react';
-import { FiMapPin, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiMapPin, FiPlus, FiTrash2, FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
 import styles from './AddressesTab.module.css';
 
-function AddressesTab({ addresses: initialAddresses = [] }) {
-  const [addressList, setAddressList] = useState(initialAddresses);
+function AddressesTab() {
+  const [addressList, setAddressList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hs_user_addresses');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     phone: '',
-    streetAddress: '',
+    email: '',
+    house: '',
+    street: '',
+    landmark: '',
     city: '',
-    state: '',
+    state: 'Tamil Nadu',
     pincode: ''
   });
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchAddresses = () => {
     api.getAddresses()
       .then((data) => {
-        if (isMounted && data.success && data.addresses.length > 0) {
+        if (data.success && Array.isArray(data.addresses)) {
           const formatted = data.addresses.map(a => ({
             id: a.id,
-            label: a.is_default ? 'Home' : 'Office',
+            label: a.is_default ? 'Home' : 'Address',
             isDefault: a.is_default,
-            name: a.full_name,
-            house: a.street_address,
-            street: a.street_address,
-            city: a.city,
-            state: a.state,
-            pincode: a.pincode,
-            phone: a.phone
+            name: a.full_name || a.name || 'Customer Address',
+            house: a.street_address || a.house || '',
+            street: a.street_address || a.street || '',
+            landmark: a.landmark || '',
+            city: a.city || '',
+            state: a.state || 'Tamil Nadu',
+            pincode: a.pincode || '',
+            phone: a.phone || '',
+            email: a.email || ''
           }));
           setAddressList(formatted);
+          try {
+            localStorage.setItem('hs_user_addresses', JSON.stringify(formatted));
+          } catch (e) {}
         }
       })
       .catch((err) => {
-        console.log('[AddressesTab] Operating with local address list:', err.message);
+        console.log('[AddressesTab] Live fetch warning:', err.message);
       });
+  };
 
-    return () => { isMounted = false; };
+  useEffect(() => {
+    fetchAddresses();
   }, []);
 
-  const handleSave = () => {
-    if (!formData.fullName || !formData.phone || !formData.streetAddress || !formData.city || !formData.pincode) return;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    api.addAddress({
-      fullName: formData.fullName,
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.phone || !formData.pincode || !formData.city) {
+      alert('Please fill in required fields (Full Name, Mobile Number, City, Pincode).');
+      return;
+    }
+
+    const payload = {
+      fullName: formData.name,
       phone: formData.phone,
-      streetAddress: formData.streetAddress,
+      email: formData.email,
+      streetAddress: `${formData.house ? formData.house + ', ' : ''}${formData.street || ''}${formData.landmark ? ', ' + formData.landmark : ''}`.trim(),
       city: formData.city,
       state: formData.state || 'Tamil Nadu',
       pincode: formData.pincode,
       isDefault: addressList.length === 0
-    })
+    };
+
+    api.addAddress(payload)
       .then((data) => {
         if (data.success && data.address) {
-          const a = data.address;
-          setAddressList(prev => [...prev, {
-            id: a.id,
-            label: 'Home',
-            isDefault: a.is_default,
-            name: a.full_name,
-            house: a.street_address,
-            street: a.street_address,
-            city: a.city,
-            state: a.state,
-            pincode: a.pincode,
-            phone: a.phone
-          }]);
+          const added = {
+            id: data.address.id,
+            label: data.address.is_default ? 'Home' : 'Address',
+            isDefault: data.address.is_default,
+            name: data.address.full_name || formData.name,
+            house: formData.house || data.address.street_address,
+            street: formData.street || data.address.street_address,
+            landmark: formData.landmark || '',
+            city: data.address.city || formData.city,
+            state: data.address.state || formData.state,
+            pincode: data.address.pincode || formData.pincode,
+            phone: data.address.phone || formData.phone,
+            email: formData.email
+          };
+          const updated = [added, ...addressList];
+          setAddressList(updated);
+          try {
+            localStorage.setItem('hs_user_addresses', JSON.stringify(updated));
+          } catch (e) {}
+        } else {
+          fetchAddresses();
         }
       })
       .catch(() => {
-        setAddressList(prev => [...prev, {
-          id: Date.now(),
+        const fallbackId = `addr_${Date.now()}`;
+        const newLocal = {
+          id: fallbackId,
           label: 'Home',
-          isDefault: false,
-          name: formData.fullName,
-          house: formData.streetAddress,
-          street: formData.streetAddress,
+          isDefault: addressList.length === 0,
+          name: formData.name,
+          house: formData.house,
+          street: formData.street,
+          landmark: formData.landmark,
           city: formData.city,
           state: formData.state || 'Tamil Nadu',
           pincode: formData.pincode,
-          phone: formData.phone
-        }]);
+          phone: formData.phone,
+          email: formData.email
+        };
+        const updated = [newLocal, ...addressList];
+        setAddressList(updated);
+        try {
+          localStorage.setItem('hs_user_addresses', JSON.stringify(updated));
+        } catch (e) {}
       });
 
     setShowAddForm(false);
-    setFormData({ fullName: '', phone: '', streetAddress: '', city: '', state: '', pincode: '' });
+    setFormData({
+      name: '',
+      phone: '',
+      email: '',
+      house: '',
+      street: '',
+      landmark: '',
+      city: '',
+      state: 'Tamil Nadu',
+      pincode: ''
+    });
   };
 
   const handleDelete = (id) => {
-    api.deleteAddress(id).catch(() => {});
-    setAddressList((prev) => prev.filter((a) => a.id !== id));
+    if (window.confirm('Are you sure you want to delete this address?')) {
+      api.deleteAddress(id).catch(() => {});
+      const updated = addressList.filter((a) => a.id !== id);
+      setAddressList(updated);
+      try {
+        localStorage.setItem('hs_user_addresses', JSON.stringify(updated));
+      } catch (e) {}
+    }
   };
 
   return (
@@ -109,87 +170,166 @@ function AddressesTab({ addresses: initialAddresses = [] }) {
 
       {showAddForm && (
         <div className={styles.formBox}>
-          <h4>Add New Delivery Address</h4>
-          <div className={styles.formGrid}>
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              className={styles.inputField}
-            />
-            <input
-              type="tel"
-              placeholder="Mobile Number"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className={styles.inputField}
-            />
-            <input
-              type="text"
-              placeholder="Flat / House No & Street Address"
-              value={formData.streetAddress}
-              onChange={(e) => setFormData({ ...formData, streetAddress: e.target.value })}
-              className={styles.inputField}
-            />
-            <input
-              type="text"
-              placeholder="City"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className={styles.inputField}
-            />
-            <input
-              type="text"
-              placeholder="State"
-              value={formData.state}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-              className={styles.inputField}
-            />
-            <input
-              type="text"
-              placeholder="Pincode"
-              value={formData.pincode}
-              onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-              className={styles.inputField}
-            />
-          </div>
-          <button onClick={handleSave} className={styles.saveBtn}>
-            Save Address
-          </button>
+          <h4 className={styles.formTitle}>Add New Delivery Address</h4>
+          <form onSubmit={handleSave} className={styles.addressForm}>
+            <div className={styles.formGrid}>
+              <div className={styles.inputGroup}>
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="e.g. Ananya Sharma"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>Mobile Number *</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  placeholder="+91 98765 43210"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="ananya@example.com"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>House / Flat / Building *</label>
+                <input
+                  type="text"
+                  name="house"
+                  required
+                  placeholder="123, Anna Nagar 2nd Street"
+                  value={formData.house}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>Street / Area</label>
+                <input
+                  type="text"
+                  name="street"
+                  placeholder="Bodinayakanur"
+                  value={formData.street}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>Landmark</label>
+                <input
+                  type="text"
+                  name="landmark"
+                  placeholder="Near Lotus Park"
+                  value={formData.landmark}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>City *</label>
+                <input
+                  type="text"
+                  name="city"
+                  required
+                  placeholder="Theni"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>State *</label>
+                <input
+                  type="text"
+                  name="state"
+                  required
+                  placeholder="Tamil Nadu"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label>Pincode *</label>
+                <input
+                  type="text"
+                  name="pincode"
+                  required
+                  placeholder="625513"
+                  value={formData.pincode}
+                  onChange={handleInputChange}
+                  className={styles.inputField}
+                />
+              </div>
+            </div>
+
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.saveBtn}>
+                Save Address
+              </button>
+              <button type="button" onClick={() => setShowAddForm(false)} className={styles.cancelBtn}>
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      <div className={styles.addressGrid}>
-        {addressList.map((addr) => (
-          <div key={addr.id} className={styles.addrCard}>
-            <div className={styles.cardHeader}>
-              <div className={styles.labelRow}>
-                <FiMapPin className={styles.pinIcon} />
-                <strong className={styles.label}>{addr.label}</strong>
-                {addr.isDefault && <span className={styles.defaultBadge}>Default</span>}
-              </div>
-              <div className={styles.actionBtns}>
-                <button
-                  onClick={() => handleDelete(addr.id)}
-                  className={styles.actionIconBtn}
-                  title="Delete Address"
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
-            </div>
+      {!showAddForm && (
+        <div className={styles.addressGrid}>
+          {addressList.length > 0 ? (
+            addressList.map((addr) => (
+              <div key={addr.id} className={styles.addrCard}>
+                <div className={styles.cardHeader}>
+                  <strong className={styles.label}>{addr.label || 'Home'}</strong>
+                  {addr.isDefault && <span className={styles.defaultTag}>Default</span>}
+                  <button onClick={() => handleDelete(addr.id)} className={styles.deleteBtn} title="Delete Address">
+                    <FiTrash2 />
+                  </button>
+                </div>
 
-            <div className={styles.cardBody}>
-              <p className={styles.name}>{addr.name}</p>
-              <p className={styles.address}>
-                {addr.house}, {addr.city} - {addr.pincode}, {addr.state}
-              </p>
-              <span className={styles.phone}>Phone: {addr.phone}</span>
+                <div className={styles.cardBody}>
+                  <p className={styles.name}>{addr.name}</p>
+                  <p className={styles.street}>
+                    {addr.house || addr.street}{addr.street && addr.house !== addr.street ? `, ${addr.street}` : ''}{addr.landmark ? `, Near ${addr.landmark}` : ''}, {addr.city} - {addr.pincode}, {addr.state}
+                  </p>
+                  <p className={styles.phone}>Phone: {addr.phone}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className={styles.emptyState}>
+              <FiMapPin className={styles.emptyIcon} />
+              <p>No saved addresses found. Add a delivery address for fast checkout!</p>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

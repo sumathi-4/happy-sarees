@@ -5,6 +5,8 @@ import { PATHS } from '../../routes/paths';
 import { PRODUCTS } from '../../data/mockData';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import styles from './Header.module.css';
 import logoImg from '../../assets/logo.jpg';
 
@@ -12,6 +14,8 @@ const TRENDING_SEARCHES = ['Banarasi Silk', 'Floral Organza', 'Red Bridal', 'Mul
 
 function Header() {
   const { isAuthenticated, user, logout } = useAuth();
+  const { wishlistCount } = useWishlist();
+  const { cartCount } = useCart();
   const [isSticky, setIsSticky] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -210,13 +214,13 @@ function Header() {
               {/* Wishlist Link */}
               <Link to={PATHS.WISHLIST} className={styles.actionIcon} aria-label="Wishlist">
                 <FiHeart />
-                <span className={styles.badge}>0</span>
+                <span className={styles.badge}>{wishlistCount}</span>
               </Link>
 
               {/* Shopping Cart Link */}
               <Link to={PATHS.CART} className={styles.actionIcon} aria-label="Cart">
                 <FiShoppingCart />
-                <span className={styles.badge}>0</span>
+                <span className={styles.badge}>{cartCount}</span>
               </Link>
 
               {/* User Account / Profile */}

@@ -79,12 +79,20 @@ export const api = {
   addToCart: (productId, quantity) => axiosInstance.post('/cart', { productId, quantity }),
   removeFromCart: (productId) => axiosInstance.delete(`/cart/${productId}`),
 
+  // Recently Viewed APIs (Neon DB Persistent)
+  getRecentlyViewed: () => axiosInstance.get('/recently-viewed'),
+  recordRecentlyViewed: (productId) => axiosInstance.post('/recently-viewed', { productId }),
+
   // CMS & Announcement Bar & Master Data APIs
   getAnnouncementBar: () => axiosInstance.get('/cms/announcement-bar'),
   getCmsSections: () => axiosInstance.get('/cms/sections'),
   getNavigationMenu: () => axiosInstance.get('/cms/navigation'),
   getMasterData: () => axiosInstance.get('/cms/master-data'),
-  getSpecTypes: () => axiosInstance.get('/cms/spec-types')
+  getSpecTypes: () => axiosInstance.get('/cms/spec-types'),
+
+  // Coupon & Offer APIs
+  getAvailableCoupons: () => axiosInstance.get('/cms/available-coupons'),
+  validateCoupon: (code, orderAmount) => axiosInstance.post('/cms/validate-coupon', { code, orderAmount })
 };
 
 export default api;

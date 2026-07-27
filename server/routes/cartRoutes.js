@@ -16,7 +16,7 @@ router.get('/', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    res.json({ success: true, cart: result.rows });
+    res.json({ success: true, cart: result.rows, items: result.rows, data: result.rows });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch cart items.' });
   }

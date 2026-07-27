@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaHeart } from 'react-icons/fa';
 import { FiHeart, FiShare2, FiShoppingCart, FiZap, FiCheckCircle, FiRefreshCw, FiTruck } from 'react-icons/fi';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import styles from './ProductSummary.module.css';
 
 function ProductSummary({ product, onAddToCart, onBuyNow }) {
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const isWishlisted = isInWishlist(product?.id);
   const [copiedToast, setCopiedToast] = useState(false);
 
   if (!product) return null;
@@ -17,6 +21,13 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
       setTimeout(() => setCopiedToast(false), 2500);
     } else {
       alert('Product link copied to clipboard!');
+    }
+  };
+
+  const handleAddToCartClick = () => {
+    addToCart(product, quantity);
+    if (onAddToCart) {
+      onAddToCart(product, quantity);
     }
   };
 
@@ -32,22 +43,13 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
         </p>
       )}
 
-      {/* Ratings & Reviews bar */}
+      {/* Rating & Reviews Bar */}
       <div className={styles.ratingRow}>
-        <div className={styles.stars}>
-          {[...Array(5)].map((_, i) => (
-            <FaStar
-              key={i}
-              className={`${styles.starIcon} ${
-                i < Math.floor(product.rating) ? styles.starFilled : ''
-              }`}
-            />
-          ))}
+        <div className={styles.starBadge}>
+          <span>{product.rating || 4.8}</span>
+          <FaStar className={styles.starIcon} />
         </div>
-        <span className={styles.ratingScore}>{product.rating}</span>
-        <span className={styles.reviewCount}>({product.reviewCount} Reviews)</span>
-        <span className={styles.ratingDivider}>|</span>
-        <a href="#customer-reviews" className={styles.writeReviewLink}>Write a Review</a>
+        <span className={styles.reviewCount}>({product.reviewCount || 24} Verified Reviews)</span>
       </div>
 
       {/* Prices display */}
@@ -97,10 +99,14 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
       {/* Secondary Actions (Wishlist & Share) */}
       <div className={styles.secondaryActions}>
         <button
-          onClick={() => setIsWishlisted(!isWishlisted)}
+          onClick={() => toggleWishlist(product)}
           className={`${styles.wishlistBtn} ${isWishlisted ? styles.activeWishlist : ''}`}
         >
-          <FiHeart className={styles.actionIcon} />
+          {isWishlisted ? (
+            <FaHeart className={styles.actionIcon} style={{ color: '#e91e63' }} />
+          ) : (
+            <FiHeart className={styles.actionIcon} />
+          )}
           {isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}
         </button>
         <button onClick={handleShare} className={styles.shareBtn}>
@@ -111,7 +117,7 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
 
       {/* Primary CTAs (Add to Cart / Buy Now) */}
       <div className={styles.primaryActions}>
-        <button onClick={() => onAddToCart(product, quantity)} className={styles.addToCartBtn}>
+        <button onClick={handleAddToCartClick} className={styles.addToCartBtn}>
           <FiShoppingCart className={styles.ctaIcon} />
           Add to Cart
         </button>

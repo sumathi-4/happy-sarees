@@ -7,10 +7,13 @@ import Toolbar from '../shop/Toolbar/Toolbar';
 import FilterSidebar from '../shop/FilterSidebar/FilterSidebar';
 import ProductGrid from '../shop/ProductGrid/ProductGrid';
 import QuickViewModal from '../shop/QuickViewModal/QuickViewModal';
+import { useWishlist } from '../context/WishlistContext';
 import styles from './Shop.module.css';
 
 function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { wishlist, toggleWishlist } = useWishlist();
+  const wishlistedIds = wishlist.map(item => Number(item.id || item.productId));
 
   // Products state (populated live from Neon PostgreSQL DB)
   const [productsList, setProductsList] = useState([]);
@@ -35,11 +38,12 @@ function Shop() {
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   
-  // Wishlist Mock State
-  const [wishlistedIds, setWishlistedIds] = useState([]);
-  
   // Quick View Product State
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+
+  const handleToggleWishlist = (product) => {
+    toggleWishlist(product);
+  };
 
   // Fetch products from Neon PostgreSQL API on mount
   useEffect(() => {
@@ -105,12 +109,6 @@ function Shop() {
     setAvailabilityFilter('all');
     setSortBy('newest');
     setSearchParams({});
-  };
-
-  const handleToggleWishlist = (id) => {
-    setWishlistedIds(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
   };
 
   const handleAddToCart = (product) => {

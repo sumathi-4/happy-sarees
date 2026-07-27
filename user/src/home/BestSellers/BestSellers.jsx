@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { FiHeart, FiEye, FiShoppingCart } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { PRODUCTS } from '../../data/mockData';
 import api from '../../services/api';
+import { useWishlist } from '../../context/WishlistContext';
 import QuickViewModal from '../../shop/QuickViewModal/QuickViewModal';
 import styles from './BestSellers.module.css';
 
 function BestSellers() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [bestsellerList, setBestsellerList] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     let isMounted = true;
@@ -27,14 +29,6 @@ function BestSellers() {
 
   const featured = bestsellerList.find((p) => p.isFeaturedBestSeller) || bestsellerList[0];
   const others = bestsellerList.filter((p) => p.id !== (featured ? featured.id : null));
-
-  const toggleWishlist = (id) => {
-    if (wishlist.includes(id)) {
-      setWishlist(wishlist.filter((item) => item !== id));
-    } else {
-      setWishlist([...wishlist, id]);
-    }
-  };
 
   if (!featured) return null;
 
@@ -56,11 +50,15 @@ function BestSellers() {
               <img src={featured.image} alt={featured.name} className={styles.featuredImage} />
               
               <button 
-                onClick={() => toggleWishlist(featured.id)}
-                className={`${styles.wishlistBtn} ${wishlist.includes(featured.id) ? styles.activeWishlist : ''}`}
+                onClick={() => toggleWishlist(featured)}
+                className={`${styles.wishlistBtn} ${isInWishlist(featured.id) ? styles.activeWishlist : ''}`}
                 aria-label="Wishlist"
               >
-                <FiHeart className={styles.heartIcon} />
+                {isInWishlist(featured.id) ? (
+                  <FaHeart className={styles.heartIcon} style={{ color: '#e91e63' }} />
+                ) : (
+                  <FiHeart className={styles.heartIcon} />
+                )}
               </button>
 
               <span className={styles.bestsellerTag}>BEST SELLER</span>
@@ -96,18 +94,22 @@ function BestSellers() {
         {/* Right Column - Other Bestsellers */}
         <div className={styles.othersColumn}>
           {others.map((product) => {
-            const isFav = wishlist.includes(product.id);
+            const isFav = isInWishlist(product.id);
             return (
               <div key={product.id} className={styles.smallCard}>
                 <div className={styles.smallImageWrapper}>
                   <img src={product.image} alt={product.name} className={styles.smallImage} />
                   
                   <button 
-                    onClick={() => toggleWishlist(product.id)}
+                    onClick={() => toggleWishlist(product)}
                     className={`${styles.wishlistBtnSmall} ${isFav ? styles.activeWishlist : ''}`}
                     aria-label="Wishlist"
                   >
-                    <FiHeart className={styles.heartIconSmall} />
+                    {isFav ? (
+                      <FaHeart className={styles.heartIconSmall} style={{ color: '#e91e63' }} />
+                    ) : (
+                      <FiHeart className={styles.heartIconSmall} />
+                    )}
                   </button>
 
                   <div className={styles.smallActions}>

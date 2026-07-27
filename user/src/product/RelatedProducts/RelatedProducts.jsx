@@ -1,12 +1,30 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
 import ProductCard from '../../components/common/ProductCard/ProductCard';
 import styles from './RelatedProducts.module.css';
 
-function RelatedProducts({ products = [] }) {
+function RelatedProducts({ products: passedProducts = [] }) {
   const scrollRef = useRef(null);
+  const [items, setItems] = useState(passedProducts);
 
-  if (!products.length) return null;
+  useEffect(() => {
+    if (passedProducts && passedProducts.length > 0) {
+      setItems(passedProducts);
+    } else {
+      let isMounted = true;
+      api.getProducts()
+        .then((data) => {
+          if (isMounted && data.success && Array.isArray(data.products)) {
+            setItems(data.products.slice(0, 8));
+          }
+        })
+        .catch(() => {});
+      return () => { isMounted = false; };
+    }
+  }, [passedProducts]);
+
+  if (!items.length) return null;
 
   const handleScroll = (direction) => {
     if (scrollRef.current) {
@@ -38,7 +56,7 @@ function RelatedProducts({ products = [] }) {
       </div>
 
       <div ref={scrollRef} className={styles.productSlider}>
-        {products.map((item) => (
+        {items.map((item) => (
           <div key={item.id} style={{ flex: '0 0 260px', minWidth: '260px' }}>
             <ProductCard product={item} />
           </div>

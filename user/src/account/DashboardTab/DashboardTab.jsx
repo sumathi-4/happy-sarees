@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FiShoppingBag,
   FiPackage,
@@ -9,10 +9,24 @@ import {
   FiEdit,
   FiShoppingCart
 } from 'react-icons/fi';
-import { RECOMMENDED_PRODUCTS } from '../../data/mockData';
+import { FaHeart } from 'react-icons/fa';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import styles from './DashboardTab.module.css';
 
-function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelectTab, onAddToCart }) {
+function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelectTab }) {
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('hs_recently_viewed') || '[]');
+      setRecentlyViewed(saved.slice(0, 4));
+    } catch (e) {
+      setRecentlyViewed([]);
+    }
+  }, []);
   return (
     <div className={styles.dashboardWrapper}>
       {/* Welcome & Reward Banner */}
@@ -28,8 +42,8 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           <div className={styles.crownCircle}>👑</div>
           <div className={styles.rewardMeta}>
             <span className={styles.rewardLabel}>My Rewards</span>
-            <strong className={styles.rewardPts}>{userProfile.rewardPoints.toLocaleString()} Points</strong>
-            <span className={styles.rewardTier}>You are a {userProfile.memberTier}</span>
+            <strong className={styles.rewardPts}>{(Number(userProfile.rewardPoints) || 0).toLocaleString()} Points</strong>
+            <span className={styles.rewardTier}>You are a {userProfile.memberTier || 'Registered Member'}</span>
           </div>
           <FiChevronRight className={styles.arrowIcon} />
         </div>
@@ -86,7 +100,7 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
             <FiAward className={styles.statIcon} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statNum}>{userProfile.rewardPoints.toLocaleString()}</span>
+            <span className={styles.statNum}>{(Number(userProfile.rewardPoints) || 0).toLocaleString()}</span>
             <span className={styles.statLabel}>Reward Points</span>
             <span className={styles.statLink}>View Rewards &gt;</span>
           </div>
@@ -105,27 +119,33 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           </div>
 
           <div className={styles.ordersList}>
-            {recentOrders.map((order) => (
-              <div key={order.id} className={styles.orderItem}>
-                <img
-                  src={order.items[0]?.image || '/src/assets/hero_saree_model.png'}
-                  alt={order.items[0]?.name}
-                  className={styles.orderThumb}
-                />
-                <div className={styles.orderMeta}>
-                  <h4 className={styles.orderName}>{order.items[0]?.name}</h4>
-                  <span className={styles.orderSub}>Order ID: {order.id}</span>
-                  <span className={styles.orderDate}>Placed on: {order.date}</span>
+            {recentOrders.length > 0 ? (
+              recentOrders.slice(0, 3).map((order) => (
+                <div key={order.id} className={styles.orderItem}>
+                  <img
+                    src={order.items?.[0]?.image || '/src/assets/hero_saree_model.png'}
+                    alt={order.items?.[0]?.name || 'Saree'}
+                    className={styles.orderThumb}
+                  />
+                  <div className={styles.orderMeta}>
+                    <h4 className={styles.orderName}>{order.items?.[0]?.name || 'Silk Saree'}</h4>
+                    <span className={styles.orderSub}>Order ID: {order.id}</span>
+                    <span className={styles.orderDate}>Placed on: {order.date}</span>
+                  </div>
+                  <div className={styles.orderRight}>
+                    <strong className={styles.orderPrice}>₹{Number(order.totalPrice || 0).toLocaleString()}</strong>
+                    <span className={styles.orderQty}>{order.items?.length || 1} Item</span>
+                    <span className={`${styles.statusBadge} ${styles[(order.status || 'Processing').toLowerCase()]}`}>
+                      {order.status || 'Processing'}
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.orderRight}>
-                  <strong className={styles.orderPrice}>₹{order.totalPrice.toLocaleString()}</strong>
-                  <span className={styles.orderQty}>{order.itemCount} Item</span>
-                  <span className={`${styles.statusBadge} ${styles[order.status.toLowerCase()]}`}>
-                    {order.status}
-                  </span>
-                </div>
+              ))
+            ) : (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#666' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>No recent orders placed yet.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -139,31 +159,37 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           </div>
 
           <div className={styles.recGrid}>
-            {RECOMMENDED_PRODUCTS.map((prod) => (
-              <div key={prod.id} className={styles.recCard}>
-                <div className={styles.recImgFrame}>
-                  <img src={prod.image} alt={prod.name} className={styles.recImg} />
-                  <button className={styles.recHeartBtn}>
-                    <FiHeart />
-                  </button>
-                </div>
-                <div className={styles.recMeta}>
-                  <h5 className={styles.recTitle}>{prod.name}</h5>
-                  <div className={styles.recPriceRow}>
-                    <strong className={styles.recPrice}>₹{prod.price.toLocaleString()}</strong>
-                    {prod.originalPrice > prod.price && (
-                      <span className={styles.recOrigPrice}>₹{prod.originalPrice.toLocaleString()}</span>
-                    )}
+            {recentlyViewed.length > 0 ? (
+              recentlyViewed.map((prod) => {
+                const isWish = isInWishlist(prod.id);
+                return (
+                  <div key={prod.id} className={styles.recCard}>
+                    <div className={styles.recImgFrame}>
+                      <img src={prod.image} alt={prod.name} className={styles.recImg} />
+                      <button onClick={() => toggleWishlist(prod)} className={styles.recHeartBtn}>
+                        {isWish ? <FaHeart style={{ color: '#e91e63' }} /> : <FiHeart />}
+                      </button>
+                    </div>
+                    <div className={styles.recMeta}>
+                      <h5 className={styles.recTitle}>{prod.name}</h5>
+                      <div className={styles.recPriceRow}>
+                        <strong className={styles.recPrice}>₹{Number(prod.price || 0).toLocaleString()}</strong>
+                      </div>
+                      <button
+                        onClick={() => addToCart(prod, 1)}
+                        className={styles.recCartBtn}
+                      >
+                        <FiShoppingCart /> Add to Cart
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => onAddToCart(prod)}
-                    className={styles.recCartBtn}
-                  >
-                    <FiShoppingCart /> Add to Cart
-                  </button>
-                </div>
+                );
+              })
+            ) : (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#666', gridColumn: '1 / -1' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>No recently viewed products yet.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -180,19 +206,25 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           </div>
 
           <div className={styles.addressesPreviewList}>
-            {addresses.map((addr) => (
-              <div key={addr.id} className={styles.miniAddrCard}>
-                <div className={styles.addrHeader}>
-                  <strong className={styles.addrLabel}>{addr.label}</strong>
-                  {addr.isDefault && <span className={styles.defaultTag}>Default</span>}
-                  <FiEdit className={styles.editIcon} />
+            {addresses.length > 0 ? (
+              addresses.map((addr) => (
+                <div key={addr.id} className={styles.miniAddrCard}>
+                  <div className={styles.addrHeader}>
+                    <strong className={styles.addrLabel}>{addr.label || 'Home'}</strong>
+                    {addr.isDefault && <span className={styles.defaultTag}>Default</span>}
+                    <FiEdit className={styles.editIcon} />
+                  </div>
+                  <p className={styles.addrText}>
+                    {addr.house || addr.streetAddress}, {addr.city} - {addr.pincode}, {addr.state || 'Tamil Nadu'}
+                  </p>
+                  <span className={styles.addrPhone}>Ph: {addr.phone}</span>
                 </div>
-                <p className={styles.addrText}>
-                  {addr.house}, {addr.street}, {addr.city} - {addr.pincode}, {addr.state}
-                </p>
-                <span className={styles.addrPhone}>Ph: {addr.phone}</span>
+              ))
+            ) : (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#666' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>No saved addresses yet.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -202,19 +234,19 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           <div className={styles.summaryRows}>
             <div className={styles.sumRow}>
               <span>Total Orders</span>
-              <strong>{userProfile.totalOrders}</strong>
+              <strong>{userProfile.totalOrders || 0}</strong>
             </div>
             <div className={styles.sumRow}>
               <span>Total Spent</span>
-              <strong className={styles.primaryText}>₹{userProfile.totalSpent.toLocaleString()}</strong>
+              <strong className={styles.primaryText}>₹{(Number(userProfile.totalSpent) || 0).toLocaleString()}</strong>
             </div>
             <div className={styles.sumRow}>
               <span>You Saved</span>
-              <strong className={styles.greenText}>₹{userProfile.totalSaved.toLocaleString()}</strong>
+              <strong className={styles.greenText}>₹{(Number(userProfile.totalSaved) || 0).toLocaleString()}</strong>
             </div>
             <div className={styles.sumRow}>
               <span>Member Since</span>
-              <strong>{userProfile.memberSince}</strong>
+              <strong>{userProfile.memberSince || '2026'}</strong>
             </div>
           </div>
         </div>

@@ -147,7 +147,7 @@ class ProductService {
 
   // ── Get Single Product ─────────────────────────────────────
   async getById(id) {
-    const [prod, images, seo] = await Promise.all([
+    const [prod, images, seo, specs] = await Promise.all([
       db.query(
         `SELECT p.*, c.name as category_name
          FROM products p LEFT JOIN categories c ON p.category_id = c.id
@@ -160,6 +160,15 @@ class ProductService {
         [id]
       ),
       db.query(`SELECT * FROM product_seo WHERE product_id = $1`, [id]),
+      db.query(
+        `SELECT ps.master_type_id, ps.master_value_id, mt.name as master_type_name, mt.slug as master_type_slug, 
+                mt.show_in_specifications, mi.name as master_value_name, ps.custom_value
+         FROM product_specifications ps
+         JOIN master_types mt ON ps.master_type_id = mt.id
+         LEFT JOIN master_items mi ON ps.master_value_id = mi.id
+         WHERE ps.product_id = $1 AND mt.is_active = true`,
+        [id]
+      )
     ]);
 
     if (prod.rows.length === 0) throw { status: 404, message: 'Product not found.' };
@@ -180,9 +189,31 @@ class ProductService {
       }
     }
 
+    const specificationsList = specs.rows.map(r => ({
+      master_type_id: r.master_type_id,
+      master_value_id: r.master_value_id,
+      master_type_name: r.master_type_name,
+      master_type_slug: r.master_type_slug,
+      show_in_specifications: r.show_in_specifications,
+      value: r.master_value_name || r.custom_value
+    }));
+
+    specs.rows.forEach(r => {
+      const valName = r.master_value_name || r.custom_value;
+      if (valName) {
+        customData[r.master_type_id] = valName;
+        customData[r.master_type_slug] = valName;
+        customData[r.master_type_name] = valName;
+        const singular = r.master_type_slug.endsWith('s') ? r.master_type_slug.slice(0, -1) : r.master_type_slug;
+        customData[singular] = valName;
+        customData[singular.replace(/-/g, '_')] = valName;
+      }
+    });
+
     return {
       ...customData,
       ...p,
+      specifications: specificationsList,
       customMasterData: customData,
       custom_master_data: customData,
       mrp: p.original_price ? Number(p.original_price) : Number(p.price),
@@ -315,6 +346,9 @@ class ProductService {
         [productId, metaTitle, metaDesc]
       );
     }
+
+    // Sync product_specifications table (master_type_id & master_value_id)
+    await this.syncProductSpecifications(productId, data);
 
     return this.getById(productId);
   }
@@ -457,7 +491,69 @@ class ProductService {
       );
     }
 
+    // Sync product_specifications table (master_type_id & master_value_id)
+    await this.syncProductSpecifications(id, data);
+
     return this.getById(id);
+  }
+
+  // ── Sync Product Specifications Table ─────────────────────────────
+  async syncProductSpecifications(productId, data) {
+    try {
+      const allTypesRes = await db.query(`SELECT id, name, slug FROM master_types WHERE is_active = true`);
+      const customMasterData = { ...(data.customMasterData || data.custom_master_data || {}) };
+
+      for (const t of allTypesRes.rows) {
+        const slug = (t.slug || '').toLowerCase().trim();
+        const slugUnderscore = slug.replace(/-/g, '_');
+        const singularSlug = slug.endsWith('s') ? slug.slice(0, -1) : slug;
+        const singularUnderscore = singularSlug.replace(/-/g, '_');
+
+        const val = 
+          data[t.id] ??
+          data[t.name] ??
+          data[slug] ??
+          data[slugUnderscore] ??
+          data[singularSlug] ??
+          data[singularUnderscore] ??
+          customMasterData[t.id] ??
+          customMasterData[t.name] ??
+          customMasterData[slug] ??
+          customMasterData[slugUnderscore] ??
+          customMasterData[singularSlug] ??
+          customMasterData[singularUnderscore];
+
+        if (val !== undefined && val !== null && val !== '') {
+          let masterValueId = null;
+          let customValue = null;
+
+          if (typeof val === 'number') {
+            masterValueId = val;
+            const itemRes = await db.query(`SELECT name FROM master_items WHERE id = $1`, [masterValueId]);
+            if (itemRes.rows.length > 0) customValue = itemRes.rows[0].name;
+          } else if (typeof val === 'string' && val.trim() !== '') {
+            customValue = val.trim();
+            const itemRes = await db.query(
+              `SELECT id FROM master_items WHERE type_id = $1 AND (LOWER(name) = LOWER($2) OR slug = $3)`,
+              [t.id, customValue, slugify(customValue)]
+            );
+            if (itemRes.rows.length > 0) masterValueId = itemRes.rows[0].id;
+          }
+
+          if (masterValueId || customValue) {
+            await db.query(
+              `INSERT INTO product_specifications (product_id, master_type_id, master_value_id, custom_value)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (product_id, master_type_id) DO UPDATE
+               SET master_value_id = EXCLUDED.master_value_id, custom_value = EXCLUDED.custom_value, updated_at = NOW()`,
+              [productId, t.id, masterValueId, customValue]
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[productService.syncProductSpecifications] Error:', err.message);
+    }
   }
 
   // ── Permanent Hard Delete ──────────────────────────────────

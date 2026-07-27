@@ -171,7 +171,9 @@ function MasterDataManagement() {
     }
     addMasterType(newTypeName, {
       showInFilters: newTypeShowInFilters,
-      showInSpecs: newTypeShowInSpecs
+      showInSpecs: newTypeShowInSpecs,
+      show_in_filters: newTypeShowInFilters,
+      show_in_specifications: newTypeShowInSpecs
     });
     setSelectedType(cleanKey);
     setViewMode('table');
@@ -189,7 +191,9 @@ function MasterDataManagement() {
     await updateMasterType(editingTypeKey, { 
       name: editTypeName.trim(),
       showInFilters: editTypeShowInFilters,
-      showInSpecs: editTypeShowInSpecs
+      showInSpecs: editTypeShowInSpecs,
+      show_in_filters: editTypeShowInFilters,
+      show_in_specifications: editTypeShowInSpecs
     });
     triggerToast(`Updated Master Type to "${editTypeName.trim()}".`);
     setEditingTypeKey(null);

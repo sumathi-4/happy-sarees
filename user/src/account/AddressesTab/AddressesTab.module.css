@@ -58,10 +58,11 @@
   border: 1px solid rgba(209, 27, 105, 0.08);
 }
 
-.formBox h4 {
+.formTitle {
   font-family: var(--font-display);
   font-size: 1.1rem;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.2rem 0;
+  color: var(--primary-color);
 }
 
 .formGrid {
@@ -71,20 +72,61 @@
   margin-bottom: 1rem;
 }
 
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+}
+
+.inputGroup label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
 .inputField {
   font-family: var(--font-sans);
   font-size: 0.85rem;
   padding: 0.6rem 0.8rem;
   border-radius: var(--radius-button);
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   outline: none;
-  background-color: var(--bg-white);
+  background-color: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.inputField:focus {
+  border-color: var(--primary-color);
+}
+
+.formActions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
 }
 
 .saveBtn {
   background-color: var(--primary-color);
   color: var(--bg-white);
   border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-button);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.saveBtn:hover {
+  background-color: var(--secondary-color);
+}
+
+.cancelBtn {
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
   padding: 0.6rem 1.4rem;
   border-radius: var(--radius-button);
   font-family: var(--font-sans);
@@ -104,6 +146,7 @@
   border-radius: var(--radius-card);
   padding: 1.4rem;
   background-color: var(--bg-white);
+  text-align: left;
 }
 
 .cardHeader {
@@ -113,16 +156,6 @@
   margin-bottom: 0.8rem;
 }
 
-.labelRow {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.pinIcon {
-  color: var(--primary-color);
-}
-
 .label {
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -130,32 +163,28 @@
   color: var(--text-color);
 }
 
-.defaultBadge {
+.defaultTag {
   background-color: var(--bg-soft-pink-darker);
   color: var(--primary-color);
   font-family: var(--font-sans);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 4px;
 }
 
-.actionBtns {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.actionIconBtn {
+.deleteBtn {
   background: transparent;
   border: none;
-  color: var(--text-light);
-  font-size: 1rem;
+  color: #e53935;
+  font-size: 1.1rem;
   cursor: pointer;
   padding: 0.2rem;
+  transition: transform 0.2s ease;
+}
 
-  &:hover {
-    color: var(--primary-color);
-  }
+.deleteBtn:hover {
+  transform: scale(1.15);
 }
 
 .cardBody {
@@ -171,12 +200,32 @@
   margin: 0 0 0.3rem 0;
 }
 
-.address {
+.street {
   margin: 0 0 0.4rem 0;
 }
 
 .phone {
   font-weight: 600;
+  margin: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  background: var(--bg-soft-pink);
+  border-radius: var(--radius-card);
+  border: 1px dashed rgba(209, 27, 105, 0.2);
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+
+.emptyIcon {
+  font-size: 2.2rem;
+  color: var(--primary-color);
+  margin-bottom: 0.8rem;
 }
 
 @media (max-width: 768px) {

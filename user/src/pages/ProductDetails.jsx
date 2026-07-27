@@ -29,6 +29,20 @@ function ProductDetails() {
       .then((data) => {
         if (isMounted && data.success && data.product) {
           setProduct(data.product);
+          try {
+            const p = data.product;
+            api.recordRecentlyViewed(p.id).catch(() => {});
+            const saved = JSON.parse(localStorage.getItem('hs_recently_viewed') || '[]');
+            const filtered = saved.filter(item => Number(item.id) !== Number(p.id));
+            const newItem = {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: p.image || (Array.isArray(p.images) ? p.images[0] : '/src/assets/hero_saree_model.png')
+            };
+            const updated = [newItem, ...filtered].slice(0, 10);
+            localStorage.setItem('hs_recently_viewed', JSON.stringify(updated));
+          } catch (e) {}
         }
       })
       .catch((err) => {

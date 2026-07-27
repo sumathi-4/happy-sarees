@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiUser, FiMail, FiPhone, FiCalendar, FiSave } from 'react-icons/fi';
 import styles from './ProfileTab.module.css';
 
 function ProfileTab({ userProfile }) {
   const [profileData, setProfileData] = useState({ ...userProfile });
+
+  useEffect(() => {
+    if (userProfile) {
+      setProfileData({ ...userProfile });
+    }
+  }, [userProfile]);
 
   const handleChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });

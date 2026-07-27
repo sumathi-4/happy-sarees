@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiRefreshCw, FiShield, FiTruck } from 'react-icons/fi';
 import styles from './CheckoutSummary.module.css';
 
-function CheckoutSummary({ cartItems = [], deliveryPrice = 0, discountAmount = 2500 }) {
+function CheckoutSummary({ cartItems = [], deliveryPrice = 0, discountAmount = 0 }) {
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.originalPrice || item.price) * item.quantity,
     0
   );
   const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discount = Math.max(0, subtotal - sellingTotal + discountAmount);
-  const grandTotal = Math.max(0, subtotal - discount + deliveryPrice);
+  const discount = Math.max(0, (subtotal - sellingTotal) + Number(discountAmount || 0));
+  const grandTotal = Math.max(0, subtotal - discount + Number(deliveryPrice || 0));
 
   return (
     <div className={styles.stickyColumn}>

@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', authenticateToken, async (req, res) => {
   const client = await db.pool.connect();
   try {
-    const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
+    const { items, totalAmount, shippingAddress, paymentMethod, couponCode } = req.body;
 
     if (!items || !items.length || !totalAmount) {
       return res.status(400).json({ success: false, message: 'Cart items and total amount are required.' });
@@ -32,6 +32,25 @@ router.post('/', authenticateToken, async (req, res) => {
          VALUES ($1, $2, $3, $4)`,
         [order.id, item.productId || item.id, item.quantity, item.price]
       );
+    }
+
+    // Auto increment coupon usage in Neon DB
+    if (couponCode) {
+      const couponRes = await client.query(
+        `UPDATE coupons 
+         SET usage_count = usage_count + 1 
+         WHERE UPPER(code) = UPPER($1) 
+         RETURNING id`,
+        [couponCode]
+      );
+      if (couponRes.rows.length > 0) {
+        const couponId = couponRes.rows[0].id;
+        await client.query(
+          `INSERT INTO coupon_usage (coupon_id, user_id, order_id)
+           VALUES ($1, $2, $3)`,
+          [couponId, req.user.id, order.id]
+        );
+      }
     }
 
     await client.query('COMMIT');
@@ -80,7 +99,7 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    res.json({ success: true, orders: result.rows });
+    res.json({ success: true, orders: result.rows, data: result.rows });
   } catch (error) {
     console.error('Fetch Orders Error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch orders history.' });

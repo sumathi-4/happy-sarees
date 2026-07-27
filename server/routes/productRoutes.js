@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const productService = require('../services/admin/productService');
 
 const router = express.Router();
 
@@ -166,39 +167,32 @@ router.get('/:id', async (req, res) => {
     const parsedId = isNum ? parseInt(id) : (parseInt(id.replace(/\D/g, '')) || 0);
 
     let productRes = await db.query(
-      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.id = $1 OR p.slug = $2`,
+      `SELECT id FROM products WHERE (id = $1 AND deleted_at IS NULL) OR (slug = $2 AND deleted_at IS NULL)`,
       [parsedId > 0 ? parsedId : 0, id]
     );
 
     // Fallback: return first product if requested ID is mock format like "p1"
     if (productRes.rows.length === 0) {
-      productRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id ORDER BY p.id ASC LIMIT 1`);
+      productRes = await db.query(`SELECT id FROM products WHERE deleted_at IS NULL ORDER BY id ASC LIMIT 1`);
     }
 
     if (productRes.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    const row = productRes.rows[0];
-
-    // Fetch images
-    const imagesRes = await db.query(
-      `SELECT image_url, image_data, is_primary FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, display_order ASC`,
-      [row.id]
-    );
-    const images = imagesRes.rows.map(img => img.image_data || img.image_url).filter(Boolean);
+    const prodId = productRes.rows[0].id;
+    const productData = await productService.getById(prodId);
 
     // Fetch related products
     const relatedRes = await db.query(
-      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 LIMIT 4`,
-      [row.category_id || 1, row.id]
+      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 AND p.deleted_at IS NULL LIMIT 4`,
+      [productData.category_id || 1, prodId]
     );
     const relatedProducts = relatedRes.rows.map(r => formatProductRow(r));
 
-    const product = formatProductRow(row, { [row.id]: images.length ? images : null });
-    product.relatedProducts = relatedProducts;
+    productData.relatedProducts = relatedProducts;
 
-    res.json({ success: true, product });
+    res.json({ success: true, product: productData });
   } catch (error) {
     console.error('Fetch Product Details Error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch product details.' });

@@ -3,8 +3,8 @@ import { FiPackage, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import api from '../../services/api';
 import styles from './OrdersTab.module.css';
 
-function OrdersTab({ orders: initialOrders = [] }) {
-  const [orders, setOrders] = useState(initialOrders);
+function OrdersTab() {
+  const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
@@ -12,7 +12,7 @@ function OrdersTab({ orders: initialOrders = [] }) {
     let isMounted = true;
     api.getMyOrders()
       .then((data) => {
-        if (isMounted && data.success && data.orders.length > 0) {
+        if (isMounted && data.success && Array.isArray(data.orders)) {
           const formatted = data.orders.map(o => ({
             id: o.order_number || o.id,
             date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -31,7 +31,7 @@ function OrdersTab({ orders: initialOrders = [] }) {
         }
       })
       .catch((err) => {
-        console.log('[OrdersTab] Operating with initial order data:', err.message);
+        console.log('[OrdersTab] Live fetch warning:', err.message);
       });
 
     return () => { isMounted = false; };

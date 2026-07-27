@@ -1,18 +1,58 @@
 import React, { useState } from 'react';
 import { 
-  FiTag, FiTrash2, FiEdit2, FiCheck, FiX, FiBell, 
-  FiShoppingBag, FiAlertTriangle, FiPercent, FiUserPlus, FiXCircle 
+  FiTag, FiTrash2, FiEdit2, FiCheck, FiX, FiPlus, 
+  FiArrowLeft, FiCopy, FiSearch, FiFilter,
+  FiPower, FiClock, FiRepeat
 } from 'react-icons/fi';
 import { useAdminData } from '../context/AdminDataContext';
+import { couponsApi } from '../api/adminApi';
 import styles from '../styles/Coupons.module.css';
 
+// Automatic Coupon Status Computation Logic
+const getCouponStatus = (coupon) => {
+  if (!coupon) return 'Active';
+
+  // 1. Check if Expiry Date has passed
+  if (coupon.expiryDate || coupon.expires_at) {
+    const expDate = new Date(coupon.expiryDate || coupon.expires_at);
+    if (!isNaN(expDate.getTime())) {
+      const endOfExpDate = new Date(expDate);
+      endOfExpDate.setHours(23, 59, 59, 999);
+      if (new Date() > endOfExpDate) {
+        return 'Expired';
+      }
+    }
+  }
+
+  if (coupon.computed_status === 'expired') {
+    return 'Expired';
+  }
+
+  // 2. Check Active status flag
+  const isInactive = coupon.is_active === false || coupon.is_active === 'false' || coupon.is_active === 0 ||
+                     (coupon.status && (coupon.status.toLowerCase() === 'inactive' || coupon.status.toLowerCase() === 'disabled')) ||
+                     coupon.computed_status === 'inactive';
+
+  if (isInactive) {
+    return 'Inactive';
+  }
+
+  return 'Active';
+};
+
 function Coupons() {
-  const { coupons, setCoupons, notifications, setNotifications } = useAdminData();
+  const { coupons, setCoupons, refreshCoupons } = useAdminData();
 
-  // Active coupon selected for editing (null means create mode)
+  // Mode: false = Table View, true = Create/Edit Form View
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCode, setEditingCode] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
-  // Create/Edit form values state
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
+  // Form State
   const [formData, setFormData] = useState({
     code: '',
     type: 'Percentage',
@@ -26,9 +66,6 @@ function Coupons() {
     status: 'Active'
   });
 
-  // Notification filter state: 'all' | 'unread' | 'read'
-  const [notifFilter, setNotifFilter] = useState('all');
-
   // Toast alert
   const [toastMsg, setToastMsg] = useState(null);
   const triggerToast = (msg) => {
@@ -36,27 +73,10 @@ function Coupons() {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  // Populate form for editing
-  const handleEditClick = (coupon) => {
-    setEditingCode(coupon.code);
-    setFormData({
-      code: coupon.code,
-      type: coupon.type,
-      discountValue: coupon.discountValue,
-      minOrder: coupon.minOrder,
-      maxDiscount: coupon.maxDiscount || '',
-      usageLimit: coupon.usageLimit,
-      perUserLimit: coupon.perUserLimit,
-      startDate: coupon.startDate,
-      expiryDate: coupon.expiryDate,
-      status: coupon.status
-    });
-    triggerToast(`Editing coupon ${coupon.code}.`);
-  };
-
-  // Cancel edit mode
-  const handleCancelForm = () => {
+  // Open Create Form
+  const handleOpenCreate = () => {
     setEditingCode(null);
+    setEditingId(null);
     setFormData({
       code: '',
       type: 'Percentage',
@@ -69,334 +89,572 @@ function Coupons() {
       expiryDate: '',
       status: 'Active'
     });
+    setIsFormOpen(true);
   };
 
-  // Save / Add coupon handler
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.code || !formData.discountValue || !formData.minOrder) {
-      alert("Coupon Code, Discount Value, and Minimum Order amount are required.");
+  // Open Edit Form
+  const handleEditClick = (coupon) => {
+    setEditingCode(coupon.code);
+    setEditingId(coupon.id);
+    setFormData({
+      code: coupon.code,
+      type: coupon.type || (coupon.value ? 'Percentage' : 'Flat'),
+      discountValue: coupon.discountValue || coupon.value || (coupon.discount ? coupon.discount.replace(/\D/g, '') : ''),
+      minOrder: coupon.minOrder || coupon.min_order_amount || coupon.min || '',
+      maxDiscount: coupon.maxDiscount || coupon.max_discount_amount || coupon.max || '',
+      usageLimit: coupon.usageLimit || coupon.usage_limit || coupon.limit || '',
+      perUserLimit: coupon.perUserLimit || coupon.per_user_limit || 1,
+      startDate: coupon.startDate || (coupon.starts_at ? new Date(coupon.starts_at).toISOString().split('T')[0] : ''),
+      expiryDate: coupon.expiryDate || (coupon.expires_at ? new Date(coupon.expires_at).toISOString().split('T')[0] : ''),
+      status: getCouponStatus(coupon) === 'Inactive' ? 'Inactive' : 'Active'
+    });
+    setIsFormOpen(true);
+  };
+
+  // Quick 1-Click Status Toggle from Table Row Action
+  const handleToggleStatus = async (coupon) => {
+    const currentStatus = getCouponStatus(coupon);
+    
+    if (currentStatus === 'Expired') {
+      triggerToast(`Coupon ${coupon.code} is expired. Update expiry date to reactivate.`);
       return;
     }
 
-    const discountLabel = formData.type === 'Percentage' 
+    const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+
+    // Optimistic UI Update
+    setCoupons(prev => prev.map(c => {
+      if (c.code === coupon.code || (c.id && c.id === coupon.id)) {
+        return {
+          ...c,
+          status: newStatus,
+          is_active: newStatus === 'Active',
+          computed_status: newStatus.toLowerCase()
+        };
+      }
+      return c;
+    }));
+
+    // Call Backend API
+    if (coupon.id) {
+      try {
+        await couponsApi.toggle(coupon.id);
+        if (refreshCoupons) refreshCoupons();
+      } catch (e) {
+        console.warn('Coupon toggle API warning:', e.message);
+      }
+    }
+
+    triggerToast(`Coupon ${coupon.code} set to ${newStatus}!`);
+  };
+
+  // Cancel / Close Form
+  const handleCancelForm = () => {
+    setIsFormOpen(false);
+    setEditingCode(null);
+    setEditingId(null);
+  };
+
+  // Copy Code to Clipboard
+  const handleCopyCode = (code) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      triggerToast(`Copied code "${code}" to clipboard! 📋`);
+    }
+  };
+
+  // Submit Create or Edit Form
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.code.trim()) {
+      triggerToast('Please enter a valid coupon code.');
+      return;
+    }
+
+    const formattedDiscount = formData.type === 'Percentage' 
       ? `${formData.discountValue}% OFF` 
       : `₹${formData.discountValue} OFF`;
 
-    const nextCoupon = {
-      ...formData,
-      code: formData.code.toUpperCase().trim(),
-      discount: discountLabel,
-      discountValue: Number(formData.discountValue),
-      minOrder: Number(formData.minOrder),
-      maxDiscount: Number(formData.maxDiscount) || 0,
-      usageLimit: Number(formData.usageLimit) || 100,
-      usageCount: editingCode ? (coupons.find(c => c.code === editingCode)?.usageCount || 0) : 0,
-      perUserLimit: Number(formData.perUserLimit) || 1,
-      status: formData.status
+    const apiPayload = {
+      code: formData.code.trim().toUpperCase(),
+      name: formData.code.trim().toUpperCase(),
+      type: formData.type.toLowerCase(),
+      value: Number(formData.discountValue) || 0,
+      min_order_amount: Number(formData.minOrder) || 0,
+      min_order: Number(formData.minOrder) || 0,
+      max_discount_amount: formData.maxDiscount ? Number(formData.maxDiscount) : null,
+      max_discount: formData.maxDiscount ? Number(formData.maxDiscount) : null,
+      usage_limit: formData.usageLimit ? Number(formData.usageLimit) : 100,
+      per_user_limit: Number(formData.perUserLimit) || 1,
+      expires_at: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
+      is_active: formData.status === 'Active'
     };
 
     if (editingCode) {
-      // Edit mode
-      setCoupons(prev => prev.map(c => c.code === editingCode ? nextCoupon : c));
-      triggerToast(`Coupon ${nextCoupon.code} updated successfully.`);
+      // Update existing coupon
+      setCoupons(prev => prev.map(c => {
+        if (c.code === editingCode || c.id === editingId) {
+          return {
+            ...c,
+            ...apiPayload,
+            discount: formattedDiscount,
+            discountValue: formData.discountValue,
+            minOrder: formData.minOrder,
+            maxDiscount: formData.maxDiscount,
+            usageLimit: formData.usageLimit,
+            perUserLimit: formData.perUserLimit,
+            startDate: formData.startDate,
+            expiryDate: formData.expiryDate,
+            status: formData.status
+          };
+        }
+        return c;
+      }));
+
+      if (editingId) {
+        try {
+          await couponsApi.update(editingId, apiPayload);
+          if (refreshCoupons) refreshCoupons();
+        } catch (e) {
+          console.warn('Coupon update API warning:', e.message);
+        }
+      }
+
+      triggerToast(`Coupon ${editingCode} updated successfully! 🎉`);
     } else {
-      // Add mode
-      if (coupons.some(c => c.code === nextCoupon.code)) {
-        alert("A coupon with this code already exists. Please choose a unique name.");
-        return;
+      // Create new coupon
+      const newCoupon = {
+        id: Date.now(),
+        ...apiPayload,
+        discount: formattedDiscount,
+        discountValue: formData.discountValue,
+        usageCount: 0,
+        usage_count: 0,
+        startDate: formData.startDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        expiryDate: formData.expiryDate || '2026-12-31',
+        status: formData.status
+      };
+
+      setCoupons(prev => [newCoupon, ...prev]);
+
+      try {
+        await couponsApi.create(apiPayload);
+        if (refreshCoupons) refreshCoupons();
+      } catch (e) {
+        console.warn('Coupon create API warning:', e.message);
       }
-      setCoupons([{ ...nextCoupon, usageCount: 0 }, ...coupons]);
-      triggerToast(`Coupon ${nextCoupon.code} created successfully.`);
+
+      triggerToast(`New Coupon ${newCoupon.code} created successfully! 🏷️`);
     }
 
-    handleCancelForm();
+    setIsFormOpen(false);
+    setEditingCode(null);
+    setEditingId(null);
   };
 
-  // Delete coupon
-  const handleDeleteCoupon = (code) => {
+  // Delete Coupon
+  const handleDeleteCoupon = async (coupon) => {
+    const code = coupon.code || coupon;
     if (window.confirm(`Are you sure you want to delete coupon ${code}?`)) {
-      setCoupons(prev => prev.filter(c => c.code !== code));
-      triggerToast(`Coupon ${code} deleted.`);
-      if (editingCode === code) {
-        handleCancelForm();
+      setCoupons(prev => prev.filter(c => c.code !== code && c.id !== coupon.id));
+
+      if (coupon.id) {
+        try {
+          await couponsApi.delete(coupon.id);
+          if (refreshCoupons) refreshCoupons();
+        } catch (e) {
+          console.warn('Coupon delete API warning:', e.message);
+        }
       }
+
+      triggerToast(`Coupon ${code} deleted.`);
     }
   };
 
-  // Notification center triggers
-  const handleMarkAsRead = (id) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
-  };
+  // 4 Business Summary Counters
+  const totalCouponsCount = coupons.length;
+  const activeCouponsCount = coupons.filter(c => getCouponStatus(c) === 'Active').length;
+  const expiredCouponsCount = coupons.filter(c => getCouponStatus(c) === 'Expired').length;
+  const totalRedemptionsCount = coupons.reduce((sum, c) => sum + Number(c.usageCount || c.usage_count || 0), 0);
 
-  const handleDeleteNotif = (id, e) => {
-    e.stopPropagation(); // prevent mark as read
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    triggerToast("Notification deleted.");
-  };
-
-  const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    triggerToast("All notifications marked as read.");
-  };
-
-  // Filtered notifications list
-  const getFilteredNotifs = () => {
-    if (notifFilter === 'unread') {
-      return notifications.filter(n => !n.read);
-    } else if (notifFilter === 'read') {
-      return notifications.filter(n => n.read);
-    }
-    return notifications;
-  };
-
-  const filteredNotifs = getFilteredNotifs();
-
-  // Helper to map type icons
-  const getNotifIcon = (type) => {
-    switch (type) {
-      case 'order': return <FiShoppingBag className={styles.iconOrder} />;
-      case 'stock': return <FiAlertTriangle className={styles.iconStock} />;
-      case 'coupon': return <FiPercent className={styles.iconCoupon} />;
-      case 'customer': return <FiUserPlus className={styles.iconCustomer} />;
-      case 'payment': return <FiXCircle className={styles.iconPayment} />;
-      case 'cancel': return <FiXCircle className={styles.iconCancel} />;
-      default: return <FiBell className={styles.iconDefault} />;
-    }
-  };
+  // Filtered Coupons for Table
+  const filteredCoupons = coupons.filter(c => {
+    const matchesSearch = c.code.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (c.type || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const computedStatus = getCouponStatus(c);
+    const matchesStatus = statusFilter === 'All' || computedStatus.toLowerCase() === statusFilter.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className={styles.wrapper}>
       {toastMsg && (
         <div className={styles.toast}>
-          <FiCheck style={{ marginRight: '8px' }} />
+          <FiCheck style={{ marginRight: '8px', color: '#4caf50' }} />
           {toastMsg}
         </div>
       )}
 
-      {/* Main split grid row */}
-      <div className={styles.threeColumnGrid}>
-        
-        {/* Column 1: Coupon list card */}
-        <div className={styles.cardCol}>
-          <div className={styles.cardHeader}>
-            <h3>Coupon Curation</h3>
-            <button className={styles.createBtn} onClick={handleCancelForm}>+ Create Coupon</button>
+      {!isFormOpen ? (
+        /* ── VIEW 1: Full-Width Coupon Curation Table ──────────────── */
+        <div className={styles.mainContainer}>
+          {/* Header Bar */}
+          <div className={styles.pageHeader}>
+            <div>
+              <h1 className={styles.pageTitle}>Coupon Curation</h1>
+              <p className={styles.pageSubtitle}>Manage promotional codes, discounts, and customer redemptions</p>
+            </div>
+            <button className={styles.primaryCreateBtn} onClick={handleOpenCreate}>
+              <FiPlus style={{ fontSize: '18px' }} />
+              Create Coupon
+            </button>
           </div>
-          
-          <div className={styles.tableResponsive}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Type</th>
-                  <th>Discount</th>
-                  <th>Min Order</th>
-                  <th>Usage</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coupons.map((coupon, i) => (
-                  <tr key={i} className={editingCode === coupon.code ? styles.rowEditing : ''}>
-                    <td><strong style={{ color: '#d11b69' }}>{coupon.code}</strong></td>
-                    <td><span className={styles.typeText}>{coupon.type}</span></td>
-                    <td><strong>{coupon.discount}</strong></td>
-                    <td>₹{coupon.minOrder}</td>
-                    <td>{coupon.usageCount}/{coupon.usageLimit}</td>
-                    <td>
-                      <span className={`${styles.statusPill} ${coupon.status === 'Active' ? styles.statusActive : styles.statusInactive}`}>
-                        {coupon.status}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button className={styles.rowBtn} onClick={() => handleEditClick(coupon)} title="Edit Coupon"><FiEdit2 /></button>
-                      <button className={styles.rowBtn} onClick={() => handleDeleteCoupon(coupon.code)} title="Delete Coupon" style={{ color: '#d32f2f' }}><FiTrash2 /></button>
-                    </td>
+
+          {/* 4 Summary Dashboard Cards */}
+          <div className={styles.statsRow}>
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ backgroundColor: '#fce4ec', color: '#d11b69' }}>
+                <FiTag />
+              </div>
+              <div>
+                <span className={styles.statVal}>{totalCouponsCount}</span>
+                <span className={styles.statLbl}>Total Coupons</span>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                <FiCheck />
+              </div>
+              <div>
+                <span className={styles.statVal}>{activeCouponsCount}</span>
+                <span className={styles.statLbl}>Active Coupons</span>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ backgroundColor: '#fff3e0', color: '#e65100' }}>
+                <FiClock />
+              </div>
+              <div>
+                <span className={styles.statVal}>{expiredCouponsCount}</span>
+                <span className={styles.statLbl}>Expired Coupons</span>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
+                <FiRepeat />
+              </div>
+              <div>
+                <span className={styles.statVal}>{totalRedemptionsCount}</span>
+                <span className={styles.statLbl}>Total Redemptions</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls Bar: Search & Status Filters */}
+          <div className={styles.controlsRow}>
+            <div className={styles.searchBox}>
+              <FiSearch className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search coupon code or type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+
+            {/* 4 Filter Pills: All, Active, Inactive, Expired */}
+            <div className={styles.filterPills}>
+              {['All', 'Active', 'Inactive', 'Expired'].map((status) => (
+                <button
+                  key={status}
+                  className={`${styles.pillBtn} ${statusFilter === status ? styles.pillActive : ''}`}
+                  onClick={() => setStatusFilter(status)}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Full-Width Table Card */}
+          <div className={styles.tableCard}>
+            <div className={styles.tableResponsive}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Discount</th>
+                    <th>Min Order</th>
+                    <th>Usage</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredCoupons.length > 0 ? (
+                    filteredCoupons.map((coupon, i) => {
+                      const currentStatus = getCouponStatus(coupon);
+                      const usedCount = coupon.usageCount ?? coupon.usage_count ?? 0;
+                      const usageLimitVal = coupon.usageLimit ?? coupon.usage_limit ?? coupon.limit;
+                      const limitDisplay = (usageLimitVal && Number(usageLimitVal) > 0) ? usageLimitVal : '∞';
+
+                      let statusClass = styles.statusActive;
+                      if (currentStatus === 'Inactive') statusClass = styles.statusInactive;
+                      if (currentStatus === 'Expired') statusClass = styles.statusExpired;
+
+                      return (
+                        <tr key={i} className={editingCode === coupon.code ? styles.rowEditing : ''}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <strong className={styles.codeBadge}>{coupon.code}</strong>
+                              <button
+                                className={styles.iconActionBtn}
+                                onClick={() => handleCopyCode(coupon.code)}
+                                title="Copy Code"
+                              >
+                                <FiCopy />
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={styles.typeTag}>{coupon.type || 'Percentage'}</span>
+                          </td>
+                          <td>
+                            <strong className={styles.discountText}>
+                              {coupon.discount || (coupon.value ? `${coupon.value}% OFF` : 'Discount')}
+                            </strong>
+                          </td>
+                          <td>₹{Number(coupon.minOrder || coupon.min_order_amount || coupon.min || 0).toLocaleString()}</td>
+                          <td>
+                            <span className={styles.usageTag}>
+                              {usedCount} / {limitDisplay}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`${styles.statusPill} ${statusClass}`}>
+                              {currentStatus}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
+                              {/* 1-Click Status Toggle Button (Disabled if Expired) */}
+                              <button
+                                className={`${styles.statusToggleBtn} ${
+                                  currentStatus === 'Active' ? styles.statusBtnActive : 
+                                  currentStatus === 'Expired' ? styles.statusBtnExpired : styles.statusBtnInactive
+                                }`}
+                                onClick={() => handleToggleStatus(coupon)}
+                                disabled={currentStatus === 'Expired'}
+                                title={currentStatus === 'Expired' ? 'Expired' : `Click to toggle status`}
+                              >
+                                <FiPower style={{ fontSize: '12px' }} />
+                                {currentStatus}
+                              </button>
+
+                              {/* Edit Button */}
+                              <button
+                                className={styles.actionBtnEdit}
+                                onClick={() => handleEditClick(coupon)}
+                                title="Edit Coupon Details"
+                              >
+                                <FiEdit2 /> Edit
+                              </button>
+
+                              {/* Delete Button */}
+                              <button
+                                className={styles.actionBtnDelete}
+                                onClick={() => handleDeleteCoupon(coupon)}
+                                title="Delete Coupon"
+                              >
+                                <FiTrash2 />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className={styles.emptyTd}>
+                        No coupons found matching your search or status filter.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-
-        {/* Column 2: Create / Edit Form card */}
-        <div className={styles.cardCol}>
-          <div className={styles.cardHeader}>
-            <h3>{editingCode ? `Edit Coupon: ${editingCode}` : 'Create Coupon'}</h3>
+      ) : (
+        /* ── VIEW 2: Clean Full-Width Create / Edit Coupon Form ───────── */
+        <div className={styles.formContainer}>
+          {/* Form Header with Back Arrow */}
+          <div className={styles.formHeaderRow}>
+            <button className={styles.backBtn} onClick={handleCancelForm}>
+              <FiArrowLeft style={{ fontSize: '18px' }} />
+              Back to Coupons
+            </button>
+            <h2 className={styles.formCardTitle}>
+              {editingCode ? `Edit Coupon: ${editingCode}` : 'Create New Coupon'}
+            </h2>
           </div>
-          
-          <form onSubmit={handleFormSubmit} className={styles.form}>
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label>Coupon Code</label>
-                <input 
-                  type="text" 
-                  value={formData.code} 
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="e.g. HAPPY10"
-                  disabled={!!editingCode} // code is key identifier
-                />
-              </div>
 
-              <div className={styles.formGroup}>
-                <label>Coupon Type</label>
-                <select 
-                  value={formData.type} 
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                >
-                  <option value="Percentage">Percentage Discount</option>
-                  <option value="Flat">Flat Cash Discount</option>
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Discount Value ({formData.type === 'Percentage' ? '%' : '₹'})</label>
-                <input 
-                  type="number" 
-                  value={formData.discountValue} 
-                  onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
-                  placeholder={formData.type === 'Percentage' ? 'e.g. 10' : 'e.g. 500'}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Minimum Order Amount</label>
-                <input 
-                  type="number" 
-                  value={formData.minOrder} 
-                  onChange={(e) => setFormData({ ...formData, minOrder: e.target.value })}
-                  placeholder="e.g. 1500"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Maximum Discount (₹ cap)</label>
-                <input 
-                  type="number" 
-                  value={formData.maxDiscount} 
-                  onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
-                  placeholder="e.g. 1000"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Usage Limit (Max claims)</label>
-                <input 
-                  type="number" 
-                  value={formData.usageLimit} 
-                  onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
-                  placeholder="e.g. 100"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Per User Claim Limit</label>
-                <input 
-                  type="number" 
-                  value={formData.perUserLimit} 
-                  onChange={(e) => setFormData({ ...formData, perUserLimit: e.target.value })}
-                  placeholder="e.g. 1"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Start Date</label>
-                <input 
-                  type="text" 
-                  value={formData.startDate} 
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  placeholder="e.g. 15 Jun 2026"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Expiry Date</label>
-                <input 
-                  type="text" 
-                  value={formData.expiryDate} 
-                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                  placeholder="e.g. 30 Dec 2026"
-                />
-              </div>
-
-              <div className={styles.toggleRow}>
-                <span>Active Status</span>
-                <label className={styles.switchLabel}>
+          <div className={styles.formCard}>
+            <form onSubmit={handleFormSubmit} className={styles.form}>
+              <div className={styles.formGrid}>
+                
+                {/* Coupon Code */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Coupon Code</label>
                   <input 
-                    type="checkbox" 
-                    checked={formData.status === 'Active'}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 'Active' : 'Inactive' })} 
+                    type="text" 
+                    value={formData.code} 
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="e.g. HAPPY10"
+                    disabled={!!editingCode}
+                    className={styles.inputField}
+                    required
                   />
-                  <span className={styles.switchSlider} />
-                </label>
-              </div>
-            </div>
-
-            <div className={styles.formActions}>
-              <button type="button" className={styles.cancelBtn} onClick={handleCancelForm}>Cancel</button>
-              <button type="submit" className={styles.saveBtn}>Save Coupon</button>
-            </div>
-          </form>
-        </div>
-
-        {/* Column 3: Notification center card */}
-        <div className={styles.cardCol}>
-          <div className={styles.cardHeader}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FiBell className={styles.bellIcon} />
-              <h3>Notification Center</h3>
-            </div>
-            <button className={styles.markAllBtn} onClick={handleMarkAllRead}>Mark Read</button>
-          </div>
-
-          {/* Inner filters */}
-          <div className={styles.notifFilters}>
-            <button className={`${styles.filterBtn} ${notifFilter === 'all' ? styles.filterBtnActive : ''}`} onClick={() => setNotifFilter('all')}>All</button>
-            <button className={`${styles.filterBtn} ${notifFilter === 'unread' ? styles.filterBtnActive : ''}`} onClick={() => setNotifFilter('unread')}>Unread</button>
-            <button className={`${styles.filterBtn} ${notifFilter === 'read' ? styles.filterBtnActive : ''}`} onClick={() => setNotifFilter('read')}>Read</button>
-          </div>
-
-          {/* List items block */}
-          <div className={styles.notifList}>
-            {filteredNotifs.length > 0 ? (
-              filteredNotifs.map((notif) => (
-                <div 
-                  key={notif.id} 
-                  className={`${styles.notifCard} ${!notif.read ? styles.notifUnread : ''}`}
-                  onClick={() => handleMarkAsRead(notif.id)}
-                >
-                  <span className={styles.notifIconSlot}>
-                    {getNotifIcon(notif.type)}
-                  </span>
-                  
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong className={styles.notifTitle}>{notif.title}</strong>
-                      <span className={styles.notifTime}>{notif.time}</span>
-                    </div>
-                    <p className={styles.notifMsg}>{notif.message}</p>
-                  </div>
-
-                  <div className={styles.notifActions}>
-                    {!notif.read && <span className={styles.redDot} />}
-                    <button className={styles.trashNotifBtn} onClick={(e) => handleDeleteNotif(notif.id, e)}>✕</button>
-                  </div>
+                  <span className={styles.hintText}>Unique uppercase code customers enter at checkout</span>
                 </div>
-              ))
-            ) : (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#999999' }}>
-                <FiBell style={{ fontSize: '24px', marginBottom: '8px', color: '#999' }} />
-                <p>No notifications available.</p>
+
+                {/* Coupon Type */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Coupon Type</label>
+                  <select 
+                    value={formData.type} 
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className={styles.selectField}
+                  >
+                    <option value="Percentage">Percentage Discount</option>
+                    <option value="Flat">Flat Cash Discount</option>
+                  </select>
+                  <span className={styles.hintText}>Select whether discount is % based or flat ₹ amount</span>
+                </div>
+
+                {/* Discount Value */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    Discount Value ({formData.type === 'Percentage' ? '%' : '₹'})
+                  </label>
+                  <input 
+                    type="number" 
+                    value={formData.discountValue} 
+                    onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                    placeholder={formData.type === 'Percentage' ? 'e.g. 10' : 'e.g. 500'}
+                    className={styles.inputField}
+                    required
+                  />
+                </div>
+
+                {/* Minimum Order Amount */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Minimum Order Amount (₹)</label>
+                  <input 
+                    type="number" 
+                    value={formData.minOrder} 
+                    onChange={(e) => setFormData({ ...formData, minOrder: e.target.value })}
+                    placeholder="e.g. 1500"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Maximum Discount */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Maximum Discount (₹ cap)</label>
+                  <input 
+                    type="number" 
+                    value={formData.maxDiscount} 
+                    onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
+                    placeholder="e.g. 1000"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Usage Limit */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Usage Limit (Max claims)</label>
+                  <input 
+                    type="number" 
+                    value={formData.usageLimit} 
+                    onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
+                    placeholder="e.g. 100"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Per User Claim Limit */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Per User Claim Limit</label>
+                  <input 
+                    type="number" 
+                    value={formData.perUserLimit} 
+                    onChange={(e) => setFormData({ ...formData, perUserLimit: e.target.value })}
+                    placeholder="1"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Start Date */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Start Date</label>
+                  <input 
+                    type="text" 
+                    value={formData.startDate} 
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    placeholder="e.g. 15 Jun 2026"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Expiry Date */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Expiry Date</label>
+                  <input 
+                    type="text" 
+                    value={formData.expiryDate} 
+                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                    placeholder="e.g. 2026-12-31"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                {/* Active Status Row */}
+                <div className={styles.toggleRow}>
+                  <div className={styles.toggleTextGroup}>
+                    <label className={styles.formLabel} style={{ margin: 0 }}>Active Status</label>
+                    <span className={styles.hintText}>Enable or disable this coupon code instantly (Expired status is computed automatically)</span>
+                  </div>
+                  <label className={styles.switchLabel}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.status === 'Active'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 'Active' : 'Inactive' })} 
+                    />
+                    <span className={styles.switchSlider} />
+                  </label>
+                </div>
               </div>
-            )}
+
+              {/* Form Buttons */}
+              <div className={styles.formActions}>
+                <button type="button" className={styles.cancelBtn} onClick={handleCancelForm}>
+                  Cancel
+                </button>
+                <button type="submit" className={styles.saveBtn}>
+                  Save Coupon
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }

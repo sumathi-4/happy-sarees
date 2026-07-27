@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
-import {
-  MOCK_CART_ITEMS,
-  AVAILABLE_OFFERS,
-  RECOMMENDED_PRODUCTS,
-  SAMPLE_PRODUCT_DETAIL
-} from '../data/mockData';
+import { useCart } from '../context/CartContext';
 import api from '../services/api';
 import CartItem from '../cart/CartItem/CartItem';
 import OrderSummary from '../cart/OrderSummary/OrderSummary';
@@ -19,65 +14,59 @@ import styles from './Cart.module.css';
 
 function Cart() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS);
-  const [appliedCoupon, setAppliedCoupon] = useState(AVAILABLE_OFFERS.find(o => o.code === 'FREESHIP') || null);
+  const { cart, removeFromCart, updateQuantity } = useCart();
+  const [availableOffers, setAvailableOffers] = useState([]);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+  const cartItems = cart || [];
+  const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   useEffect(() => {
     let isMounted = true;
-    api.getCart()
+    api.getAvailableCoupons()
       .then((data) => {
-        if (isMounted && data.success && data.cart.length > 0) {
-          const formatted = data.cart.map(c => ({
-            id: c.id,
-            productId: c.product_id || c.id,
-            name: c.name,
-            price: Number(c.price),
-            originalPrice: c.original_price ? Number(c.original_price) : null,
-            image: c.image_url || '/src/assets/hero_saree_model.png',
-            quantity: c.quantity,
-            fabric: c.fabric || 'Silk'
-          }));
-          setCartItems(formatted);
+        if (isMounted && data.success && Array.isArray(data.offers)) {
+          setAvailableOffers(data.offers);
         }
       })
       .catch((err) => {
-        console.log('[Cart] Operating with local cart items:', err.message);
+        console.warn('[Cart] Live coupons fetch warning:', err.message);
       });
-
     return () => { isMounted = false; };
   }, []);
 
   const handleUpdateQuantity = (id, newQty) => {
-    if (newQty < 1) {
-      handleRemove(id);
-      return;
-    }
-    setCartItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, quantity: newQty } : item))
-    );
+    updateQuantity(id, newQty);
   };
 
   const handleRemove = (id) => {
-    api.removeFromCart(id).catch(() => {});
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    removeFromCart(id);
   };
 
   const handleMoveToWishlist = (product) => {
     api.addToWishlist(product.productId || product.id).catch(() => {});
-    setCartItems(prev => prev.filter(item => item.id !== product.id));
+    removeFromCart(product.id);
     alert(`"${product.name}" moved to your Wishlist!`);
   };
 
   const handleApplyCoupon = (code) => {
-    const foundOffer = AVAILABLE_OFFERS.find(
-      o => o.code.toLowerCase() === code.toLowerCase()
-    );
-    if (foundOffer) {
-      setAppliedCoupon(foundOffer);
-      alert(`Coupon "${foundOffer.code}" applied successfully!`);
-    } else {
-      alert(`Invalid coupon code "${code}". Try FESTIVE10 or HSFS500.`);
-    }
+    if (!code) return;
+    api.validateCoupon(code, sellingTotal)
+      .then((data) => {
+        if (data.success && data.coupon) {
+          setAppliedCoupon({
+            code: data.code,
+            discountAmount: data.discountAmount,
+            discountPercent: data.coupon.discountType === 'Percentage' ? data.coupon.discountValue : null
+          });
+          alert(`Coupon "${data.code}" applied successfully! Saved ₹${data.discountAmount}`);
+        } else {
+          alert(data.message || `Invalid coupon code "${code}".`);
+        }
+      })
+      .catch((err) => {
+        alert(err.message || `Could not apply coupon "${code}".`);
+      });
   };
 
   return (
@@ -138,7 +127,7 @@ function Cart() {
                 onApplyCoupon={handleApplyCoupon}
               />
               <AvailableOffers
-                offers={AVAILABLE_OFFERS}
+                offers={availableOffers}
                 appliedCoupon={appliedCoupon}
                 onApplyCoupon={handleApplyCoupon}
               />
@@ -149,10 +138,10 @@ function Cart() {
         )}
 
         {/* You May Also Like Slider */}
-        <RelatedProducts products={RECOMMENDED_PRODUCTS} />
+        <RelatedProducts />
 
         {/* Recently Viewed Products Slider */}
-        <RecentlyViewed products={SAMPLE_PRODUCT_DETAIL.recentlyViewed} />
+        <RecentlyViewed />
       </div>
     </div>
   );

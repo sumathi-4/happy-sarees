@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiHeart, FiEye, FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { useToast } from '../../../context/ToastContext';
+import { useWishlist } from '../../../context/WishlistContext';
+import { useCart } from '../../../context/CartContext';
 import api from '../../../services/api';
 import styles from './ProductCard.module.css';
 
@@ -13,7 +16,9 @@ function ProductCard({
 }) {
   const navigate = useNavigate();
   const toast = useToast();
-  const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const isWishlisted = isInWishlist(product?.id);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
   if (!product) return null;
@@ -42,31 +47,16 @@ function ProductCard({
   const handleWishlistToggle = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    const nextState = !isWishlisted;
-    setIsWishlisted(nextState);
-
-    // Call PostgreSQL Wishlist API
-    if (nextState) {
-      api.addToWishlist(product.id).catch(() => {});
-      toast.success(`Saved "${product.name}" to Wishlist! ❤️`);
-    } else {
-      api.removeFromWishlist(product.id).catch(() => {});
-      toast.info(`Removed "${product.name}" from Wishlist.`);
-    }
-
+    toggleWishlist(product);
     if (onToggleWishlist) {
-      onToggleWishlist(product.id);
+      onToggleWishlist(product);
     }
   };
 
   const handleAddCartClick = (e) => {
     e.stopPropagation();
     e.preventDefault();
-
-    // Call PostgreSQL Cart API
-    api.addToCart(product.id, 1).catch(() => {});
-    toast.success(`Added "${product.name}" to Shopping Bag! 🛍️`);
-
+    addToCart(product, 1);
     if (onAddToCart) {
       onAddToCart(product);
     }
@@ -116,9 +106,13 @@ function ProductCard({
           onClick={handleWishlistToggle}
           className={`${styles.wishlistBtn} ${isWishlisted ? styles.wishlistActive : ''}`}
           aria-label="Toggle Wishlist"
-          title="Add to Wishlist"
+          title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
         >
-          <FiHeart className={styles.heartIcon} />
+          {isWishlisted ? (
+            <FaHeart className={styles.heartIcon} style={{ color: '#e91e63' }} />
+          ) : (
+            <FiHeart className={styles.heartIcon} />
+          )}
         </button>
 
         {/* Image Slider Navigation Arrows */}

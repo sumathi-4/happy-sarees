@@ -1,9 +1,9 @@
 .wrapper {
-  padding: 24px;
+  padding: 28px;
   position: relative;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 80px);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #fafafa;
+  background-color: #fcf8fa;
 }
 
 /* Toast Message */
@@ -11,11 +11,11 @@
   position: fixed;
   top: 24px;
   right: 24px;
-  background-color: #2b2b2b;
+  background-color: #1e1e1e;
   color: #ffffff;
   padding: 12px 24px;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -29,57 +29,176 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Three column layout grid */
-.threeColumnGrid {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-}
-
-.cardCol {
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.06);
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+/* Main Container */
+.mainContainer {
   display: flex;
   flex-direction: column;
+  gap: 24px;
 }
 
-.cardHeader {
+/* Page Header */
+.pageHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  padding-bottom: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
-.cardHeader h3 {
-  font-size: 15px;
+.pageTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
   font-weight: 700;
   color: #2b2b2b;
-  margin: 0;
-  font-family: 'Outfit', sans-serif;
+  margin: 0 0 4px 0;
 }
 
-.createBtn {
-  padding: 6px 12px;
-  background-color: #d11b69;
+.pageSubtitle {
+  font-size: 13.5px;
+  color: #777777;
+  margin: 0;
+}
+
+.primaryCreateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #d11b69 0%, #a00045 100%);
   color: #ffffff;
+  padding: 10px 22px;
   border: none;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(209, 27, 105, 0.25);
+  transition: all 0.2s ease;
+}
+
+.primaryCreateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(209, 27, 105, 0.35);
+}
+
+/* Stats Row */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.statIconBox {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.statVal {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2b2b2b;
+  line-height: 1.1;
+}
+
+.statLbl {
+  font-size: 12.5px;
+  color: #777777;
+  font-weight: 500;
+}
+
+/* Controls Bar */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999999;
+  font-size: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  background: #ffffff;
+  border: 1px solid #e2d6dd;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #2b2b2b;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: #d11b69;
+}
+
+.filterPills {
+  display: flex;
+  gap: 8px;
+}
+
+.pillBtn {
+  background: #ffffff;
+  border: 1px solid #e2d6dd;
+  color: #666666;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.createBtn:hover {
-  background-color: #b51257;
+.pillBtn:hover {
+  border-color: #d11b69;
+  color: #d11b69;
 }
 
-/* Coupon table directory */
+.pillActive {
+  background: #d11b69;
+  border-color: #d11b69;
+  color: #ffffff;
+}
+
+/* Table Card */
+.tableCard {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
 .tableResponsive {
   width: 100%;
   overflow-x: auto;
@@ -88,126 +207,302 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
 }
 
 .table th {
-  padding: 10px;
-  font-size: 10px;
+  background: #faf4f7;
+  padding: 14px 20px;
+  font-size: 12px;
   font-weight: 700;
-  color: #999999;
+  color: #555555;
   text-transform: uppercase;
-  text-align: left;
-  border-bottom: 1.5px solid rgba(0,0,0,0.06);
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f0e2e8;
 }
 
 .table td {
-  padding: 12px 10px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  font-size: 12.5px;
+  padding: 16px 20px;
+  font-size: 13.5px;
+  color: #333333;
+  border-bottom: 1px solid #f7eef2;
   vertical-align: middle;
 }
 
-.rowEditing {
-  background-color: #fef8f9;
+.table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.typeText {
-  font-size: 11px;
-  color: #666666;
+.table tbody tr:hover {
+  background-color: #fff9fb;
 }
 
-/* Status pills */
-.statusPill {
-  font-size: 9px;
+.codeBadge {
+  font-family: 'Outfit', monospace;
+  font-size: 14px;
   font-weight: 700;
-  padding: 2px 6px;
+  color: #d11b69;
+  background: #fce4ec;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.typeTag {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #555555;
+  background: #f0f0f0;
+  padding: 4px 10px;
   border-radius: 4px;
+}
+
+.discountText {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.usageTag {
+  font-size: 12.5px;
+  color: #666666;
+  font-weight: 500;
+}
+
+.statusPill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .statusActive {
-  background-color: #e8f5e9;
+  background: #e8f5e9;
   color: #2e7d32;
 }
 
 .statusInactive {
-  background-color: #fafafa;
-  color: #999999;
+  background: #ffebee;
+  color: #c62828;
 }
 
-.rowBtn {
+.statusExpired {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.statusToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.statusBtnActive {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.statusBtnActive:hover {
+  background: #c8e6c9;
+  color: #1b5e20;
+}
+
+.statusBtnInactive {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+.statusBtnInactive:hover {
+  background: #ffcdd2;
+  color: #b71c1c;
+}
+
+.statusBtnExpired {
+  background: #fff3e0;
+  color: #e65100;
+  border-color: #ffe0b2;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.iconActionBtn {
   background: transparent;
   border: none;
-  font-size: 13px;
-  color: #666666;
+  color: #888888;
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s ease;
 }
 
-.rowBtn:hover {
-  background-color: rgba(0,0,0,0.05);
+.iconActionBtn:hover {
   color: #d11b69;
 }
 
-/* Create coupon form card layout */
-.form {
+.actionBtnEdit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fce4ec;
+  color: #d11b69;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.actionBtnEdit:hover {
+  background: #f8bbd0;
+}
+
+.actionBtnDelete {
+  background: #ffebee;
+  color: #d32f2f;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.actionBtnDelete:hover {
+  background: #ffcdd2;
+}
+
+.emptyTd {
+  text-align: center;
+  padding: 40px !important;
+  color: #888888;
+  font-size: 14px;
+}
+
+/* ── VIEW 2: FORM STYLING ────────────────────────────────── */
+.formContainer {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.formHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e2d6dd;
+  color: #2b2b2b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  background: #fce4ec;
+  border-color: #d11b69;
+  color: #d11b69;
+}
+
+.formCardTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2b2b2b;
+  margin: 0;
+}
+
+.formCard {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(209, 27, 105, 0.08);
+  padding: 32px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.03);
 }
 
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.formGroup label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #2b2b2b;
+.formLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333333;
 }
 
-.formGroup input, .formGroup select {
-  padding: 8px 10px;
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 6px;
-  font-size: 12.5px;
+.inputField, .selectField {
   width: 100%;
+  padding: 12px 14px;
+  background: #fafafa;
+  border: 1.5px solid #e2d6dd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2b2b2b;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
 }
 
-.formGroup input:focus, .formGroup select:focus {
-  outline: none;
+.inputField:focus, .selectField:focus {
+  background: #ffffff;
   border-color: #d11b69;
+  box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.1);
+}
+
+.hintText {
+  font-size: 11.5px;
+  color: #888888;
 }
 
 .toggleRow {
-  grid-column: span 2;
+  grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fafafa;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #2b2b2b;
-  margin-top: 6px;
+  background: #fff8fa;
+  padding: 16px 20px;
+  border-radius: 10px;
+  border: 1px solid #fce4ec;
 }
 
-/* IOS Style Toggle Switch Slider */
 .switchLabel {
   position: relative;
   display: inline-block;
   width: 44px;
-  height: 22px;
+  height: 24px;
 }
 
 .switchLabel input {
@@ -219,20 +514,17 @@
 .switchSlider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #ccc;
   transition: .3s;
-  border-radius: 34px;
+  border-radius: 24px;
 }
 
 .switchSlider:before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
+  height: 18px;
+  width: 18px;
   left: 3px;
   bottom: 3px;
   background-color: white;
@@ -241,180 +533,61 @@
 }
 
 .switchLabel input:checked + .switchSlider {
-  background-color: #2e7d32;
+  background-color: #d11b69;
 }
 
 .switchLabel input:checked + .switchSlider:before {
-  transform: translateX(22px);
+  transform: translateX(20px);
 }
 
 .formActions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  border-top: 1px solid rgba(0,0,0,0.06);
-  padding-top: 14px;
+  gap: 14px;
+  border-top: 1px solid #f0e2e8;
+  padding-top: 24px;
 }
 
 .cancelBtn {
-  padding: 8px 14px;
-  background-color: transparent;
-  border: 1px solid rgba(0,0,0,0.15);
-  color: #666666;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.saveBtn {
-  padding: 8px 14px;
-  background-color: #d11b69;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.saveBtn:hover {
-  background-color: #b51257;
-}
-
-/* Notification center list */
-.bellIcon {
-  color: #d11b69;
-  font-size: 16px;
-}
-
-.markAllBtn {
-  background: transparent;
-  border: none;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #d11b69;
-  cursor: pointer;
-}
-
-.notifFilters {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.filterBtn {
-  padding: 4px 10px;
-  border-radius: 20px;
-  background-color: #fafafa;
-  border: 1px solid rgba(0,0,0,0.08);
-  font-size: 11px;
-  color: #666666;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.filterBtnActive {
-  background-color: rgba(209,27,105,0.08);
-  border-color: #d11b69;
-  color: #d11b69;
-}
-
-.notifList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 520px;
-  overflow-y: auto;
-}
-
-.notifCard {
-  background-color: #fafafa;
-  border: 1px solid rgba(0,0,0,0.04);
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  color: #555555;
+  padding: 11px 24px;
   border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  position: relative;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.notifCard:hover {
-  background-color: #ffffff;
-  border-color: rgba(209,27,105,0.2);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+.cancelBtn:hover {
+  background: #f5f5f5;
+  border-color: #aaaaaa;
 }
 
-.notifUnread {
-  background-color: #fff9fb;
-  border-color: rgba(209,27,105,0.1);
-}
-
-.notifIconSlot {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-}
-
-.iconOrder { color: #d11b69; }
-.iconStock { color: #ff8f00; }
-.iconCoupon { color: #673ab7; }
-.iconCustomer { color: #1565c0; }
-.iconPayment, .iconCancel { color: #c62828; }
-.iconDefault { color: #757575; }
-
-.notifTitle {
-  font-size: 12px;
-  font-weight: 700;
-  color: #2b2b2b;
-}
-
-.notifTime {
-  font-size: 9.5px;
-  color: #999999;
-}
-
-.notifMsg {
-  font-size: 11.5px;
-  color: #666666;
-  margin: 4px 0 0 0;
-  line-height: 1.35;
-}
-
-.notifActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  align-self: center;
-}
-
-.redDot {
-  width: 6px;
-  height: 6px;
-  background-color: #d11b69;
-  border-radius: 50%;
-}
-
-.trashNotifBtn {
-  background: transparent;
+.saveBtn {
+  background: linear-gradient(135deg, #d11b69 0%, #a00045 100%);
+  color: #ffffff;
   border: none;
-  font-size: 10px;
-  color: #999999;
+  padding: 11px 32px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(209, 27, 105, 0.25);
+  transition: all 0.2s ease;
 }
 
-.trashNotifBtn:hover {
-  background-color: #ffebee;
-  color: #c62828;
+.saveBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(209, 27, 105, 0.35);
+}
+
+@media (max-width: 900px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
 }

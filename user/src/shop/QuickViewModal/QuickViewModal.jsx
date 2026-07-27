@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiX, FiStar, FiHeart, FiShoppingCart, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { useToast } from '../../context/ToastContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import styles from './QuickViewModal.module.css';
 
 function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
   const navigate = useNavigate();
   const toast = useToast();
-  const [isWishlisted, setIsWishlisted] = useState(product?.isWishlisted || false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const isWishlisted = isInWishlist(product?.id);
 
   if (!product) return null;
 
@@ -16,23 +21,16 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
     : null;
 
   const handleAddToCartClick = () => {
+    addToCart(product, 1);
     if (onAddToCart) {
       onAddToCart(product);
-    } else {
-      toast.success(`Added "${product.name}" to Shopping Bag! 🛍️`);
     }
   };
 
   const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+    toggleWishlist(product);
     if (onAddToWishlist) {
       onAddToWishlist(product);
-    } else {
-      if (!isWishlisted) {
-        toast.success(`Saved "${product.name}" to Wishlist! ❤️`);
-      } else {
-        toast.info(`Removed "${product.name}" from Wishlist.`);
-      }
     }
   };
 
@@ -142,9 +140,13 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
               <button
                 onClick={handleToggleWishlist}
                 className={`${styles.wishlistBtn} ${isWishlisted ? styles.wishlistActive : ''}`}
-                title="Add to Wishlist"
+                title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
               >
-                <FiHeart className={styles.btnIcon} />
+                {isWishlisted ? (
+                  <FaHeart className={styles.btnIcon} style={{ color: '#e91e63' }} />
+                ) : (
+                  <FiHeart className={styles.btnIcon} />
+                )}
                 {isWishlisted ? 'Saved' : 'Wishlist'}
               </button>
             </div>

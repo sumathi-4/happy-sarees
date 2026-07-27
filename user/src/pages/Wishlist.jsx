@@ -1,58 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHeart } from 'react-icons/fa';
 import { FiGrid, FiList, FiCheckCircle, FiRefreshCw, FiShield, FiTruck } from 'react-icons/fi';
-import { MOCK_WISHLIST_ITEMS, SAMPLE_PRODUCT_DETAIL } from '../data/mockData';
-import api from '../services/api';
+import { useWishlist } from '../context/WishlistContext';
+import { SAMPLE_PRODUCT_DETAIL } from '../data/mockData';
 import WishlistCard from '../wishlist/WishlistCard/WishlistCard';
 import EmptyWishlist from '../wishlist/EmptyWishlist/EmptyWishlist';
 import RecentlyViewed from '../product/RecentlyViewed/RecentlyViewed';
 import styles from './Wishlist.module.css';
 
 function Wishlist() {
-  const [wishlistItems, setWishlistItems] = useState(MOCK_WISHLIST_ITEMS);
+  const { wishlist, removeFromWishlist } = useWishlist();
   const [sortBy, setSortBy] = useState('recent');
   const [viewMode, setViewMode] = useState('grid');
 
-  useEffect(() => {
-    let isMounted = true;
-    api.getWishlist()
-      .then((data) => {
-        if (isMounted && data.success && data.wishlist) {
-          const formatted = data.wishlist.map(p => ({
-            id: p.id,
-            name: p.name,
-            price: Number(p.price),
-            originalPrice: p.original_price ? Number(p.original_price) : null,
-            image: p.image_url || '/src/assets/hero_saree_model.png',
-            fabric: p.fabric || 'Silk',
-            rating: Number(p.rating || 4.8),
-            reviewCount: Number(p.review_count || 24),
-            inStock: p.in_stock
-          }));
-          setWishlistItems(formatted);
-        }
-      })
-      .catch((err) => {
-        console.log('[Wishlist] Operating with local saved wishlist:', err.message);
-      });
-
-    return () => { isMounted = false; };
-  }, []);
+  const wishlistItems = wishlist || [];
 
   const handleRemove = (id) => {
-    api.removeFromWishlist(id).catch(() => {});
-    setWishlistItems(prev => prev.filter(item => item.id !== id));
+    removeFromWishlist(id);
   };
 
   const handleAddToCart = (product) => {
-    alert(`"${product.name}" added to cart!`);
+    // Add to cart toast / action
   };
 
   // Sort logic
   const sortedItems = [...wishlistItems].sort((a, b) => {
-    if (sortBy === 'price-asc') return a.price - b.price;
-    if (sortBy === 'price-desc') return b.price - a.price;
+    if (sortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
+    if (sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
     if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
     return 0;
   });
@@ -135,7 +110,7 @@ function Wishlist() {
         )}
 
         {/* Recently Viewed Products Carousel */}
-        <RecentlyViewed products={SAMPLE_PRODUCT_DETAIL.recentlyViewed} />
+        <RecentlyViewed />
 
         {/* Trust Badges */}
         <div className={styles.trustBadgesSection}>

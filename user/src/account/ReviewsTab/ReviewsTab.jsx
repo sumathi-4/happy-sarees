@@ -14,36 +14,43 @@ function ReviewsTab({ reviews = [] }) {
       </div>
 
       <div className={styles.reviewsList}>
-        {reviews.map((rev) => (
-          <div key={rev.id} className={styles.reviewCard}>
-            <div className={styles.cardHeader}>
-              <img src={rev.image} alt={rev.productName} className={styles.thumb} />
-              <div className={styles.meta}>
-                <h4 className={styles.productName}>{rev.productName}</h4>
-                <div className={styles.ratingRow}>
-                  <div className={styles.stars}>
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={`${styles.starIcon} ${i < rev.rating ? styles.starFilled : ''}`}
-                      />
-                    ))}
+        {reviews.length > 0 ? (
+          reviews.map((rev) => (
+            <div key={rev.id} className={styles.reviewCard}>
+              <div className={styles.cardHeader}>
+                <img src={rev.image} alt={rev.productName} className={styles.thumb} />
+                <div className={styles.meta}>
+                  <h4 className={styles.productName}>{rev.productName}</h4>
+                  <div className={styles.ratingRow}>
+                    <div className={styles.stars}>
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={`${styles.starIcon} ${i < rev.rating ? styles.starFilled : ''}`}
+                        />
+                      ))}
+                    </div>
+                    <span className={styles.dateText}>Reviewed on {rev.date}</span>
                   </div>
-                  <span className={styles.dateText}>Reviewed on {rev.date}</span>
                 </div>
+
+                <span className={styles.verifiedTag}>
+                  <FiCheckCircle /> Verified Purchase
+                </span>
               </div>
 
-              <span className={styles.verifiedTag}>
-                <FiCheckCircle /> Verified Purchase
-              </span>
+              <div className={styles.cardBody}>
+                <h5 className={styles.revTitle}>"{rev.title}"</h5>
+                <p className={styles.comment}>"{rev.comment}"</p>
+              </div>
             </div>
-
-            <div className={styles.cardBody}>
-              <h5 className={styles.revTitle}>"{rev.title}"</h5>
-              <p className={styles.comment}>"{rev.comment}"</p>
-            </div>
+          ))
+        ) : (
+          <div style={{ padding: '3rem 1rem', textAlign: 'center', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #f0e6eb' }}>
+            <p style={{ margin: 0, fontSize: '1rem', color: '#666' }}>You haven't submitted any product reviews yet.</p>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#999' }}>Share your feedback on delivered orders to earn reward points!</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

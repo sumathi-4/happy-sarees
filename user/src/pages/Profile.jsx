@@ -1,13 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  MOCK_USER_PROFILE,
-  MOCK_ACCOUNT_ORDERS,
-  MOCK_ADDRESSES,
-  MOCK_USER_REVIEWS,
-  MOCK_NOTIFICATIONS
-} from '../data/mockData';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { PATHS } from '../routes/paths';
 import AccountSidebar from '../account/AccountSidebar/AccountSidebar';
 import DashboardTab from '../account/DashboardTab/DashboardTab';
@@ -18,16 +14,88 @@ import ProfileTab from '../account/ProfileTab/ProfileTab';
 import PasswordTab from '../account/PasswordTab/PasswordTab';
 import NotificationsTab from '../account/NotificationsTab/NotificationsTab';
 import Wishlist from './Wishlist';
+import Cart from './Cart';
 import styles from './Profile.module.css';
 
 function Profile() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout } = useAuth();
+  const { wishlistCount } = useWishlist();
+  const { cartCount } = useCart();
+  const [orders, setOrders] = useState([]);
+  const [addresses, setAddresses] = useState([]);
 
   const activeTab = searchParams.get('tab') || 'dashboard';
 
-  const userProfile = user || MOCK_USER_PROFILE;
+  useEffect(() => {
+    let isMounted = true;
+    api.getMyOrders()
+      .then((data) => {
+        if (isMounted && data.success && Array.isArray(data.orders)) {
+          const formatted = data.orders.map(o => ({
+            id: o.order_number || o.id,
+            date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+            status: o.order_status || 'Processing',
+            totalPrice: Number(o.total_amount),
+            items: (o.items || []).map(i => ({
+              id: i.id,
+              name: i.productName || 'Silk Saree',
+              fabric: 'Silk',
+              quantity: i.quantity,
+              price: Number(i.price),
+              image: i.image || '/src/assets/hero_saree_model.png'
+            }))
+          }));
+          setOrders(formatted);
+        }
+      })
+      .catch((err) => {
+        console.log('[Profile] Live orders warning:', err.message);
+      });
+
+    api.getAddresses()
+      .then((data) => {
+        if (isMounted && data.success && Array.isArray(data.addresses)) {
+          const formatted = data.addresses.map(a => ({
+            id: a.id,
+            label: a.is_default ? 'Home' : 'Work',
+            isDefault: a.is_default,
+            name: a.full_name || a.name,
+            house: a.street_address || a.house,
+            street: a.street_address || a.street,
+            city: a.city,
+            state: a.state || 'Tamil Nadu',
+            pincode: a.pincode,
+            phone: a.phone
+          }));
+          setAddresses(formatted);
+        }
+      })
+      .catch((err) => {
+        console.log('[Profile] Live addresses warning:', err.message);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const userProfile = {
+    name: user?.name || user?.email?.split('@')[0] || 'Valued Customer',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    memberTier: user?.memberTier || 'Registered Member',
+    rewardPoints: Number(user?.rewardPoints || 0),
+    totalSpent: orders.reduce((sum, o) => sum + Number(o.totalPrice || 0), 0),
+    totalSaved: 0,
+    memberSince: '2026',
+    pendingOrdersCount: orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length,
+    deliveredOrdersCount: orders.filter(o => o.status === 'Delivered').length,
+    wishlistCount: Number(wishlistCount || 0),
+    cartCount: Number(cartCount || 0),
+    addressCount: Number(addresses.length || 0),
+    totalOrders: Number(orders.length || 0),
+    avatar: user?.avatar || '/src/assets/hero_saree_model.png'
+  };
 
   const handleSelectTab = (tabId) => {
     setSearchParams({ tab: tabId });
@@ -72,27 +140,30 @@ function Profile() {
             {activeTab === 'dashboard' && (
               <DashboardTab
                 userProfile={userProfile}
-                recentOrders={MOCK_ACCOUNT_ORDERS}
-                addresses={MOCK_ADDRESSES}
+                recentOrders={orders}
+                addresses={addresses}
                 onSelectTab={handleSelectTab}
-                onAddToCart={handleAddToCart}
               />
             )}
 
             {activeTab === 'orders' && (
-              <OrdersTab orders={MOCK_ACCOUNT_ORDERS} />
+              <OrdersTab orders={orders} />
             )}
 
             {activeTab === 'wishlist' && (
               <Wishlist />
             )}
 
+            {activeTab === 'cart' && (
+              <Cart />
+            )}
+
             {activeTab === 'addresses' && (
-              <AddressesTab addresses={MOCK_ADDRESSES} />
+              <AddressesTab addresses={addresses} />
             )}
 
             {activeTab === 'reviews' && (
-              <ReviewsTab reviews={MOCK_USER_REVIEWS} />
+              <ReviewsTab />
             )}
 
             {activeTab === 'profile' && (
@@ -104,7 +175,7 @@ function Profile() {
             )}
 
             {activeTab === 'notifications' && (
-              <NotificationsTab notifications={MOCK_NOTIFICATIONS} />
+              <NotificationsTab />
             )}
           </div>
         </div>
