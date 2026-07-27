@@ -6,7 +6,7 @@ import {
   FiTrash2, FiPlus, FiEye, FiEyeOff, FiRefreshCw, FiDownload, FiUpload,
   FiShare2, FiLayers, FiFileText
 } from 'react-icons/fi';
-import { settingsApi } from '../api/adminApi';
+import { settingsApi, shippingMethodsApi } from '../api/adminApi';
 import styles from '../styles/Settings.module.css';
 
 /* ─────────────────── Shared Toast ─────────────────── */
@@ -48,6 +48,228 @@ function Field({ label, children, half, full }) {
     <div className={`${styles.field} ${half ? styles.fieldHalf : ''} ${full ? styles.fieldFull : ''}`}>
       <label className={styles.fieldLabel}>{label}</label>
       {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   DYNAMIC SHIPPING METHODS PANEL
+═══════════════════════════════════════ */
+function ShippingMethodsPanel({ settings, handleChange }) {
+  const [methods, setMethods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [toast, fire] = useToast();
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    shipping_charge: 0,
+    estimated_delivery_days: '3-5 Business Days',
+    free_shipping_eligible: true,
+    is_enabled: true,
+    display_order: 1
+  });
+
+  const fetchMethods = () => {
+    setLoading(true);
+    shippingMethodsApi.getAll()
+      .then(d => setMethods(d.shippingMethods || []))
+      .catch(() => setMethods([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchMethods(); }, []);
+
+  const resetForm = () => {
+    setForm({ name: '', description: '', shipping_charge: 0, estimated_delivery_days: '3-5 Business Days', free_shipping_eligible: true, is_enabled: true, display_order: (methods.length + 1) });
+    setEditingId(null);
+    setShowForm(false);
+  };
+
+  const handleEdit = (m) => {
+    setForm({
+      name: m.name,
+      description: m.description || '',
+      shipping_charge: Number(m.shipping_charge) || 0,
+      estimated_delivery_days: m.estimated_delivery_days || '3-5 Business Days',
+      free_shipping_eligible: m.free_shipping_eligible !== false,
+      is_enabled: m.is_enabled !== false,
+      display_order: m.display_order || 1
+    });
+    setEditingId(m.id);
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) { fire('Method name is required.'); return; }
+    try {
+      if (editingId) {
+        await shippingMethodsApi.update(editingId, form);
+        fire('Delivery method updated! Changes are now live on Checkout.');
+      } else {
+        await shippingMethodsApi.create(form);
+        fire('New delivery method created! It is now available on Checkout.');
+      }
+      fetchMethods();
+      resetForm();
+    } catch (err) {
+      fire('Error saving delivery method: ' + err.message);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Delete delivery method "${name}"?`)) return;
+    try {
+      await shippingMethodsApi.delete(id);
+      fire(`Delivery method "${name}" deleted.`);
+      fetchMethods();
+    } catch (err) {
+      fire('Error deleting: ' + err.message);
+    }
+  };
+
+  const handleToggle = async (m) => {
+    try {
+      await shippingMethodsApi.toggle(m.id);
+      fire(`"${m.name}" ${m.is_enabled ? 'disabled' : 'enabled'} on Checkout.`);
+      fetchMethods();
+    } catch (err) {
+      fire('Error toggling: ' + err.message);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#2e7d32', color: '#fff', padding: '12px 24px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '14px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          ✅ {toast}
+        </div>
+      )}
+
+      {/* Global Shipping Rules Card */}
+      <SettingsCard title="Global Shipping Rules" icon={<FiTruck />}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <Field label="Enable Free Shipping">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
+              <Toggle checked={settings.enableFreeShipping} onChange={v => handleChange('enableFreeShipping', v)} />
+              <span style={{ fontSize: '13px', fontWeight: 600 }}>{settings.enableFreeShipping ? 'Free Shipping Enabled' : 'Free Shipping Disabled'}</span>
+            </div>
+          </Field>
+          <Field label="Free Shipping Minimum Order Amount (₹)" half>
+            <input style={{ padding: '8px 12px', border: '1.5px solid #e0e0e0', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none' }} type="number" value={settings.minFreeShippingOrder} onChange={e => handleChange('minFreeShippingOrder', Number(e.target.value))} />
+          </Field>
+        </div>
+        <div style={{ marginTop: '12px', padding: '10px 14px', background: '#f8f9fa', borderRadius: '8px', fontSize: '13px', color: '#555' }}>
+          💡 When enabled, delivery methods marked as <strong>"Eligible for Free Shipping"</strong> will show <strong>FREE</strong> on checkout when cart total ≥ ₹{settings.minFreeShippingOrder || 2999}.
+        </div>
+      </SettingsCard>
+
+      {/* Delivery Methods Management Card */}
+      <SettingsCard
+        title="Delivery Methods"
+        icon={<FiTruck />}
+        action={
+          <button
+            onClick={() => { resetForm(); setShowForm(!showForm); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#d11b69', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+          >
+            <FiPlus /> {showForm && !editingId ? 'Cancel' : 'Add Delivery Method'}
+          </button>
+        }
+      >
+        {/* Create / Edit Form */}
+        {showForm && (
+          <form onSubmit={handleSubmit} style={{ background: '#fef6fb', border: '1px solid rgba(209,27,105,0.12)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 16px', color: '#d11b69', fontSize: '15px', fontWeight: 700 }}>
+              {editingId ? '✏️ Edit Delivery Method' : '➕ New Delivery Method'}
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Method Name *</label>
+                <input required placeholder="e.g. Standard Delivery" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Shipping Charge (₹)</label>
+                <input type="number" placeholder="0" value={form.shipping_charge} onChange={e => setForm(f => ({ ...f, shipping_charge: Number(e.target.value) }))} style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Description</label>
+                <input placeholder="e.g. Delivery in 4-6 business days" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Estimated Delivery Days</label>
+                <input placeholder="e.g. 4–6 Business Days" value={form.estimated_delivery_days} onChange={e => setForm(f => ({ ...f, estimated_delivery_days: e.target.value }))} style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Display Order</label>
+                <input type="number" min="1" placeholder="1" value={form.display_order} onChange={e => setForm(f => ({ ...f, display_order: Number(e.target.value) }))} style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: '8px', width: '100%', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={form.free_shipping_eligible} onChange={e => setForm(f => ({ ...f, free_shipping_eligible: e.target.checked }))} />
+                  Eligible for Free Shipping
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={form.is_enabled} onChange={e => setForm(f => ({ ...f, is_enabled: e.target.checked }))} />
+                  Enabled on Checkout
+                </label>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button type="submit" style={{ background: '#d11b69', color: '#fff', border: 'none', padding: '9px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
+                {editingId ? 'Save Changes' : 'Create Method'}
+              </button>
+              <button type="button" onClick={resetForm} style={{ background: 'transparent', border: '1px solid #ddd', padding: '9px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Methods List */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Loading delivery methods...</div>
+        ) : methods.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#999', background: '#fafafa', borderRadius: '12px', border: '1px dashed #ddd' }}>
+            <FiTruck style={{ fontSize: '2rem', marginBottom: '10px', color: '#d11b69' }} />
+            <p>No delivery methods configured yet. Add your first one above.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {methods.map(m => (
+              <div key={m.id} style={{ border: `1.5px solid ${m.is_enabled ? 'rgba(209,27,105,0.15)' : '#e0e0e0'}`, borderRadius: '12px', padding: '16px 20px', background: m.is_enabled ? '#fff' : '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', opacity: m.is_enabled ? 1 : 0.6 }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                    <FiTruck style={{ color: '#d11b69' }} />
+                    <strong style={{ fontSize: '15px', color: '#1a1a1a' }}>{m.name}</strong>
+                    {!m.is_enabled && <span style={{ background: '#f5f5f5', color: '#999', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>DISABLED</span>}
+                    {m.free_shipping_eligible && <span style={{ background: '#e8f5e9', color: '#2e7d32', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>FREE-ELIGIBLE</span>}
+                  </div>
+                  <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#666' }}>{m.description}</p>
+                  <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#888' }}>
+                    <span>⏱ {m.estimated_delivery_days}</span>
+                    <span>₹{Number(m.shipping_charge).toLocaleString()} charge</span>
+                    <span>Order #{m.display_order}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  <button onClick={() => handleToggle(m)} title={m.is_enabled ? 'Disable on Checkout' : 'Enable on Checkout'} style={{ background: m.is_enabled ? '#e8f5e9' : '#f5f5f5', color: m.is_enabled ? '#2e7d32' : '#999', border: 'none', padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>
+                    {m.is_enabled ? '✓ Enabled' : '○ Disabled'}
+                  </button>
+                  <button onClick={() => handleEdit(m)} style={{ background: '#e3f2fd', color: '#1565c0', border: 'none', padding: '7px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '13px' }}>
+                    <FiEdit2 size={13} /> Edit
+                  </button>
+                  <button onClick={() => handleDelete(m.id, m.name)} style={{ background: '#ffebee', color: '#c62828', border: 'none', padding: '7px 10px', borderRadius: '6px', cursor: 'pointer' }}>
+                    <FiTrash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SettingsCard>
     </div>
   );
 }
@@ -479,34 +701,10 @@ function Settings() {
 
       {/* ────────────────── TAB 4: SHIPPING ────────────────── */}
       {activeTab === 'shipping' && (
-        <div className={styles.sectionsStack}>
-          <SettingsCard title="Global Shipping Rules" icon={<FiTruck />}>
-            <div className={styles.formGrid}>
-              <Field label="Enable Free Shipping">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                  <Toggle checked={settings.enableFreeShipping} onChange={v => handleChange('enableFreeShipping', v)} />
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{settings.enableFreeShipping ? 'Free Shipping Enabled' : 'Free Shipping Disabled'}</span>
-                </div>
-              </Field>
-
-              <Field label="Free Shipping Minimum Order Amount (₹)" half>
-                <input className={styles.input} type="number" value={settings.minFreeShippingOrder} onChange={e => handleChange('minFreeShippingOrder', Number(e.target.value))} />
-              </Field>
-
-              <Field label="Standard Shipping Rate (₹)" half>
-                <input className={styles.input} type="number" value={settings.standardShippingRate} onChange={e => handleChange('standardShippingRate', Number(e.target.value))} />
-              </Field>
-
-              <Field label="Express Shipping Rate (₹)" half>
-                <input className={styles.input} type="number" value={settings.expressShippingRate} onChange={e => handleChange('expressShippingRate', Number(e.target.value))} />
-              </Field>
-
-              <Field label="Estimated Delivery Days" half>
-                <input className={styles.input} value={settings.deliveryDays} onChange={e => handleChange('deliveryDays', e.target.value)} />
-              </Field>
-            </div>
-          </SettingsCard>
-        </div>
+        <ShippingMethodsPanel
+          settings={settings}
+          handleChange={handleChange}
+        />
       )}
 
       {/* ────────────────── TAB 5: POLICIES ────────────────── */}

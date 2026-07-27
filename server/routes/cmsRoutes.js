@@ -276,5 +276,41 @@ router.post('/validate-coupon', async (req, res) => {
   }
 });
 
+// 8. Public Shipping Methods & Free Shipping Rules for Customer Checkout
+router.get('/shipping-methods', async (req, res) => {
+  try {
+    const [methodsRes, settingsRes] = await Promise.all([
+      db.query(`SELECT * FROM shipping_methods WHERE is_enabled = true ORDER BY display_order ASC, id ASC`),
+      db.query(`SELECT setting_key, setting_value FROM store_settings WHERE category = 'shipping' OR setting_key LIKE 'store_shipping%'`)
+    ]);
+
+    let shippingRules = {
+      enable_free_shipping: true,
+      free_shipping_min_amount: 2999
+    };
+
+    settingsRes.rows.forEach(r => {
+      let val = r.setting_value;
+      if (typeof val === 'string') {
+        try { val = JSON.parse(val); } catch(e) {}
+      }
+      if (val && typeof val === 'object') {
+        if (val.enable_free_shipping !== undefined) shippingRules.enable_free_shipping = !!val.enable_free_shipping;
+        if (val.free_shipping_min_amount !== undefined) shippingRules.free_shipping_min_amount = Number(val.free_shipping_min_amount) || 2999;
+      }
+    });
+
+    res.json({
+      success: true,
+      shippingMethods: methodsRes.rows,
+      options: methodsRes.rows,
+      shippingRules
+    });
+  } catch (error) {
+    console.error('Fetch Public Shipping Methods Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch shipping methods' });
+  }
+});
+
 module.exports = router;
 

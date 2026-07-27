@@ -70,10 +70,28 @@ exports.updateAdminUser = async (req, res, next) => {
 };
 exports.deleteAdminUser = async (req, res, next) => {
   try {
-    await settingsService.deleteAdminUser(parseInt(req.params.id), req.adminUser.adminId);
+    await settingsService.deleteAdminUser(parseInt(req.params.id));
     return success(res, {}, 'Admin user deleted.');
-  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+  } catch (e) { next(e); }
 };
+
+// Shipping Methods Controllers
+exports.getShippingMethods = async (req, res, next) => {
+  try { return success(res, { shippingMethods: await settingsService.getShippingMethods() }); } catch (e) { next(e); }
+};
+exports.createShippingMethod = async (req, res, next) => {
+  try { return success(res, { shippingMethod: await settingsService.createShippingMethod(req.body) }, 'Shipping method created.', 201); } catch (e) { next(e); }
+};
+exports.updateShippingMethod = async (req, res, next) => {
+  try { return success(res, { shippingMethod: await settingsService.updateShippingMethod(parseInt(req.params.id), req.body) }, 'Shipping method updated.'); } catch (e) { next(e); }
+};
+exports.deleteShippingMethod = async (req, res, next) => {
+  try { await settingsService.deleteShippingMethod(parseInt(req.params.id)); return success(res, {}, 'Shipping method deleted.'); } catch (e) { next(e); }
+};
+exports.toggleShippingMethod = async (req, res, next) => {
+  try { return success(res, { shippingMethod: await settingsService.toggleShippingMethod(parseInt(req.params.id)) }, 'Shipping method toggled.'); } catch (e) { next(e); }
+};
+
 exports.getRoles = async (req, res, next) => {
   try { return success(res, { roles: await settingsService.getRoles() }); } catch (e) { next(e); }
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiLock } from 'react-icons/fi';
-import { DELIVERY_METHODS, PAYMENT_METHODS } from '../data/mockData';
+import { PAYMENT_METHODS } from '../data/mockData';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
 import CheckoutStepper from '../checkout/CheckoutStepper/CheckoutStepper';
@@ -25,7 +25,16 @@ function Checkout() {
   // Address state (Live from Neon DB)
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState('');
-  const [selectedDeliveryId, setSelectedDeliveryId] = useState(DELIVERY_METHODS[0]?.id || '');
+
+  // Dynamic Delivery Methods state (Live from Neon DB via /api/cms/shipping-methods)
+  const [deliveryMethods, setDeliveryMethods] = useState([]);
+  const [deliveryMethodsLoading, setDeliveryMethodsLoading] = useState(true);
+  const [shippingRules, setShippingRules] = useState({
+    enable_free_shipping: true,
+    free_shipping_min_amount: 2999
+  });
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState('');
+
   const [selectedPaymentId, setSelectedPaymentId] = useState(PAYMENT_METHODS[0]?.id || '');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOrderNumber, setCreatedOrderNumber] = useState('HS-84920');
@@ -66,6 +75,34 @@ function Checkout() {
             setSelectedAddressId('');
           }
         }
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  // Load Dynamic Delivery Methods from Neon DB
+  useEffect(() => {
+    let isMounted = true;
+    setDeliveryMethodsLoading(true);
+    api.getShippingMethods()
+      .then((data) => {
+        if (!isMounted) return;
+        // Support both {shippingMethods:[]} and {options:[]}
+        const methods = data.shippingMethods || data.options || [];
+        const rules = data.shippingRules || {};
+        setDeliveryMethods(methods);
+        setShippingRules({
+          enable_free_shipping: rules.enable_free_shipping !== false,
+          free_shipping_min_amount: Number(rules.free_shipping_min_amount) || 2999
+        });
+        if (methods.length > 0) {
+          setSelectedDeliveryId(methods[0].id);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setDeliveryMethods([]);
+      })
+      .finally(() => {
+        if (isMounted) setDeliveryMethodsLoading(false);
       });
     return () => { isMounted = false; };
   }, []);
@@ -120,15 +157,25 @@ function Checkout() {
 
   // Derived selections
   const selectedAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0];
-  const selectedDelivery = DELIVERY_METHODS.find(d => d.id === selectedDeliveryId) || DELIVERY_METHODS[0];
+  const selectedDelivery = deliveryMethods.find(d => d.id === selectedDeliveryId) || deliveryMethods[0];
   const selectedPayment = PAYMENT_METHODS.find(p => p.id === selectedPaymentId) || PAYMENT_METHODS[0];
 
-  const deliveryPrice = selectedDelivery?.price || 0;
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
+  // Dynamic price calculation including free shipping logic
+  const cartSubtotal = cartItems.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
   const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
-  const discount = Math.max(0, (subtotal - sellingTotal) + couponDiscount);
-  const grandTotal = Math.max(0, subtotal - discount + deliveryPrice);
+  const discount = Math.max(0, (cartSubtotal - sellingTotal) + couponDiscount);
+
+  const qualifiesForFreeShipping = shippingRules.enable_free_shipping && sellingTotal >= shippingRules.free_shipping_min_amount;
+  const getRawDeliveryCharge = () => {
+    if (!selectedDelivery) return 0;
+    return Number(selectedDelivery.shipping_charge || selectedDelivery.price || 0);
+  };
+  const deliveryPrice = (qualifiesForFreeShipping && selectedDelivery?.free_shipping_eligible)
+    ? 0
+    : getRawDeliveryCharge();
+
+  const grandTotal = Math.max(0, cartSubtotal - discount + deliveryPrice);
 
   const handlePlaceOrder = () => {
     const orderPayload = {
@@ -140,7 +187,7 @@ function Checkout() {
       })),
       totalAmount: grandTotal,
       shippingAddress: selectedAddress,
-      paymentMethod: selectedPayment?.title || 'COD',
+      paymentMethod: selectedPayment?.title || selectedPayment?.name || 'COD',
       couponCode: appliedCoupon?.code || null
     };
 
@@ -203,11 +250,15 @@ function Checkout() {
 
                 {activeStep === 2 && (
                   <DeliveryStep
-                    options={DELIVERY_METHODS}
+                    options={deliveryMethods}
                     selectedOptionId={selectedDeliveryId}
                     onSelectOption={setSelectedDeliveryId}
                     onNextStep={() => setActiveStep(3)}
                     onPrevStep={() => setActiveStep(1)}
+                    cartSubtotal={sellingTotal}
+                    freeShippingEnabled={shippingRules.enable_free_shipping}
+                    freeShippingMinAmount={shippingRules.free_shipping_min_amount}
+                    loading={deliveryMethodsLoading}
                   />
                 )}
 

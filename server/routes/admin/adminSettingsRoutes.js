@@ -28,6 +28,13 @@ router.post('/admins',           ...manage, ctrl.createAdminUser);
 router.put('/admins/:id',        ...manage, ctrl.updateAdminUser);
 router.delete('/admins/:id',     ...manage, ctrl.deleteAdminUser);
 
+// Dynamic Shipping Methods Management
+router.get('/shipping-methods',            ...view,   ctrl.getShippingMethods);
+router.post('/shipping-methods',           ...manage, ctrl.createShippingMethod);
+router.put('/shipping-methods/:id',        ...manage, ctrl.updateShippingMethod);
+router.delete('/shipping-methods/:id',     ...manage, ctrl.deleteShippingMethod);
+router.put('/shipping-methods/:id/toggle',  ...manage, ctrl.toggleShippingMethod);
+
 // Roles & Permissions
 router.get('/roles',             ...view,   ctrl.getRoles);
 router.get('/roles/:roleId/permissions', ...view, ctrl.getPermissions);

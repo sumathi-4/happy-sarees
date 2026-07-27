@@ -151,6 +151,15 @@ export const settingsApi = {
   updatePerms:   (roleId, permissions) => api.put(`/settings/roles/${roleId}/permissions`, { permissions }),
 };
 
+// ── Shipping Methods ───────────────────────────────────────
+export const shippingMethodsApi = {
+  getAll:  ()         => api.get('/settings/shipping-methods'),
+  create:  (data)     => api.post('/settings/shipping-methods', data),
+  update:  (id, data) => api.put(`/settings/shipping-methods/${id}`, data),
+  delete:  (id)       => api.delete(`/settings/shipping-methods/${id}`),
+  toggle:  (id)       => api.put(`/settings/shipping-methods/${id}/toggle`, {}),
+};
+
 // ── Notifications ──────────────────────────────────────────
 export const notificationsApi = {
   getAll:     (params = {}) => api.get('/notifications?' + new URLSearchParams(params)),

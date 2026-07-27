@@ -92,7 +92,10 @@ export const api = {
 
   // Coupon & Offer APIs
   getAvailableCoupons: () => axiosInstance.get('/cms/available-coupons'),
-  validateCoupon: (code, orderAmount) => axiosInstance.post('/cms/validate-coupon', { code, orderAmount })
+  validateCoupon: (code, orderAmount) => axiosInstance.post('/cms/validate-coupon', { code, orderAmount }),
+
+  // Dynamic Shipping Methods API
+  getShippingMethods: () => axiosInstance.get('/cms/shipping-methods')
 };
 
 export default api;
