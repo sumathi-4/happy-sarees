@@ -345,3 +345,34 @@
 .nextBtn:hover {
   background-color: var(--secondary-color);
 }
+
+.disabledCard {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  background-color: #fafafa !important;
+  border-color: #e0e0e0 !important;
+}
+
+.infoNoticeBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: #fef6fb;
+  border: 1px solid rgba(209, 27, 105, 0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: -1px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.warningNoticeBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 8px;
+}

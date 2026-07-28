@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { FiLock, FiCreditCard, FiSmartphone, FiGlobe, FiDollarSign, FiCheck } from 'react-icons/fi';
+import React from 'react';
+import { FiLock, FiCreditCard, FiDollarSign, FiCheck, FiShield, FiAlertTriangle } from 'react-icons/fi';
 import styles from './PaymentStep.module.css';
 
-function PaymentStep({ methods = [], selectedPaymentId, onSelectPayment, onNextStep, onPrevStep }) {
-  const [upiVpa, setUpiVpa] = useState('');
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
-  const [selectedBank, setSelectedBank] = useState('sbi');
-
+function PaymentStep({
+  methods = [],
+  selectedPaymentId,
+  onSelectPayment,
+  onNextStep,
+  onPrevStep,
+  grandTotal = 0,
+  codMaxAmount = 5000,
+  loading = false
+}) {
   return (
     <div className={styles.stepCard}>
       <div className={styles.headerRow}>
@@ -26,168 +26,108 @@ function PaymentStep({ methods = [], selectedPaymentId, onSelectPayment, onNextS
         </div>
       </div>
 
-      <div className={styles.methodsList}>
-        {methods.map((method) => {
-          const isSelected = selectedPaymentId === method.id;
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+          <FiLock style={{ fontSize: '2rem', marginBottom: '10px', opacity: 0.4 }} />
+          <p>Loading payment methods...</p>
+        </div>
+      ) : methods.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#999', background: '#fafafa', borderRadius: '12px', border: '1px dashed #ddd' }}>
+          <FiLock style={{ fontSize: '2rem', marginBottom: '10px', opacity: 0.4 }} />
+          <p>No payment methods available. Please contact store support.</p>
+        </div>
+      ) : (
+        <div className={styles.methodsList}>
+          {methods.map((method) => {
+            const isSelected = selectedPaymentId === method.id;
+            const isCod = method.id === 'pay_cod' || method.type === 'cod';
+            const isOnline = method.id === 'pay_online' || method.type === 'online';
 
-          return (
-            <div key={method.id} className={styles.methodWrapper}>
-              <div
-                onClick={() => onSelectPayment(method.id)}
-                className={`${styles.methodCard} ${isSelected ? styles.selectedCard : ''}`}
-              >
-                <div className={styles.cardLeft}>
-                  <input
-                    type="radio"
-                    name="payment_method"
-                    checked={isSelected}
-                    onChange={() => onSelectPayment(method.id)}
-                    className={styles.radio}
-                  />
+            const maxAllowedCod = Number(method.maxAmount || method.cod_max_amount || codMaxAmount || 5000);
+            const isCodExceeded = isCod && grandTotal > maxAllowedCod;
 
-                  <div className={styles.iconBox}>
-                    {method.id === 'pay_upi' ? (
-                      <FiSmartphone className={styles.payIcon} />
-                    ) : method.id === 'pay_card' ? (
-                      <FiCreditCard className={styles.payIcon} />
-                    ) : method.id === 'pay_netbanking' ? (
-                      <FiGlobe className={styles.payIcon} />
-                    ) : (
-                      <FiDollarSign className={styles.payIcon} />
-                    )}
-                  </div>
+            return (
+              <div key={method.id} className={styles.methodWrapper}>
+                <div
+                  onClick={() => {
+                    if (isCodExceeded) return;
+                    onSelectPayment(method.id);
+                  }}
+                  className={`${styles.methodCard} ${isSelected && !isCodExceeded ? styles.selectedCard : ''} ${isCodExceeded ? styles.disabledCard : ''}`}
+                >
+                  <div className={styles.cardLeft}>
+                    <input
+                      type="radio"
+                      name="payment_method"
+                      checked={isSelected && !isCodExceeded}
+                      disabled={isCodExceeded}
+                      onChange={() => {
+                        if (!isCodExceeded) onSelectPayment(method.id);
+                      }}
+                      className={styles.radio}
+                    />
 
-                  <div className={styles.infoGroup}>
-                    <h4 className={styles.methodName}>{method.name}</h4>
-                    <p className={styles.methodDesc}>{method.desc}</p>
-                  </div>
-                </div>
-
-                <div className={styles.cardRight}>
-                  {method.charge && <span className={styles.chargeTag}>+ ₹{method.charge}</span>}
-                  <div className={styles.badgeRow}>
-                    {method.icons.map((ic, i) => (
-                      <span key={i} className={styles.iconPill}>{ic}</span>
-                    ))}
-                  </div>
-                  {isSelected && <FiCheck className={styles.checkIcon} />}
-                </div>
-              </div>
-
-              {/* Dynamic Interactive Payment Input Box */}
-              {isSelected && (
-                <div className={styles.detailsPanel}>
-                  {method.id === 'pay_upi' && (
-                    <div className={styles.upiBox}>
-                      <p className={styles.boxTitle}>Scan QR or Enter UPI ID</p>
-                      <div className={styles.qrRow}>
-                        <div className={styles.qrCodePlaceholder}>
-                          <div className={styles.qrMock}>[ QR Code ]</div>
-                        </div>
-                        <div className={styles.upiInputRow}>
-                          <label>Enter VPA / UPI ID</label>
-                          <div className={styles.upiInputWrapper}>
-                            <input
-                              type="text"
-                              placeholder="mobile-number@upi / username@okaxis"
-                              value={upiVpa}
-                              onChange={(e) => setUpiVpa(e.target.value)}
-                              className={styles.inputField}
-                            />
-                            <button type="button" className={styles.verifyBtn}>Verify</button>
-                          </div>
-                        </div>
-                      </div>
+                    <div className={styles.iconBox}>
+                      {isOnline ? (
+                        <FiCreditCard className={styles.payIcon} />
+                      ) : (
+                        <FiDollarSign className={styles.payIcon} />
+                      )}
                     </div>
-                  )}
 
-                  {method.id === 'pay_card' && (
-                    <div className={styles.cardBox}>
-                      <p className={styles.boxTitle}>Enter Credit / Debit Card Details</p>
-                      <div className={styles.cardFormGrid}>
-                        <div className={styles.fullWidth}>
-                          <label>Card Number</label>
-                          <input
-                            type="text"
-                            placeholder="4532 •••• •••• 8920"
-                            value={cardDetails.number}
-                            onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value })}
-                            className={styles.inputField}
-                          />
-                        </div>
-                        <div>
-                          <label>Expiry Date</label>
-                          <input
-                            type="text"
-                            placeholder="MM / YY"
-                            value={cardDetails.expiry}
-                            onChange={(e) => setCardDetails({ ...cardDetails, expiry: e.target.value })}
-                            className={styles.inputField}
-                          />
-                        </div>
-                        <div>
-                          <label>CVV / CVC</label>
-                          <input
-                            type="password"
-                            placeholder="•••"
-                            maxLength={4}
-                            value={cardDetails.cvv}
-                            onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
-                            className={styles.inputField}
-                          />
-                        </div>
-                        <div className={styles.fullWidth}>
-                          <label>Cardholder Name</label>
-                          <input
-                            type="text"
-                            placeholder="Ananya Sharma"
-                            value={cardDetails.name}
-                            onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
-                            className={styles.inputField}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {method.id === 'pay_netbanking' && (
-                    <div className={styles.netbankBox}>
-                      <p className={styles.boxTitle}>Select Popular Bank</p>
-                      <div className={styles.bankGrid}>
-                        {['SBI', 'HDFC', 'ICICI', 'AXIS', 'KOTAK'].map((bank) => (
-                          <button
-                            key={bank}
-                            type="button"
-                            onClick={() => setSelectedBank(bank)}
-                            className={`${styles.bankBtn} ${selectedBank === bank ? styles.selectedBank : ''}`}
-                          >
-                            {bank}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {method.id === 'pay_cod' && (
-                    <div className={styles.codBox}>
-                      <p className={styles.boxTitle}>Cash on Delivery Selected</p>
-                      <p className={styles.codDesc}>
-                        Please keep exact cash ready upon delivery. An additional convenience fee of ₹40 applies.
+                    <div className={styles.infoGroup}>
+                      <h4 className={styles.methodName}>{method.name || method.title}</h4>
+                      <p className={styles.methodDesc}>
+                        {method.description || method.desc}
                       </p>
                     </div>
-                  )}
+                  </div>
+
+                  <div className={styles.cardRight}>
+                    <div className={styles.badgeRow}>
+                      {(method.icons || []).map((ic, i) => (
+                        <span key={i} className={styles.iconPill}>{ic}</span>
+                      ))}
+                    </div>
+                    {isSelected && !isCodExceeded && <FiCheck className={styles.checkIcon} />}
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+
+                {/* Information Box when selected */}
+                {isSelected && !isCodExceeded && isOnline && (
+                  <div className={styles.detailsPanel}>
+                    <div className={styles.infoNoticeBox}>
+                      <FiShield style={{ fontSize: '1.2rem', color: '#d11b69', flexShrink: 0 }} />
+                      <div>
+                        <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>Online Payment via Razorpay</strong>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>
+                          You will complete your payment securely via UPI (Google Pay, PhonePe, Paytm), Credit/Debit Card, Net Banking, or Wallet when you click Place Order.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* COD Exceeded Warning Notice */}
+                {isCodExceeded && (
+                  <div className={styles.warningNoticeBox}>
+                    <FiAlertTriangle style={{ color: '#d32f2f', fontSize: '1.2rem', flexShrink: 0 }} />
+                    <span style={{ fontSize: '12px', color: '#c62828', fontWeight: 600 }}>
+                      Cash on Delivery is unavailable for orders above ₹{maxAllowedCod.toLocaleString()}. Please select <strong>Pay Online</strong>.
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className={styles.footerRow}>
         <button onClick={onPrevStep} className={styles.backBtn}>
           Back to Delivery
         </button>
-        <button onClick={onNextStep} className={styles.nextBtn}>
+        <button onClick={onNextStep} className={styles.nextBtn} disabled={methods.length === 0}>
           Continue to Order Review
         </button>
       </div>

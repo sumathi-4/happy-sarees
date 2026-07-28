@@ -286,7 +286,9 @@ router.get('/shipping-methods', async (req, res) => {
 
     let shippingRules = {
       enable_free_shipping: true,
-      free_shipping_min_amount: 2999
+      enableFreeShipping: true,
+      free_shipping_min_amount: 2999,
+      minFreeShippingOrder: 2999
     };
 
     settingsRes.rows.forEach(r => {
@@ -295,20 +297,129 @@ router.get('/shipping-methods', async (req, res) => {
         try { val = JSON.parse(val); } catch(e) {}
       }
       if (val && typeof val === 'object') {
-        if (val.enable_free_shipping !== undefined) shippingRules.enable_free_shipping = !!val.enable_free_shipping;
-        if (val.free_shipping_min_amount !== undefined) shippingRules.free_shipping_min_amount = Number(val.free_shipping_min_amount) || 2999;
+        const enable = val.enable_free_shipping !== undefined ? val.enable_free_shipping : val.enableFreeShipping;
+        if (enable !== undefined) {
+          shippingRules.enable_free_shipping = !!enable;
+          shippingRules.enableFreeShipping = !!enable;
+        }
+
+        const minAmt = val.free_shipping_min_amount !== undefined ? val.free_shipping_min_amount : val.minFreeShippingOrder;
+        if (minAmt !== undefined) {
+          const num = Number(minAmt) || 2999;
+          shippingRules.free_shipping_min_amount = num;
+          shippingRules.minFreeShippingOrder = num;
+        }
       }
     });
 
+    const formattedMethods = methodsRes.rows.map(row => ({
+      ...row,
+      price: Number(row.shipping_charge),
+      shipping_charge: Number(row.shipping_charge),
+      estimate: row.estimated_delivery_days,
+      estimated_delivery_days: row.estimated_delivery_days
+    }));
+
     res.json({
       success: true,
-      shippingMethods: methodsRes.rows,
-      options: methodsRes.rows,
+      shippingMethods: formattedMethods,
+      options: formattedMethods,
       shippingRules
     });
   } catch (error) {
     console.error('Fetch Public Shipping Methods Error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch shipping methods' });
+  }
+});
+
+// 9. Public Dynamic Payment Methods & Gateways for Customer Checkout
+router.get('/payment-methods', async (req, res) => {
+  try {
+    const settingsRes = await db.query(
+      `SELECT setting_key, setting_value FROM store_settings WHERE category IN ('integrations', 'payment') OR setting_key LIKE 'store_integrations%' OR setting_key LIKE 'store_payment%'`
+    );
+
+    let config = {
+      razorpayEnabled: true,
+      razorpayKey: 'rzp_live_XXXXXXXXXXXXXX',
+      codEnabled: true,
+      codMaxAmount: 5000
+    };
+
+    settingsRes.rows.forEach(r => {
+      let val = r.setting_value;
+      if (typeof val === 'string') {
+        try { val = JSON.parse(val); } catch(e) {}
+      }
+      if (val && typeof val === 'object') {
+        const rzpEnable = val.razorpayEnabled !== undefined ? val.razorpayEnabled : val.razorpay_enabled;
+        if (rzpEnable !== undefined) config.razorpayEnabled = !!rzpEnable;
+
+        const rzpKey = val.razorpayKey || val.razorpay_key;
+        if (rzpKey) config.razorpayKey = rzpKey;
+
+        const codEnable = val.codEnabled !== undefined ? val.codEnabled : val.cod_enabled;
+        if (codEnable !== undefined) config.codEnabled = !!codEnable;
+
+        const codMax = val.codMaxAmount !== undefined ? val.codMaxAmount : val.cod_max_amount;
+        if (codMax !== undefined) config.codMaxAmount = Number(codMax) || 5000;
+      }
+    });
+
+    const paymentSettings = {
+      razorpayEnabled: config.razorpayEnabled,
+      razorpay_enabled: config.razorpayEnabled,
+      razorpayKey: config.razorpayKey,
+      razorpay_key: config.razorpayKey,
+      codEnabled: config.codEnabled,
+      cod_enabled: config.codEnabled,
+      codMaxAmount: config.codMaxAmount,
+      cod_max_amount: config.codMaxAmount
+    };
+
+    const paymentMethods = [];
+
+    if (config.razorpayEnabled) {
+      paymentMethods.push({
+        id: 'pay_online',
+        key: 'pay_online',
+        name: 'Pay Online',
+        title: 'Pay Online',
+        type: 'online',
+        gateway: 'razorpay',
+        description: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.',
+        desc: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.',
+        icons: ['UPI', 'Cards', 'Net Banking', 'Wallets'],
+        is_enabled: true
+      });
+    }
+
+    if (config.codEnabled) {
+      paymentMethods.push({
+        id: 'pay_cod',
+        key: 'pay_cod',
+        name: 'Cash on Delivery (COD)',
+        title: 'Cash on Delivery (COD)',
+        type: 'cod',
+        gateway: 'cod',
+        description: 'Pay in cash or UPI when your saree arrives at your doorstep.',
+        desc: 'Pay in cash or UPI when your saree arrives at your doorstep.',
+        maxAmount: config.codMaxAmount,
+        cod_max_amount: config.codMaxAmount,
+        icons: ['COD'],
+        is_enabled: true
+      });
+    }
+
+    res.json({
+      success: true,
+      paymentSettings,
+      paymentMethods,
+      methods: paymentMethods
+    });
+  } catch (error) {
+    console.error('Fetch Public Payment Methods Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch payment methods' });
   }
 });
 

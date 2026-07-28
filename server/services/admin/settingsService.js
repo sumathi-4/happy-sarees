@@ -46,11 +46,42 @@ class SettingsService {
   }
 
   async updatePayment(data, adminUserId) {
-    return this.updateSetting('store_payment', data, adminUserId, 'payment');
+    const razorpayEnabled = data.razorpayEnabled !== undefined ? !!data.razorpayEnabled : (data.razorpay_enabled !== undefined ? !!data.razorpay_enabled : true);
+    const razorpayKey = data.razorpayKey || data.razorpay_key || '';
+    const razorpaySecret = data.razorpaySecret || data.razorpay_secret || '';
+    const codEnabled = data.codEnabled !== undefined ? !!data.codEnabled : (data.cod_enabled !== undefined ? !!data.cod_enabled : true);
+    const codMaxAmount = Number(data.codMaxAmount !== undefined ? data.codMaxAmount : (data.cod_max_amount !== undefined ? data.cod_max_amount : 5000)) || 5000;
+
+    const standardized = {
+      ...data,
+      razorpayEnabled,
+      razorpay_enabled: razorpayEnabled,
+      razorpayKey,
+      razorpay_key: razorpayKey,
+      razorpaySecret,
+      razorpay_secret: razorpaySecret,
+      codEnabled,
+      cod_enabled: codEnabled,
+      codMaxAmount,
+      cod_max_amount: codMaxAmount
+    };
+    return this.updateSetting('store_payment', standardized, adminUserId, 'payment');
   }
 
   async updateShipping(data, adminUserId) {
-    return this.updateSetting('store_shipping', data, adminUserId, 'shipping');
+    const enableFreeShipping = data.enableFreeShipping !== undefined ? !!data.enableFreeShipping : (data.enable_free_shipping !== undefined ? !!data.enable_free_shipping : true);
+    const minFreeShippingOrder = Number(data.minFreeShippingOrder !== undefined ? data.minFreeShippingOrder : (data.free_shipping_min_amount !== undefined ? data.free_shipping_min_amount : 2999)) || 2999;
+    
+    const standardized = {
+      enable_free_shipping: enableFreeShipping,
+      enableFreeShipping: enableFreeShipping,
+      free_shipping_min_amount: minFreeShippingOrder,
+      minFreeShippingOrder: minFreeShippingOrder,
+      standardShippingRate: Number(data.standardShippingRate) || 99,
+      expressShippingRate: Number(data.expressShippingRate) || 199,
+      deliveryDays: data.deliveryDays || '3-5 Business Days'
+    };
+    return this.updateSetting('store_shipping', standardized, adminUserId, 'shipping');
   }
 
   async updateTax(data, adminUserId) {
@@ -74,7 +105,26 @@ class SettingsService {
   }
 
   async updateIntegrations(data, adminUserId) {
-    return this.updateSetting('store_integrations', data, adminUserId, 'integrations');
+    const razorpayEnabled = data.razorpayEnabled !== undefined ? !!data.razorpayEnabled : (data.razorpay_enabled !== undefined ? !!data.razorpay_enabled : true);
+    const razorpayKey = data.razorpayKey || data.razorpay_key || '';
+    const razorpaySecret = data.razorpaySecret || data.razorpay_secret || '';
+    const codEnabled = data.codEnabled !== undefined ? !!data.codEnabled : (data.cod_enabled !== undefined ? !!data.cod_enabled : true);
+    const codMaxAmount = Number(data.codMaxAmount !== undefined ? data.codMaxAmount : (data.cod_max_amount !== undefined ? data.cod_max_amount : 5000)) || 5000;
+
+    const standardized = {
+      ...data,
+      razorpayEnabled,
+      razorpay_enabled: razorpayEnabled,
+      razorpayKey,
+      razorpay_key: razorpayKey,
+      razorpaySecret,
+      razorpay_secret: razorpaySecret,
+      codEnabled,
+      cod_enabled: codEnabled,
+      codMaxAmount,
+      cod_max_amount: codMaxAmount
+    };
+    return this.updateSetting('store_integrations', standardized, adminUserId, 'integrations');
   }
 
   async uploadLogo(imageData, adminUserId) {
@@ -170,6 +220,111 @@ class SettingsService {
     const { invalidateCache } = require('../../middleware/rbac');
     invalidateCache(roleId);
     return this.getPermissionsForRole(roleId);
+  }
+
+  // ── Dynamic Shipping Methods CRUD ────────────────────────────
+  async getShippingMethods() {
+    const res = await db.query(
+      `SELECT * FROM shipping_methods ORDER BY display_order ASC, id ASC`
+    );
+    return res.rows.map(row => ({
+      ...row,
+      price: Number(row.shipping_charge),
+      shipping_charge: Number(row.shipping_charge),
+      estimate: row.estimated_delivery_days,
+      estimated_delivery_days: row.estimated_delivery_days
+    }));
+  }
+
+  async createShippingMethod(data) {
+    const { name, description, shipping_charge, price, estimated_delivery_days, estimate, free_shipping_eligible, is_enabled, display_order } = data;
+    const charge = shipping_charge !== undefined ? shipping_charge : (price !== undefined ? price : 0);
+    const deliveryDays = estimated_delivery_days || estimate || '3-5 Business Days';
+    
+    const res = await db.query(
+      `INSERT INTO shipping_methods 
+        (name, description, shipping_charge, estimated_delivery_days, free_shipping_eligible, is_enabled, display_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [
+        name,
+        description || '',
+        Number(charge) || 0,
+        deliveryDays,
+        free_shipping_eligible !== false,
+        is_enabled !== false,
+        Number(display_order) || 1
+      ]
+    );
+    const row = res.rows[0];
+    return {
+      ...row,
+      price: Number(row.shipping_charge),
+      shipping_charge: Number(row.shipping_charge),
+      estimate: row.estimated_delivery_days,
+      estimated_delivery_days: row.estimated_delivery_days
+    };
+  }
+
+  async updateShippingMethod(id, data) {
+    const { name, description, shipping_charge, price, estimated_delivery_days, estimate, free_shipping_eligible, is_enabled, display_order } = data;
+    const charge = shipping_charge !== undefined ? shipping_charge : (price !== undefined ? price : 0);
+    const deliveryDays = estimated_delivery_days || estimate || '3-5 Business Days';
+
+    const res = await db.query(
+      `UPDATE shipping_methods
+       SET name = $1,
+           description = $2,
+           shipping_charge = $3,
+           estimated_delivery_days = $4,
+           free_shipping_eligible = $5,
+           is_enabled = $6,
+           display_order = $7,
+           updated_at = NOW()
+       WHERE id = $8
+       RETURNING *`,
+      [
+        name,
+        description || '',
+        Number(charge) || 0,
+        deliveryDays,
+        free_shipping_eligible !== false,
+        is_enabled !== false,
+        Number(display_order) || 1,
+        id
+      ]
+    );
+    if (res.rows.length === 0) throw { status: 404, message: 'Shipping method not found.' };
+    const row = res.rows[0];
+    return {
+      ...row,
+      price: Number(row.shipping_charge),
+      shipping_charge: Number(row.shipping_charge),
+      estimate: row.estimated_delivery_days,
+      estimated_delivery_days: row.estimated_delivery_days
+    };
+  }
+
+  async deleteShippingMethod(id) {
+    const res = await db.query(`DELETE FROM shipping_methods WHERE id = $1 RETURNING id`, [id]);
+    if (res.rows.length === 0) throw { status: 404, message: 'Shipping method not found.' };
+    return { success: true };
+  }
+
+  async toggleShippingMethod(id) {
+    const res = await db.query(
+      `UPDATE shipping_methods SET is_enabled = NOT is_enabled, updated_at = NOW() WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    if (res.rows.length === 0) throw { status: 404, message: 'Shipping method not found.' };
+    const row = res.rows[0];
+    return {
+      ...row,
+      price: Number(row.shipping_charge),
+      shipping_charge: Number(row.shipping_charge),
+      estimate: row.estimated_delivery_days,
+      estimated_delivery_days: row.estimated_delivery_days
+    };
   }
 }
 

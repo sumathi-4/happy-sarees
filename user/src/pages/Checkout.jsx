@@ -35,7 +35,16 @@ function Checkout() {
   });
   const [selectedDeliveryId, setSelectedDeliveryId] = useState('');
 
-  const [selectedPaymentId, setSelectedPaymentId] = useState(PAYMENT_METHODS[0]?.id || '');
+  const [selectedPaymentId, setSelectedPaymentId] = useState('');
+  // Dynamic Payment Methods state (Live from Neon DB via /api/cms/payment-methods)
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
+  const [paymentSettings, setPaymentSettings] = useState({
+    razorpayEnabled: true,
+    codEnabled: true,
+    codMaxAmount: 5000
+  });
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOrderNumber, setCreatedOrderNumber] = useState('HS-84920');
 
@@ -89,11 +98,18 @@ function Checkout() {
         // Support both {shippingMethods:[]} and {options:[]}
         const methods = data.shippingMethods || data.options || [];
         const rules = data.shippingRules || {};
+        
+        const enable = rules.enable_free_shipping !== undefined ? rules.enable_free_shipping : (rules.enableFreeShipping !== undefined ? rules.enableFreeShipping : true);
+        const minAmt = rules.free_shipping_min_amount !== undefined ? rules.free_shipping_min_amount : (rules.minFreeShippingOrder !== undefined ? rules.minFreeShippingOrder : 2999);
+
         setDeliveryMethods(methods);
         setShippingRules({
-          enable_free_shipping: rules.enable_free_shipping !== false,
-          free_shipping_min_amount: Number(rules.free_shipping_min_amount) || 2999
+          enable_free_shipping: !!enable,
+          enableFreeShipping: !!enable,
+          free_shipping_min_amount: Number(minAmt) || 2999,
+          minFreeShippingOrder: Number(minAmt) || 2999
         });
+
         if (methods.length > 0) {
           setSelectedDeliveryId(methods[0].id);
         }
@@ -103,6 +119,55 @@ function Checkout() {
       })
       .finally(() => {
         if (isMounted) setDeliveryMethodsLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  // Load Dynamic Payment Methods from Neon DB
+  useEffect(() => {
+    let isMounted = true;
+    setPaymentMethodsLoading(true);
+    api.getPaymentMethods()
+      .then((data) => {
+        if (!isMounted) return;
+        const methods = data.paymentMethods || data.methods || [];
+        const settings = data.paymentSettings || {};
+        setPaymentMethods(methods);
+        setPaymentSettings({
+          razorpayEnabled: settings.razorpayEnabled !== false && settings.razorpay_enabled !== false,
+          codEnabled: settings.codEnabled !== false && settings.cod_enabled !== false,
+          codMaxAmount: Number(settings.codMaxAmount || settings.cod_max_amount || 5000),
+          razorpayKey: settings.razorpayKey || settings.razorpay_key || ''
+        });
+
+        if (methods.length > 0) {
+          setSelectedPaymentId(methods[0].id);
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        const defaults = [
+          {
+            id: 'pay_online',
+            name: 'Pay Online',
+            title: 'Pay Online',
+            desc: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.',
+            icons: ['UPI', 'Cards', 'Net Banking', 'Wallets']
+          },
+          {
+            id: 'pay_cod',
+            name: 'Cash on Delivery (COD)',
+            title: 'Cash on Delivery (COD)',
+            desc: 'Pay in cash or UPI when your saree arrives at your doorstep.',
+            maxAmount: 5000,
+            icons: ['COD']
+          }
+        ];
+        setPaymentMethods(defaults);
+        setSelectedPaymentId(defaults[0].id);
+      })
+      .finally(() => {
+        if (isMounted) setPaymentMethodsLoading(false);
       });
     return () => { isMounted = false; };
   }, []);
@@ -158,7 +223,7 @@ function Checkout() {
   // Derived selections
   const selectedAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0];
   const selectedDelivery = deliveryMethods.find(d => d.id === selectedDeliveryId) || deliveryMethods[0];
-  const selectedPayment = PAYMENT_METHODS.find(p => p.id === selectedPaymentId) || PAYMENT_METHODS[0];
+  const selectedPayment = paymentMethods.find(p => p.id === selectedPaymentId) || paymentMethods[0];
 
   // Dynamic price calculation including free shipping logic
   const cartSubtotal = cartItems.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
@@ -166,10 +231,13 @@ function Checkout() {
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
   const discount = Math.max(0, (cartSubtotal - sellingTotal) + couponDiscount);
 
-  const qualifiesForFreeShipping = shippingRules.enable_free_shipping && sellingTotal >= shippingRules.free_shipping_min_amount;
+  const freeShippingActive = shippingRules.enable_free_shipping !== false && shippingRules.enableFreeShipping !== false;
+  const minOrderAmount = Number(shippingRules.free_shipping_min_amount || shippingRules.minFreeShippingOrder || 2999);
+  const qualifiesForFreeShipping = freeShippingActive && sellingTotal >= minOrderAmount;
+
   const getRawDeliveryCharge = () => {
     if (!selectedDelivery) return 0;
-    return Number(selectedDelivery.shipping_charge || selectedDelivery.price || 0);
+    return Number(selectedDelivery.shipping_charge !== undefined ? selectedDelivery.shipping_charge : (selectedDelivery.price !== undefined ? selectedDelivery.price : 0));
   };
   const deliveryPrice = (qualifiesForFreeShipping && selectedDelivery?.free_shipping_eligible)
     ? 0
@@ -264,11 +332,14 @@ function Checkout() {
 
                 {activeStep === 3 && (
                   <PaymentStep
-                    methods={PAYMENT_METHODS}
+                    methods={paymentMethods}
                     selectedPaymentId={selectedPaymentId}
                     onSelectPayment={setSelectedPaymentId}
                     onNextStep={() => setActiveStep(4)}
                     onPrevStep={() => setActiveStep(2)}
+                    grandTotal={grandTotal}
+                    codMaxAmount={paymentSettings.codMaxAmount}
+                    loading={paymentMethodsLoading}
                   />
                 )}
 

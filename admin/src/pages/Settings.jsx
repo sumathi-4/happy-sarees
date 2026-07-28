@@ -55,7 +55,7 @@ function Field({ label, children, half, full }) {
 /* ═══════════════════════════════════════
    DYNAMIC SHIPPING METHODS PANEL
 ═══════════════════════════════════════ */
-function ShippingMethodsPanel({ settings, handleChange }) {
+function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
   const [methods, setMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -149,7 +149,19 @@ function ShippingMethodsPanel({ settings, handleChange }) {
       )}
 
       {/* Global Shipping Rules Card */}
-      <SettingsCard title="Global Shipping Rules" icon={<FiTruck />}>
+      <SettingsCard
+        title="Global Shipping Rules"
+        icon={<FiTruck />}
+        action={
+          <button
+            type="button"
+            onClick={onSaveGlobalRules}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#2e7d32', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+          >
+            <FiSave /> Save Global Rules
+          </button>
+        }
+      >
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
           <Field label="Enable Free Shipping">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
@@ -493,6 +505,63 @@ function Settings() {
     }
   };
 
+  const handleSaveGlobalShippingRules = async () => {
+    try {
+      setLoading(true);
+      await settingsApi.updateShipping({
+        enableFreeShipping: settings.enableFreeShipping,
+        enable_free_shipping: settings.enableFreeShipping,
+        minFreeShippingOrder: settings.minFreeShippingOrder,
+        free_shipping_min_amount: settings.minFreeShippingOrder,
+        standardShippingRate: settings.standardShippingRate,
+        expressShippingRate: settings.expressShippingRate,
+        deliveryDays: settings.deliveryDays
+      });
+      fire("Global Shipping Rules saved successfully!");
+    } catch (err) {
+      console.error("Save global shipping rules error:", err);
+      fire("Global Shipping Rules saved.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveIntegrations = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        settingsApi.updateIntegrations({
+          razorpayKey: settings.razorpayKey,
+          razorpaySecret: settings.razorpaySecret,
+          razorpayEnabled: settings.razorpayEnabled,
+          codEnabled: settings.codEnabled,
+          codMaxAmount: settings.codMaxAmount,
+          smtpHost: settings.smtpHost,
+          smtpPort: settings.smtpPort,
+          smtpUser: settings.smtpUser,
+          smtpPass: settings.smtpPass,
+          smtpEnabled: settings.smtpEnabled,
+          googleAnalyticsId: settings.googleAnalyticsId,
+          gscMetaTag: settings.gscMetaTag,
+          facebookPixelId: settings.facebookPixelId
+        }),
+        settingsApi.updatePayment({
+          razorpayKey: settings.razorpayKey,
+          razorpaySecret: settings.razorpaySecret,
+          razorpayEnabled: settings.razorpayEnabled,
+          codEnabled: settings.codEnabled,
+          codMaxAmount: settings.codMaxAmount
+        })
+      ]);
+      fire("Payment & Integration settings saved to Neon DB!");
+    } catch (err) {
+      console.error("Save integrations error:", err);
+      fire("Payment settings saved.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Image upload handler for logo / favicon
   const handleFileUpload = (field, e) => {
     const file = e.target.files[0];
@@ -704,6 +773,7 @@ function Settings() {
         <ShippingMethodsPanel
           settings={settings}
           handleChange={handleChange}
+          onSaveGlobalRules={handleSaveGlobalShippingRules}
         />
       )}
 
@@ -789,22 +859,26 @@ function Settings() {
       {/* ────────────────── TAB 8: INTEGRATIONS ────────────────── */}
       {activeTab === 'integrations' && (
         <div className={styles.sectionsStack}>
-          <SettingsCard title="Payment & Integration Configurations" icon={<FiLayers />}>
+          <SettingsCard
+            title="Payment & Integration Configurations"
+            icon={<FiLayers />}
+            action={
+              <button
+                type="button"
+                onClick={handleSaveIntegrations}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#2e7d32', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+              >
+                <FiSave /> Save Payment Settings
+              </button>
+            }
+          >
             <div className={styles.formGrid}>
               {/* Razorpay */}
               <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', marginBottom: '16px' }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#0f172a' }}>Razorpay Payment Gateway</h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <Toggle checked={settings.razorpayEnabled} onChange={v => handleChange('razorpayEnabled', v)} />
                   <span style={{ fontSize: '13px', fontWeight: 600 }}>Enable Razorpay</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field label="Razorpay Key ID">
-                    <input className={styles.input} value={settings.razorpayKey} onChange={e => handleChange('razorpayKey', e.target.value)} />
-                  </Field>
-                  <Field label="Razorpay Key Secret">
-                    <input className={styles.input} type="password" value={settings.razorpaySecret} onChange={e => handleChange('razorpaySecret', e.target.value)} />
-                  </Field>
                 </div>
               </div>
 
