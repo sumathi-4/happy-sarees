@@ -114,6 +114,27 @@ export function CartProvider({ children }) {
     }
   }, [fetchCart]);
 
+  // Clear Entire Cart (State, Local/SessionStorage, and Neon DB API Sync)
+  const clearCart = useCallback(async () => {
+    try {
+      setCart([]);
+      try {
+        localStorage.removeItem('hs_cart_items');
+        localStorage.removeItem('cart');
+        sessionStorage.removeItem('hs_cart_items');
+        sessionStorage.removeItem('cart');
+      } catch (e) {}
+
+      if (isAuthenticated) {
+        await api.clearCart();
+      }
+    } catch (err) {
+      console.warn('[CartContext] Clear cart error:', err.message);
+    } finally {
+      fetchCart();
+    }
+  }, [isAuthenticated, fetchCart]);
+
   // Total Quantity Count
   const cartCount = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
 
@@ -129,6 +150,7 @@ export function CartProvider({ children }) {
       addToCart,
       removeFromCart,
       updateQuantity,
+      clearCart,
       refetchCart: fetchCart
     }}>
       {children}

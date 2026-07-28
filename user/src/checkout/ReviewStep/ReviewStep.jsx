@@ -9,11 +9,13 @@ function ReviewStep({
   selectedPayment,
   grandTotal,
   onPlaceOrder,
-  onPrevStep
+  onPrevStep,
+  loading = false
 }) {
   const [agreedTerms, setAgreedTerms] = useState(true);
 
   const handleOrderClick = () => {
+    if (loading) return;
     if (!agreedTerms) {
       alert('Please agree to the Terms & Conditions before placing your order.');
       return;
@@ -117,8 +119,8 @@ function ReviewStep({
         <button onClick={onPrevStep} className={styles.backBtn}>
           Back to Payment
         </button>
-        <button onClick={handleOrderClick} className={styles.placeOrderBtn}>
-          <FiLock /> Place Order (₹{grandTotal.toLocaleString()})
+        <button onClick={handleOrderClick} className={styles.placeOrderBtn} disabled={loading}>
+          <FiLock /> {loading ? 'Processing Order...' : `Place Order (₹${grandTotal.toLocaleString()})`}
         </button>
       </div>
     </div>

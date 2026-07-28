@@ -52,3 +52,18 @@ exports.getInvoice = async (req, res, next) => {
   try { return success(res, { invoice: await orderService.getInvoiceData(parseInt(req.params.id)) }); }
   catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
+
+exports.deleteOrder = async (req, res, next) => {
+  try {
+    const result = await orderService.delete(parseInt(req.params.id));
+    return success(res, result, 'Order deleted successfully.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.updateNotes = async (req, res, next) => {
+  try {
+    const { notes } = req.body;
+    const order = await orderService.updateNotes(parseInt(req.params.id), notes || '');
+    return success(res, { order }, 'Internal staff notes updated successfully.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};

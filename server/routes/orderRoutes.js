@@ -16,11 +16,23 @@ router.post('/', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
+    const isOnline = paymentMethod && (paymentMethod.includes('Online') || paymentMethod.includes('Razorpay') || paymentMethod === 'pay_online');
+    const initialPaymentStatus = isOnline ? 'Pending Payment' : 'Pending';
+    const initialOrderStatus = isOnline ? 'Pending' : 'Confirmed';
+
     const orderNumber = `HS-ORD-${Date.now()}`;
     const orderRes = await client.query(
-      `INSERT INTO orders (user_id, order_number, total_amount, payment_method, shipping_address)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [req.user.id, orderNumber, totalAmount, paymentMethod || 'COD', JSON.stringify(shippingAddress || {})]
+      `INSERT INTO orders (user_id, order_number, total_amount, payment_method, payment_status, order_status, shipping_address)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [
+        req.user?.id || null,
+        orderNumber,
+        totalAmount,
+        paymentMethod || (isOnline ? 'Pay Online' : 'COD'),
+        initialPaymentStatus,
+        initialOrderStatus,
+        JSON.stringify(shippingAddress || {})
+      ]
     );
 
     const order = orderRes.rows[0];
@@ -51,6 +63,11 @@ router.post('/', authenticateToken, async (req, res) => {
           [couponId, req.user.id, order.id]
         );
       }
+    }
+
+    // Clear purchaser's cart items from Neon PostgreSQL DB
+    if (req.user?.id) {
+      await client.query('DELETE FROM cart_items WHERE user_id = $1', [req.user.id]);
     }
 
     await client.query('COMMIT');
@@ -86,8 +103,9 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
                   'productId', oi.product_id,
                   'quantity', oi.quantity,
                   'price', oi.price_at_purchase,
-                  'productName', p.name,
-                  'image', p.image_url
+                  'productName', COALESCE(p.name, 'Silk Saree'),
+                  'fabric', COALESCE(p.fabric, 'Silk'),
+                  'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), '/src/assets/hero_saree_model.png')
                 )
               ) as items
        FROM orders o
@@ -99,10 +117,127 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    res.json({ success: true, orders: result.rows, data: result.rows });
+    const orders = result.rows.map(o => {
+      let addr = o.shipping_address;
+      if (typeof addr === 'string') {
+        try { addr = JSON.parse(addr); } catch(e) {}
+      }
+
+      const rawItems = Array.isArray(o.items) ? o.items.filter(i => i && i.id) : [];
+
+      return {
+        id: o.id,
+        orderId: o.id,
+        orderNumber: o.order_number || `HS-ORD-${o.id}`,
+        order_number: o.order_number || `HS-ORD-${o.id}`,
+        totalAmount: Number(o.total_amount || 0),
+        total_amount: Number(o.total_amount || 0),
+        paymentMethod: o.payment_method || 'Pay Online',
+        payment_method: o.payment_method || 'Pay Online',
+        paymentStatus: o.payment_status || 'Pending',
+        payment_status: o.payment_status || 'Pending',
+        orderStatus: o.order_status || 'Confirmed',
+        order_status: o.order_status || 'Confirmed',
+        deliveryStatus: o.delivery_status || o.order_status || 'Processing',
+        delivery_status: o.delivery_status || o.order_status || 'Processing',
+        shippingAddress: addr,
+        shipping_address: addr,
+        razorpayOrderId: o.razorpay_order_id,
+        razorpay_order_id: o.razorpay_order_id,
+        razorpayPaymentId: o.razorpay_payment_id,
+        razorpay_payment_id: o.razorpay_payment_id,
+        razorpaySignature: o.razorpay_signature,
+        razorpay_signature: o.razorpay_signature,
+        paidAmount: o.paid_amount ? Number(o.paid_amount) : null,
+        paid_amount: o.paid_amount ? Number(o.paid_amount) : null,
+        paidAt: o.paid_at,
+        paid_at: o.paid_at,
+        trackingNumber: o.tracking_number || '',
+        tracking_number: o.tracking_number || '',
+        courierName: o.courier_name || 'Express Delivery',
+        courier_name: o.courier_name || 'Express Delivery',
+        createdAt: o.created_at,
+        created_at: o.created_at,
+        items: rawItems
+      };
+    });
+
+    res.json({ success: true, orders, data: orders });
   } catch (error) {
     console.error('Fetch Orders Error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch orders history.' });
+  }
+});
+
+// 3. Customer Cancel Order (Only allowed when status is Pending or Confirmed)
+router.put('/:id/cancel', authenticateToken, async (req, res) => {
+  try {
+    const orderId = parseInt(req.params.id);
+    const orderRes = await db.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [orderId, req.user.id]);
+    if (orderRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    const order = orderRes.rows[0];
+    const currentStatus = order.order_status || 'Confirmed';
+    if (!['Pending', 'Confirmed'].includes(currentStatus)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Order cannot be cancelled at stage "${currentStatus}". Cancellation is only allowed when status is Pending or Confirmed.` 
+      });
+    }
+
+    await db.query(
+      `UPDATE orders SET order_status = 'Cancelled', cancelled_at = NOW(), updated_at = NOW() WHERE id = $1`,
+      [orderId]
+    );
+
+    // Auto timeline log
+    await db.query(
+      `INSERT INTO order_timeline (order_id, status, note) VALUES ($1, $2, $3)`,
+      [orderId, 'Cancelled', 'Cancelled by customer']
+    );
+
+    res.json({ success: true, message: 'Order cancelled successfully.' });
+  } catch (error) {
+    console.error('Customer Cancel Order Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel order.' });
+  }
+});
+
+// 4. Customer Request Return (Only allowed when status is Delivered)
+router.post('/:id/return', authenticateToken, async (req, res) => {
+  try {
+    const orderId = parseInt(req.params.id);
+    const { reason } = req.body;
+    const orderRes = await db.query('SELECT * FROM orders WHERE id = $1 AND user_id = $2', [orderId, req.user.id]);
+    if (orderRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    const order = orderRes.rows[0];
+    if (order.order_status !== 'Delivered') {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Return can only be requested after the order has been Delivered.` 
+      });
+    }
+
+    await db.query(
+      `UPDATE orders SET order_status = 'Return Requested', updated_at = NOW() WHERE id = $1`,
+      [orderId]
+    );
+
+    // Auto timeline log
+    await db.query(
+      `INSERT INTO order_timeline (order_id, status, note) VALUES ($1, $2, $3)`,
+      [orderId, 'Return Requested', reason ? `Return requested: ${reason}` : 'Customer requested order return']
+    );
+
+    res.json({ success: true, message: 'Return request submitted successfully.' });
+  } catch (error) {
+    console.error('Customer Return Order Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to submit return request.' });
   }
 });
 

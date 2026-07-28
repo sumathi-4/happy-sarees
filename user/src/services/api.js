@@ -78,6 +78,7 @@ export const api = {
   getCart: () => axiosInstance.get('/cart'),
   addToCart: (productId, quantity) => axiosInstance.post('/cart', { productId, quantity }),
   removeFromCart: (productId) => axiosInstance.delete(`/cart/${productId}`),
+  clearCart: () => axiosInstance.delete('/cart'),
 
   // Recently Viewed APIs (Neon DB Persistent)
   getRecentlyViewed: () => axiosInstance.get('/recently-viewed'),
@@ -98,7 +99,13 @@ export const api = {
   getShippingMethods: () => axiosInstance.get('/cms/shipping-methods'),
 
   // Dynamic Payment Methods API
-  getPaymentMethods: () => axiosInstance.get('/cms/payment-methods')
+  getPaymentMethods: () => axiosInstance.get('/cms/payment-methods'),
+
+  // Razorpay Integration APIs
+  getRazorpayKey: () => axiosInstance.get('/payment/razorpay-key'),
+  createRazorpayOrder: (payload) => axiosInstance.post('/payment/create-razorpay-order', payload),
+  verifyRazorpayPayment: (payload) => axiosInstance.post('/payment/verify-signature', payload),
+  recordFailedPayment: (payload) => axiosInstance.post('/payment/record-failed-payment', payload)
 };
 
 export default api;

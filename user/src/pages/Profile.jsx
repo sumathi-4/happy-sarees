@@ -32,23 +32,47 @@ function Profile() {
     let isMounted = true;
     api.getMyOrders()
       .then((data) => {
-        if (isMounted && data.success && Array.isArray(data.orders)) {
-          const formatted = data.orders.map(o => ({
-            id: o.order_number || o.id,
-            date: new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-            status: o.order_status || 'Processing',
-            totalPrice: Number(o.total_amount),
-            items: (o.items || []).map(i => ({
-              id: i.id,
-              name: i.productName || 'Silk Saree',
-              fabric: 'Silk',
-              quantity: i.quantity,
-              price: Number(i.price),
-              image: i.image || '/src/assets/hero_saree_model.png'
-            }))
+        if (!isMounted) return;
+        const rawList = data.success && Array.isArray(data.orders) ? data.orders : (Array.isArray(data.data) ? data.data : []);
+        const formatted = rawList.map(o => {
+          let addr = o.shipping_address || o.shippingAddress;
+          if (typeof addr === 'string') {
+            try { addr = JSON.parse(addr); } catch(e) {}
+          }
+          let addrStr = '';
+          if (addr && typeof addr === 'object') {
+            addrStr = `${addr.name || addr.fullName || ''} (${addr.label || 'Address'}), ${addr.house ? addr.house + ', ' : ''}${addr.street || addr.streetAddress || ''}, ${addr.city || ''}, ${addr.state || 'Tamil Nadu'} - ${addr.pincode || ''}, Phone: ${addr.phone || ''}`.trim();
+          } else {
+            addrStr = String(addr || 'Address registered on checkout');
+          }
+
+          const rawItems = Array.isArray(o.items) ? o.items.filter(i => i && (i.id || i.productName || i.name)) : [];
+          const formattedItems = rawItems.map(i => ({
+            id: i.id || i.productId || Math.random(),
+            name: i.productName || i.name || 'Silk Saree',
+            fabric: i.fabric || 'Silk',
+            quantity: Number(i.quantity || 1),
+            price: Number(i.price || i.price_at_purchase || 0),
+            image: i.image || i.image_url || '/src/assets/hero_saree_model.png'
           }));
-          setOrders(formatted);
-        }
+
+          return {
+            id: o.order_number || o.orderNumber || `HS-ORD-${o.id}`,
+            dbId: o.id,
+            date: o.created_at || o.createdAt ? new Date(o.created_at || o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently',
+            status: o.order_status || o.orderStatus || 'Confirmed',
+            paymentStatus: o.payment_status || o.paymentStatus || 'Pending',
+            paymentMethod: o.payment_method || o.paymentMethod || 'Pay Online',
+            totalPrice: Number(o.total_amount || o.totalAmount || 0),
+            shippingAddress: addrStr,
+            razorpayPaymentId: o.razorpay_payment_id || o.razorpayPaymentId || '',
+            razorpayOrderId: o.razorpay_order_id || o.razorpayOrderId || '',
+            trackingNumber: o.tracking_number || o.trackingNumber || '',
+            courierName: o.courier_name || o.courierName || '',
+            items: formattedItems
+          };
+        });
+        setOrders(formatted);
       })
       .catch((err) => {
         console.log('[Profile] Live orders warning:', err.message);
@@ -56,28 +80,28 @@ function Profile() {
 
     api.getAddresses()
       .then((data) => {
-        if (isMounted && data.success && Array.isArray(data.addresses)) {
-          const formatted = data.addresses.map(a => ({
-            id: a.id,
-            label: a.is_default ? 'Home' : 'Work',
-            isDefault: a.is_default,
-            name: a.full_name || a.name,
-            house: a.street_address || a.house,
-            street: a.street_address || a.street,
-            city: a.city,
-            state: a.state || 'Tamil Nadu',
-            pincode: a.pincode,
-            phone: a.phone
-          }));
-          setAddresses(formatted);
-        }
+        if (!isMounted) return;
+        const rawList = data.success && Array.isArray(data.addresses) ? data.addresses : (Array.isArray(data.data) ? data.data : []);
+        const formatted = rawList.map(a => ({
+          id: a.id,
+          label: a.is_default ? 'Home' : 'Work',
+          isDefault: a.is_default,
+          name: a.full_name || a.name,
+          house: a.street_address || a.house,
+          street: a.street_address || a.street,
+          city: a.city,
+          state: a.state || 'Tamil Nadu',
+          pincode: a.pincode,
+          phone: a.phone
+        }));
+        setAddresses(formatted);
       })
       .catch((err) => {
         console.log('[Profile] Live addresses warning:', err.message);
       });
 
     return () => { isMounted = false; };
-  }, []);
+  }, [activeTab]);
 
   const userProfile = {
     name: user?.name || user?.email?.split('@')[0] || 'Valued Customer',

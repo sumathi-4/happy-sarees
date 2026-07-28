@@ -245,33 +245,174 @@ function Checkout() {
 
   const grandTotal = Math.max(0, cartSubtotal - discount + deliveryPrice);
 
-  const handlePlaceOrder = () => {
-    const orderPayload = {
-      items: cartItems.map(item => ({
-        id: item.id,
-        productId: item.productId || item.id,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      totalAmount: grandTotal,
-      shippingAddress: selectedAddress,
-      paymentMethod: selectedPayment?.title || selectedPayment?.name || 'COD',
-      couponCode: appliedCoupon?.code || null
-    };
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-    api.createOrder(orderPayload)
-      .then((data) => {
+  // Dynamic Razorpay Script Loader
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    const isOnline = selectedPayment?.id === 'pay_online' || selectedPayment?.type === 'online' || selectedPayment?.gateway === 'razorpay';
+
+    if (!isOnline) {
+      // ── CASH ON DELIVERY (COD) FLOW ──
+      const orderPayload = {
+        items: cartItems.map(item => ({
+          id: item.id,
+          productId: item.productId || item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: grandTotal,
+        shippingAddress: selectedAddress,
+        paymentMethod: selectedPayment?.title || selectedPayment?.name || 'Cash on Delivery (COD)',
+        couponCode: appliedCoupon?.code || null
+      };
+
+      try {
+        setCheckoutLoading(true);
+        const data = await api.createOrder(orderPayload);
         if (data.success && data.order) {
           setCreatedOrderNumber(data.order.orderNumber || `HS-${Date.now()}`);
         }
-      })
-      .catch((err) => {
-        console.log('[Checkout] Operating in offline checkout mode:', err.message);
-      })
-      .finally(() => {
-        if (clearCart) clearCart();
+        if (clearCart) await clearCart();
         setShowSuccessModal(true);
+      } catch (err) {
+        console.error('[COD Checkout Error]:', err);
+        alert(err.response?.data?.message || 'Failed to place COD order. Please try again.');
+      } finally {
+        setCheckoutLoading(false);
+      }
+      return;
+    }
+
+    // ── PAY ONLINE (RAZORPAY TEST MODE) FLOW ──
+    try {
+      setCheckoutLoading(true);
+
+      // 1. Create Order in Neon DB first
+      const orderPayload = {
+        items: cartItems.map(item => ({
+          id: item.id,
+          productId: item.productId || item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: grandTotal,
+        shippingAddress: selectedAddress,
+        paymentMethod: 'Pay Online',
+        couponCode: appliedCoupon?.code || null
+      };
+
+      const dbOrderRes = await api.createOrder(orderPayload);
+      const dbOrder = dbOrderRes.data?.order || dbOrderRes.order || { id: Date.now(), orderNumber: `HS-ORD-${Date.now()}` };
+
+      // 2. Initiate Razorpay Order in Backend
+      const razorpayApiRes = await api.createRazorpayOrder({
+        amount: grandTotal,
+        orderId: dbOrder.orderNumber,
+        currency: 'INR'
       });
+
+      const razorpayData = razorpayApiRes.data || razorpayApiRes;
+      if (!razorpayData.success || !razorpayData.razorpayOrderId) {
+        alert(razorpayData.message || 'Failed to initialize Razorpay payment session.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      // 3. Load Razorpay Checkout Script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert('Razorpay SDK failed to load. Please check your network connection.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      // 4. Configure Razorpay Popup Options
+      const options = {
+        key: razorpayData.keyId || paymentSettings.razorpayKey || 'rzp_test_TIsRdBOnjlnxgt',
+        amount: razorpayData.amount,
+        currency: razorpayData.currency || 'INR',
+        name: 'Happy Sarees',
+        description: `Order ${dbOrder.orderNumber}`,
+        image: '/src/assets/logo.jpg',
+        order_id: razorpayData.razorpayOrderId,
+        handler: async function (response) {
+          try {
+            setCheckoutLoading(true);
+            const verifyRes = await api.verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              dbOrderId: dbOrder.id,
+              orderNumber: dbOrder.orderNumber,
+              amount: grandTotal
+            });
+
+            const verifyData = verifyRes.data || verifyRes;
+            if (verifyData.success) {
+              if (clearCart) await clearCart();
+              setCreatedOrderNumber(dbOrder.orderNumber);
+              setShowSuccessModal(true);
+            } else {
+              alert(verifyData.message || 'Payment signature verification failed.');
+            }
+          } catch (verifyErr) {
+            console.error('[Payment Verification Error]:', verifyErr);
+            alert('Payment verification failed. Please contact customer support.');
+          } finally {
+            setCheckoutLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: async function () {
+            console.log('[Razorpay Modal Dismissed]');
+            try {
+              await api.recordFailedPayment({ dbOrderId: dbOrder.id, orderNumber: dbOrder.orderNumber, reason: 'Modal Dismissed' });
+            } catch (e) {}
+            setCheckoutLoading(false);
+            alert('Payment cancelled. You can click Place Order again to retry payment.');
+          }
+        },
+        prefill: {
+          name: selectedAddress?.name || 'Valued Customer',
+          email: selectedAddress?.email || 'customer@happysarees.com',
+          contact: selectedAddress?.phone || '9876543210'
+        },
+        theme: {
+          color: '#d11b69'
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        console.error('[Razorpay Payment Failed]:', response.error);
+        api.recordFailedPayment({ dbOrderId: dbOrder.id, orderNumber: dbOrder.orderNumber, reason: response.error.description });
+        alert(`Payment Failed: ${response.error.description || 'Transaction declined.'}`);
+        setCheckoutLoading(false);
+      });
+
+      setCheckoutLoading(false);
+      rzp.open();
+
+    } catch (err) {
+      console.error('[Online Checkout Error]:', err);
+      alert(err.response?.data?.message || err.message || 'Razorpay checkout initialization failed.');
+      setCheckoutLoading(false);
+    }
   };
 
   return (
@@ -352,6 +493,7 @@ function Checkout() {
                     grandTotal={grandTotal}
                     onPlaceOrder={handlePlaceOrder}
                     onPrevStep={() => setActiveStep(3)}
+                    loading={checkoutLoading}
                   />
                 )}
               </div>

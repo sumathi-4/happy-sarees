@@ -46,7 +46,17 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// 3. Remove Item from Cart
+// 3. Clear Entire Cart
+router.delete('/', authenticateToken, async (req, res) => {
+  try {
+    await db.query(`DELETE FROM cart_items WHERE user_id = $1`, [req.user.id]);
+    res.json({ success: true, message: 'Cart cleared successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to clear cart.' });
+  }
+});
+
+// 4. Remove Specific Item from Cart
 router.delete('/:productId', authenticateToken, async (req, res) => {
   try {
     const { productId } = req.params;

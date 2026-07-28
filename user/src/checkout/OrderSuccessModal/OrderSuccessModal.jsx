@@ -52,9 +52,14 @@ function OrderSuccessModal({ orderId = 'HS-84920', totalAmount = 18796, address,
           )}
         </div>
 
-        <button onClick={handleContinue} className={styles.continueBtn}>
-          <FiHome /> Continue Shopping
-        </button>
+        <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+          <button onClick={() => { onClose(); navigate('/profile?tab=orders'); }} className={styles.continueBtn} style={{ background: '#333', flex: 1 }}>
+            <FiPackage /> View My Orders
+          </button>
+          <button onClick={handleContinue} className={styles.continueBtn} style={{ flex: 1 }}>
+            <FiHome /> Continue Shopping
+          </button>
+        </div>
       </div>
     </div>
   );

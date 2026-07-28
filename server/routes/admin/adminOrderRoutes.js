@@ -11,5 +11,7 @@ router.put('/:id/tracking',   adminAuth, requirePermission('orders','edit'),   c
 router.post('/:id/refund',    adminAuth, requirePermission('orders','manage'), ctrl.processRefund);
 router.put('/:id/cancel',     adminAuth, requirePermission('orders','manage'), ctrl.cancel);
 router.get('/:id/invoice',    adminAuth, requirePermission('orders','view'),   ctrl.getInvoice);
+router.put('/:id/notes',      adminAuth, requirePermission('orders','edit'),   ctrl.updateNotes);
+router.delete('/:id',         adminAuth, requirePermission('orders','manage'), ctrl.deleteOrder);
 
 module.exports = router;
