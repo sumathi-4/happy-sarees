@@ -4,6 +4,7 @@
 
 const db = require('../../db');
 const { parsePagination, buildOrderBy } = require('../../utils/pagination');
+const emailService = require('../emailService');
 
 const VALID_STATUSES = [
   'Pending',
@@ -262,6 +263,9 @@ class OrderService {
       throw { status: 400, message: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` };
     }
 
+    const oldRes = await db.query('SELECT order_status FROM orders WHERE id = $1', [id]);
+    const oldStatus = oldRes.rows[0]?.order_status;
+
     const isRefunded = status === 'Refunded';
     const isCancelled = status === 'Cancelled';
     if (status === 'Refunded') {
@@ -291,7 +295,26 @@ class OrderService {
       [id, status, note || `Status updated to ${status}`, adminUserId || null]
     );
 
-    return this.getById(id);
+    const updatedOrder = await this.getById(id);
+
+    // Send email ONLY if status actually changed to prevent duplicate emails
+    if (oldStatus !== status) {
+      const typeMap = {
+        'Packed': 'PACKED',
+        'Shipped': 'SHIPPED',
+        'Out For Delivery': 'OUT_FOR_DELIVERY',
+        'Delivered': 'DELIVERED',
+        'Confirmed': 'ORDER_PLACED',
+        'Refunded': 'REFUND_COMPLETED'
+      };
+      const emailType = typeMap[status];
+      if (emailType) {
+        emailService.sendNotification(emailType, updatedOrder)
+          .catch(err => console.error('[Order Status Email Async Error]:', err.message));
+      }
+    }
+
+    return updatedOrder;
   }
 
   // ── Update Tracking ────────────────────────────────────────
@@ -313,7 +336,10 @@ class OrderService {
       `INSERT INTO order_timeline (order_id, status, note, created_by) VALUES ($1,'Refunded',$2,$3)`,
       [id, `Refund of ₹${amount} processed`, adminUserId]
     );
-    return this.getById(id);
+    const updatedOrder = await this.getById(id);
+    emailService.sendNotification('REFUND_COMPLETED', updatedOrder)
+      .catch(err => console.error('[Refund Email Async Error]:', err.message));
+    return updatedOrder;
   }
 
   // ── Cancel Order ───────────────────────────────────────────
@@ -394,7 +420,15 @@ class OrderService {
       [id, 'Return Approved', `Return request approved. Refund processed automatically (${order.payment_method || 'COD'})`, adminUserId || null]
     );
 
-    return this.getById(id);
+    const updatedOrder = await this.getById(id);
+
+    // Trigger Return Approved & Refund Completed Emails Asynchronously
+    emailService.sendNotification('RETURN_APPROVED', updatedOrder)
+      .catch(err => console.error('[Return Approved Email Async Error]:', err.message));
+    emailService.sendNotification('REFUND_COMPLETED', updatedOrder)
+      .catch(err => console.error('[Refund Completed Email Async Error]:', err.message));
+
+    return updatedOrder;
   }
 
   // ── Reject Return Request ───────────────────────────────────
@@ -416,7 +450,13 @@ class OrderService {
       [id, 'Return Rejected', 'Return request rejected by admin', adminUserId || null]
     );
 
-    return this.getById(id);
+    const updatedOrder = await this.getById(id);
+
+    // Trigger Return Rejected Email Asynchronously
+    emailService.sendNotification('RETURN_REJECTED', updatedOrder)
+      .catch(err => console.error('[Return Rejected Email Async Error]:', err.message));
+
+    return updatedOrder;
   }
 }
 

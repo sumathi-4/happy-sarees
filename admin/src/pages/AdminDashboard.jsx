@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FiDollarSign, FiShoppingCart, FiPackage, FiUsers, 
@@ -11,48 +11,115 @@ import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
 import ChartCard from '../components/ChartCard';
 import QuickActionCard from '../components/QuickActionCard';
+import { dashboardApi } from '../api/adminApi';
 import styles from '../styles/AdminDashboard.module.css';
 
 function AdminDashboard() {
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    pendingOrders: 0
+  });
+  const [salesGraph, setSalesGraph] = useState([]);
+  const [orderStatus, setOrderStatus] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [lowStockProducts, setLowStockProducts] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+
+    Promise.all([
+      dashboardApi.getStats().catch(() => null),
+      dashboardApi.getSalesGraph().catch(() => null),
+      dashboardApi.getOrderStatus().catch(() => null),
+      dashboardApi.getRecentOrders().catch(() => null),
+      dashboardApi.getTopSelling().catch(() => null),
+      dashboardApi.getLowStock().catch(() => null)
+    ]).then(([statsRes, salesRes, statusRes, ordersRes, topSellingRes, lowStockRes]) => {
+      if (!isMounted) return;
+
+      if (statsRes && statsRes.success && statsRes.stats) {
+        setStats(statsRes.stats);
+      }
+      if (salesRes && salesRes.success && salesRes.data) {
+        setSalesGraph(salesRes.data);
+      }
+      if (statusRes && statusRes.success && statusRes.data) {
+        setOrderStatus(statusRes.data);
+      }
+      if (ordersRes && ordersRes.success && ordersRes.orders) {
+        setRecentOrders(ordersRes.orders);
+      }
+      if (topSellingRes && topSellingRes.success && topSellingRes.products) {
+        setTopSellingProducts(topSellingRes.products);
+      }
+      if (lowStockRes && lowStockRes.success && lowStockRes.products) {
+        setLowStockProducts(lowStockRes.products);
+      }
+    }).finally(() => {
+      if (isMounted) setLoading(false);
+    });
+
+    return () => { isMounted = false; };
+  }, []);
+
   const statsData = [
-    { title: 'Total Revenue', value: '₹12,45,230', trend: 'up', trendValue: '18.5% from last month', icon: <FiDollarSign />, colorTheme: 'pink' },
-    { title: 'Total Orders', value: '1,245', trend: 'up', trendValue: '12.4% from last month', icon: <FiShoppingCart />, colorTheme: 'blue' },
-    { title: 'Total Products', value: '856', trend: 'up', trendValue: '8.7% from last month', icon: <FiPackage />, colorTheme: 'green' },
-    { title: 'Total Customers', value: '2,530', trend: 'up', trendValue: '15.3% from last month', icon: <FiUsers />, colorTheme: 'pink' },
-    { title: 'Pending Orders', value: '67', trend: 'down', trendValue: '3.2% from last month', icon: <FiShoppingCart />, colorTheme: 'orange' },
+    { 
+      title: 'Total Revenue', 
+      value: `₹${Number(stats.totalRevenue || 0).toLocaleString('en-IN')}`, 
+      trend: 'up', 
+      trendValue: 'Live from DB', 
+      icon: <FiDollarSign />, 
+      colorTheme: 'pink' 
+    },
+    { 
+      title: 'Total Orders', 
+      value: Number(stats.totalOrders || 0).toLocaleString('en-IN'), 
+      trend: 'up', 
+      trendValue: 'Live from DB', 
+      icon: <FiShoppingCart />, 
+      colorTheme: 'blue' 
+    },
+    { 
+      title: 'Total Products', 
+      value: Number(stats.totalProducts || 0).toLocaleString('en-IN'), 
+      trend: 'up', 
+      trendValue: 'Active catalog', 
+      icon: <FiPackage />, 
+      colorTheme: 'green' 
+    },
+    { 
+      title: 'Total Customers', 
+      value: Number(stats.totalCustomers || 0).toLocaleString('en-IN'), 
+      trend: 'up', 
+      trendValue: 'Registered users', 
+      icon: <FiUsers />, 
+      colorTheme: 'pink' 
+    },
+    { 
+      title: 'Pending Orders', 
+      value: Number(stats.pendingOrders || 0).toLocaleString('en-IN'), 
+      trend: stats.pendingOrders > 0 ? 'up' : 'muted', 
+      trendValue: stats.pendingOrders > 0 ? 'Requires fulfillment' : 'All clear', 
+      icon: <FiShoppingCart />, 
+      colorTheme: 'orange' 
+    },
     { 
       title: 'Low Stock Items', 
-      value: '23', 
-      trend: 'muted', 
-      trendValue: 'Needs attention', 
+      value: lowStockProducts.length.toLocaleString('en-IN'), 
+      trend: lowStockProducts.length > 0 ? 'down' : 'muted', 
+      trendValue: lowStockProducts.length > 0 ? 'Needs attention' : 'Sufficient inventory', 
       icon: <FiAlertTriangle />, 
       colorTheme: 'orange',
       actionLink: { label: 'View All', onClick: () => navigate('/products') } 
     }
-  ];
-
-  const recentOrders = [
-    { id: '#ORD-1256', customer: 'Sneha Reddy', date: '21 Jul 2026', amount: '₹3,299', status: 'Delivered' },
-    { id: '#ORD-1255', customer: 'Priya Sharma', date: '21 Jul 2026', amount: '₹2,899', status: 'Processing' },
-    { id: '#ORD-1254', customer: 'Anjali Verma', date: '20 Jul 2026', amount: '₹1,999', status: 'Shipped' },
-    { id: '#ORD-1253', customer: 'Meera Nair', date: '20 Jul 2026', amount: '₹4,599', status: 'Delivered' },
-    { id: '#ORD-1252', customer: 'Kavya Iyer', date: '19 Jul 2026', amount: '₹2,499', status: 'Cancelled' }
-  ];
-
-  const topSellingProducts = [
-    { id: 1, name: 'Peach Organza Printed Floral Saree', price: '₹2,189', sold: '245 Sold', image: 'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?auto=format&fit=crop&w=100&q=80' },
-    { id: 2, name: 'Lavender Soft Silk Festive Saree', price: '₹2,399', sold: '198 Sold', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80' },
-    { id: 3, name: 'Royal Magenta Kanchipuram Pure Silk Saree', price: '₹9,499', sold: '175 Sold', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80' },
-    { id: 4, name: 'Emerald Green Banarasi Silk Saree', price: '₹3,299', sold: '142 Sold', image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=100&q=80' },
-    { id: 5, name: 'Ivory Gold Tissue Saree', price: '₹3,899', sold: '120 Sold', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80' }
-  ];
-
-  const lowStockProducts = [
-    { id: 1, name: 'Mulmul Cotton Pastel Mint Saree', stock: '2 left', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=100&q=80' },
-    { id: 2, name: 'Chanderi Linen Zari Border Saree', stock: '4 left', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=100&q=80' },
-    { id: 3, name: 'Golden Zari Tissue Metallic Saree', stock: '3 left', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80' }
   ];
 
   const quickActions = [
@@ -64,8 +131,22 @@ function AdminDashboard() {
     { label: 'Settings', icon: <FiSettings />, onClick: () => navigate('/settings') }
   ];
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return String(dateStr);
+    }
+  };
+
   return (
     <div>
+      {/* Dynamic Summary Stat Cards */}
       <div className={styles.statsGrid}>
         {statsData.map((stat, i) => (
           <StatCard
@@ -81,20 +162,25 @@ function AdminDashboard() {
         ))}
       </div>
 
+      {/* Dynamic Charts Grid */}
       <div className={styles.chartsGrid}>
         <ChartCard 
           title="Sales Overview" 
           type="line" 
           selectOptions={['This Month', 'Last Month', 'This Year']} 
+          salesData={salesGraph}
         />
         <ChartCard 
           title="Order Status Overview" 
           type="donut" 
+          statusData={orderStatus}
         />
       </div>
 
+      {/* Dynamic Bottom Section */}
       <div className={styles.bottomSectionGrid}>
         <div className={styles.leftColumn}>
+          {/* Dynamic Recent Orders Table */}
           <DashboardCard 
             title="Recent Orders" 
             headerAction={
@@ -109,30 +195,41 @@ function AdminDashboard() {
               </button>
             }
           >
-            <DataTable headers={['Order ID', 'Customer', 'Date', 'Amount', 'Status', 'Action']}>
-              {recentOrders.map((order, index) => (
-                <tr key={index}>
-                  <td style={{ fontWeight: 600, color: '#d11b69' }}>{order.id}</td>
-                  <td>{order.customer}</td>
-                  <td>{order.date}</td>
-                  <td style={{ fontWeight: 600 }}>{order.amount}</td>
-                  <td>
-                    <StatusBadge status={order.status} />
-                  </td>
-                  <td>
-                    <button 
-                      className={styles.actionBtn}
-                      onClick={() => alert(`Viewing details for order ${order.id}`)}
-                      title="View Details"
-                    >
-                      <FiEye style={{ fontSize: '15px' }} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </DataTable>
+            {recentOrders.length === 0 ? (
+              <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                No recent orders found in the system.
+              </div>
+            ) : (
+              <DataTable headers={['Order ID', 'Customer', 'Date', 'Amount', 'Status', 'Action']}>
+                {recentOrders.map((order, index) => (
+                  <tr key={order.id || index}>
+                    <td style={{ fontWeight: 600, color: '#d11b69' }}>
+                      {order.orderNumber || `#ORD-${order.id}`}
+                    </td>
+                    <td>{order.customer || 'Customer'}</td>
+                    <td>{formatDate(order.date)}</td>
+                    <td style={{ fontWeight: 600 }}>
+                      ₹{Number(order.amount || 0).toLocaleString('en-IN')}
+                    </td>
+                    <td>
+                      <StatusBadge status={order.status} />
+                    </td>
+                    <td>
+                      <button 
+                        className={styles.actionBtn}
+                        onClick={() => navigate('/orders')}
+                        title="View Order Details"
+                      >
+                        <FiEye style={{ fontSize: '15px' }} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </DataTable>
+            )}
           </DashboardCard>
 
+          {/* Quick Actions */}
           <DashboardCard title="Quick Actions">
             <div className={styles.quickActionsRow}>
               {quickActions.map((action, i) => (
@@ -148,6 +245,7 @@ function AdminDashboard() {
         </div>
 
         <div className={styles.rightColumn}>
+          {/* Dynamic Top Selling Products */}
           <DashboardCard 
             title="Top Selling Products"
             headerAction={
@@ -162,33 +260,64 @@ function AdminDashboard() {
               </button>
             }
           >
-            {topSellingProducts.map((p) => (
-              <div key={p.id} className={styles.productItem}>
-                <div className={styles.productInfoLeft}>
-                  <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=100'} alt={p.name} className={styles.productThumb} />
-                  <div className={styles.productMeta}>
-                    <span className={styles.productName} title={p.name}>{p.name}</span>
-                    <span className={styles.productPrice}>{p.price}</span>
-                  </div>
-                </div>
-                <span className={styles.productCountBadge}>{p.sold}</span>
+            {topSellingProducts.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                No products found.
               </div>
-            ))}
+            ) : (
+              topSellingProducts.map((p) => (
+                <div key={p.id} className={styles.productItem}>
+                  <div className={styles.productInfoLeft}>
+                    <img 
+                      src={p.image || '/src/assets/hero_saree_model.png'} 
+                      alt={p.name} 
+                      className={styles.productThumb} 
+                      onError={(e) => { e.target.src = '/src/assets/hero_saree_model.png'; }}
+                    />
+                    <div className={styles.productMeta}>
+                      <span className={styles.productName} title={p.name}>{p.name}</span>
+                      <span className={styles.productPrice}>₹{Number(p.price || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                  <span className={styles.productCountBadge}>{p.sold} Sold</span>
+                </div>
+              ))
+            )}
           </DashboardCard>
 
+          {/* Dynamic Low Stock Products */}
           <DashboardCard title="Low Stock Products">
-            {lowStockProducts.map((p) => (
-              <div key={p.id} className={styles.productItem}>
-                <div className={styles.productInfoLeft}>
-                  <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=100'} alt={p.name} className={styles.productThumb} />
-                  <div className={styles.productMeta}>
-                    <span className={styles.productName} title={p.name}>{p.name}</span>
-                    <span className={styles.productPrice} style={{ color: '#c62828', fontWeight: 600 }}>Only {p.stock}</span>
-                  </div>
-                </div>
-                <span className={styles.stockBadge}>Restock</span>
+            {lowStockProducts.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#16a34a', fontSize: '13px', fontWeight: 600 }}>
+                ✓ All products have healthy inventory!
               </div>
-            ))}
+            ) : (
+              lowStockProducts.map((p) => (
+                <div key={p.id} className={styles.productItem}>
+                  <div className={styles.productInfoLeft}>
+                    <img 
+                      src={p.image || '/src/assets/hero_saree_model.png'} 
+                      alt={p.name} 
+                      className={styles.productThumb} 
+                      onError={(e) => { e.target.src = '/src/assets/hero_saree_model.png'; }}
+                    />
+                    <div className={styles.productMeta}>
+                      <span className={styles.productName} title={p.name}>{p.name}</span>
+                      <span className={styles.productPrice} style={{ color: '#c62828', fontWeight: 600 }}>
+                        Only {p.stockCount} left
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    className={styles.stockBadge}
+                    style={{ border: 'none', cursor: 'pointer' }}
+                    onClick={() => navigate('/products')}
+                  >
+                    Restock
+                  </button>
+                </div>
+              ))
+            )}
           </DashboardCard>
         </div>
       </div>

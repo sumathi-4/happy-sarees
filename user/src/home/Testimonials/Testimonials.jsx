@@ -1,69 +1,130 @@
-import React, { useState } from 'react';
-import { FiStar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { TESTIMONIALS } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import styles from './Testimonials.module.css';
 
 function Testimonials() {
-  const [index, setIndex] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const prevSlide = () => {
-    setIndex((prev) => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const nextSlide = () => {
-    setIndex((prev) => (prev === TESTIMONIALS.length - 1 ? 0 : prev + 1));
-  };
+    async function fetchApprovedReviews() {
+      try {
+        const res = await api.getApprovedReviews();
+        if (res && res.success && Array.isArray(res.reviews)) {
+          if (isMounted) setReviews(res.reviews);
+        } else {
+          if (isMounted) setReviews([]);
+        }
+      } catch (err) {
+        console.warn('[Testimonials] API Fetch Notice:', err.message);
+        if (isMounted) setReviews([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    fetchApprovedReviews();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.title}>CUSTOMER REVIEWS</h2>
+        </div>
+        <div className={styles.loadingSkeletonContainer}>
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className={styles.skeletonCard} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // Clean empty state if no approved reviews with homepage display exist
+  if (!reviews || reviews.length === 0) {
+    return (
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.title}>CUSTOMER REVIEWS</h2>
+        </div>
+        <div className={styles.emptyState} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: '14px' }}>No featured customer reviews published for the homepage yet.</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Limit display to max 4 latest reviews allowed by admin
+  const displayedReviews = reviews.slice(0, 4);
 
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <span className={styles.tagline}>Patron Reviews</span>
-        <h2 className={styles.title}>Customer Reviews</h2>
-        <div className={styles.divider}>
-          <span className={styles.dot}></span>
-        </div>
+        <h2 className={styles.title}>CUSTOMER REVIEWS</h2>
       </div>
 
-      <div className={styles.carouselContainer}>
-        {/* Left Arrow Navigation */}
-        <button onClick={prevSlide} className={styles.arrowBtn} aria-label="Previous review">
-          <FiChevronLeft />
-        </button>
+      <div className={styles.carouselWrapper}>
+        {/* Display Max 4 Stacked Polaroid Cards (No Next/Previous Buttons) */}
+        <div className={styles.carousel}>
+          {displayedReviews.map((item, idx) => {
+            // Display ONLY the Featured Image selected by Admin (or first image)
+            const customerImage = item.featuredImage || item.image || item.image_data || (Array.isArray(item.images) ? item.images[0] : null);
+            const reviewerName = item.name || item.reviewer || 'Verified Buyer';
+            const reviewComment = item.comment || '';
+            const ratingScore = Number(item.rating) || 5;
 
-        {/* Testimonial Panel */}
-        <div className={styles.slide}>
-          <div className={styles.avatarWrapper}>
-            <img src={TESTIMONIALS[index].avatar} alt={TESTIMONIALS[index].name} className={styles.avatar} />
-            <div className={styles.ringAccent}></div>
-          </div>
-          <div className={styles.card}>
-            <div className={styles.rating}>
-              {[...Array(5)].map((_, i) => (
-                <FiStar key={i} className={i < TESTIMONIALS[index].rating ? styles.starFilled : styles.starEmpty} />
-              ))}
-            </div>
-            <p className={styles.comment}>"{TESTIMONIALS[index].comment}"</p>
-            <h3 className={styles.author}>{TESTIMONIALS[index].name}</h3>
-            <span className={styles.verifiedTag}>Verified Buyer</span>
-          </div>
+            return (
+              <div key={item.id || idx} className={styles.reviewCard}>
+                {/* 1. Review Quote Text ABOVE photo */}
+                <div className={styles.quoteBox}>
+                  <p className={styles.quoteText}>"{reviewComment}"</p>
+                </div>
+
+                {/* 2. Stacked Photo Frame Container */}
+                <div className={styles.photoStack}>
+                  <div className={styles.stackBackLayer1} />
+                  <div className={styles.stackBackLayer2} />
+                  <div className={styles.photoFrameFront}>
+                    {customerImage ? (
+                      <img 
+                        src={customerImage} 
+                        alt={reviewerName} 
+                        className={styles.customerPhoto} 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#64748b', fontSize: '24px', fontWeight: 'bold' }}>
+                        {reviewerName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Below Photo Frame: Stars and Customer Name */}
+                <div className={styles.metaFooter}>
+                  <div className={styles.starsGroup}>
+                    {[...Array(5)].map((_, i) => (
+                      <span 
+                        key={i} 
+                        className={i < ratingScore ? styles.starFilled : styles.starEmpty}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className={styles.customerName}>_{reviewerName}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
-
-        {/* Right Arrow Navigation */}
-        <button onClick={nextSlide} className={styles.arrowBtn} aria-label="Next review">
-          <FiChevronRight />
-        </button>
-      </div>
-
-      {/* Pagination Dots */}
-      <div className={styles.dots}>
-        {TESTIMONIALS.map((_, i) => (
-          <button 
-            key={i} 
-            onClick={() => setIndex(i)} 
-            className={`${styles.dotBtn} ${i === index ? styles.activeDot : ''}`}
-            aria-label={`Navigate to slide ${i + 1}`}
-          />
-        ))}
       </div>
     </section>
   );

@@ -9,13 +9,13 @@ class DashboardService {
   // ── Summary KPIs ───────────────────────────────────────────
   async getStats() {
     const [revenue, orders, customers, products, todaySales, monthRevenue, pendingOrders] = await Promise.all([
-      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE payment_status = 'Paid' AND cancelled_at IS NULL`),
+      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE LOWER(order_status) NOT IN ('cancelled', 'refunded')`),
       db.query(`SELECT COUNT(*) as total FROM orders`),
       db.query(`SELECT COUNT(*) as total FROM users WHERE is_blocked IS NOT TRUE`),
       db.query(`SELECT COUNT(*) as total FROM products WHERE deleted_at IS NULL`),
-      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE DATE(created_at) = CURRENT_DATE AND payment_status = 'Paid'`),
-      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE) AND payment_status = 'Paid'`),
-      db.query(`SELECT COUNT(*) as total FROM orders WHERE order_status = 'Processing'`),
+      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE DATE(created_at) = CURRENT_DATE AND LOWER(order_status) NOT IN ('cancelled', 'refunded')`),
+      db.query(`SELECT COALESCE(SUM(total_amount),0) as total FROM orders WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE) AND LOWER(order_status) NOT IN ('cancelled', 'refunded')`),
+      db.query(`SELECT COUNT(*) as total FROM orders WHERE LOWER(order_status) IN ('processing', 'pending', 'pending payment', 'order_placed', 'confirmed', 'packed')`),
     ]);
 
     return {
@@ -29,7 +29,7 @@ class DashboardService {
     };
   }
 
-  // ── Sales Graph (12 months) ────────────────────────────────
+  // ── Sales Graph ────────────────────────────────
   async getSalesGraph() {
     const res = await db.query(`
       SELECT
@@ -39,7 +39,7 @@ class DashboardService {
         COUNT(*) as orders
       FROM orders
       WHERE created_at >= NOW() - INTERVAL '12 months'
-        AND payment_status = 'Paid'
+        AND LOWER(order_status) NOT IN ('cancelled', 'refunded')
       GROUP BY DATE_TRUNC('month', created_at)
       ORDER BY month_date ASC
     `);
@@ -61,12 +61,12 @@ class DashboardService {
     `);
 
     return res.rows.map(r => ({
-      status: r.status,
+      status: r.status || 'Processing',
       count:  Number(r.count),
     }));
   }
 
-  // ── Recent Orders (last 10) ────────────────────────────────
+  // ── Recent Orders ────────────────────────────────
   async getRecentOrders() {
     const res = await db.query(`
       SELECT o.id, o.order_number, o.total_amount, o.order_status,
@@ -75,40 +75,71 @@ class DashboardService {
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       ORDER BY o.created_at DESC
-      LIMIT 10
+      LIMIT 5
     `);
 
     return res.rows.map(r => ({
       id:            r.id,
-      orderNumber:   r.order_number,
-      amount:        Number(r.total_amount),
-      status:        r.order_status,
-      paymentStatus: r.payment_status,
-      customer:      r.customer_name || 'Guest',
+      orderNumber:   r.order_number || `#ORD-${r.id}`,
+      amount:        Number(r.total_amount || 0),
+      status:        r.order_status || 'Processing',
+      paymentStatus: r.payment_status || 'Pending',
+      customer:      r.customer_name || r.customer_email || 'Customer',
       email:         r.customer_email,
       date:          r.created_at,
+    }));
+  }
+
+  // ── Top Selling Products ─────────────────────────────────────
+  async getTopSellingProducts() {
+    const res = await db.query(`
+      SELECT p.id, p.name, p.price,
+             COALESCE(SUM(oi.quantity), 0) as total_sold,
+             (SELECT COALESCE(pi.image_url, pi.image_data)
+              FROM product_images pi
+              WHERE pi.product_id = p.id
+              ORDER BY pi.is_primary DESC, pi.display_order ASC
+              LIMIT 1) as image
+      FROM products p
+      LEFT JOIN order_items oi ON (oi.product_id = p.id OR (CASE WHEN oi.product_id::text ~ '^[0-9]+$' THEN oi.product_id::integer ELSE 0 END = p.id))
+      WHERE p.deleted_at IS NULL
+      GROUP BY p.id, p.name, p.price
+      ORDER BY total_sold DESC, p.id DESC
+      LIMIT 5
+    `);
+
+    return res.rows.map(r => ({
+      id:    r.id,
+      name:  r.name,
+      price: Number(r.price || 0),
+      sold:  Number(r.total_sold || 0),
+      image: r.image || null,
     }));
   }
 
   // ── Low Stock Products ─────────────────────────────────────
   async getLowStockProducts() {
     const res = await db.query(`
-      SELECT p.id, p.name, p.sku, p.stock_count, p.status,
-             pi.image_url, pi.image_data
+      SELECT p.id, p.name, p.sku, p.stock_count, p.status, p.price,
+             (SELECT COALESCE(pi.image_url, pi.image_data)
+              FROM product_images pi
+              WHERE pi.product_id = p.id
+              ORDER BY pi.is_primary DESC, pi.display_order ASC
+              LIMIT 1) as image
       FROM products p
-      LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = true
       WHERE p.stock_count < 10 AND p.deleted_at IS NULL
       ORDER BY p.stock_count ASC
-      LIMIT 10
+      LIMIT 5
     `);
 
     return res.rows.map(r => ({
       id:         r.id,
       name:       r.name,
       sku:        r.sku,
-      stockCount: r.stock_count,
+      stockCount: Number(r.stock_count || 0),
       status:     r.status,
-      image:      r.image_data || r.image_url,
+      price:      Number(r.price || 0),
+      image:      r.image || null,
     }));
   }
 
@@ -157,3 +188,4 @@ class DashboardService {
 }
 
 module.exports = new DashboardService();
+

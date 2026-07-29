@@ -9,18 +9,16 @@ import { ToastProvider } from '../context/ToastContext';
 
 function Layout() {
   return (
-    <ToastProvider>
-      <div>
-        <ScrollProgress />
-        <AnnouncementBar />
-        <Header />
-        <main>
-          <Outlet />
-        </main>
-        <Footer />
-        <BackToTop />
-      </div>
-    </ToastProvider>
+    <div>
+      <ScrollProgress />
+      <AnnouncementBar />
+      <Header />
+      <main>
+        <Outlet />
+      </main>
+      <Footer />
+      <BackToTop />
+    </div>
   );
 }
 

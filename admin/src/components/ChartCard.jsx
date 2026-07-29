@@ -1,8 +1,194 @@
 import React, { useState } from 'react';
 import styles from '../styles/Components.module.css';
 
-function ChartCard({ title, type, selectOptions, children }) {
+function ChartCard({ title, type, selectOptions, salesData = [], statusData = [], children }) {
   const [selectedOption, setSelectedOption] = useState(selectOptions ? selectOptions[0] : '');
+
+  // ── Render Dynamic Line Chart ──────────────────────────────
+  const renderLineChart = () => {
+    const list = Array.isArray(salesData) && salesData.length > 0 ? salesData : [
+      { month: 'Jul 2026', revenue: 0, orders: 0 }
+    ];
+
+    const revenues = list.map(d => Number(d.revenue || 0));
+    const maxRev = Math.max(...revenues, 1000);
+    const maxY = Math.ceil(maxRev / 1000) * 1000 || 10000;
+
+    const width = 500;
+    const height = 200;
+    const paddingLeft = 55;
+    const paddingRight = 30;
+    const paddingTop = 25;
+    const paddingBottom = 35;
+    const chartW = width - paddingLeft - paddingRight;
+    const chartH = height - paddingTop - paddingBottom;
+
+    const points = list.map((item, idx) => {
+      const x = list.length === 1
+        ? paddingLeft + chartW / 2
+        : paddingLeft + (idx / (list.length - 1)) * chartW;
+      const y = height - paddingBottom - (item.revenue / maxY) * chartH;
+      return { x, y, ...item };
+    });
+
+    let pathD = '';
+    if (points.length === 1) {
+      pathD = `M ${paddingLeft},${points[0].y} L ${width - paddingRight},${points[0].y}`;
+    } else {
+      pathD = points.reduce((acc, pt, i) => (i === 0 ? `M ${pt.x},${pt.y}` : `${acc} L ${pt.x},${pt.y}`), '');
+    }
+
+    const areaD = points.length === 1
+      ? `M ${paddingLeft},${points[0].y} L ${width - paddingRight},${points[0].y} L ${width - paddingRight},${height - paddingBottom} L ${paddingLeft},${height - paddingBottom} Z`
+      : `${pathD} L ${points[points.length - 1].x},${height - paddingBottom} L ${points[0].x},${height - paddingBottom} Z`;
+
+    const lastPt = points[points.length - 1];
+
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+        <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+          <defs>
+            <linearGradient id="chart-gradient-dynamic" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#d11b69" stopOpacity="0.25"/>
+              <stop offset="100%" stopColor="#d11b69" stopOpacity="0.0"/>
+            </linearGradient>
+          </defs>
+          {/* Horizontal Gridlines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const y = height - paddingBottom - ratio * chartH;
+            const val = Math.round(maxY * ratio);
+            return (
+              <g key={i}>
+                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#f0f0f0" strokeWidth="1" />
+                <text x="5" y={y + 3} fill="#999999" fontSize="9">
+                  ₹{val >= 100000 ? `${(val / 100000).toFixed(1)}L` : val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Area & Line */}
+          <path d={areaD} fill="url(#chart-gradient-dynamic)" />
+          <path d={pathD} fill="none" stroke="#d11b69" strokeWidth="3" strokeLinecap="round" />
+
+          {/* Points */}
+          {points.map((pt, i) => (
+            <circle
+              key={i}
+              cx={pt.x}
+              cy={pt.y}
+              r={i === points.length - 1 ? "5" : "3.5"}
+              fill={i === points.length - 1 ? "#d11b69" : "#ffffff"}
+              stroke="#d11b69"
+              strokeWidth="2"
+            />
+          ))}
+
+          {/* X Axis Labels */}
+          {points.map((pt, i) => (
+            <text key={i} x={pt.x} y={height - 10} fill="#888888" fontSize="10" textAnchor="middle">
+              {pt.month}
+            </text>
+          ))}
+
+          {/* Active Tooltip Badge */}
+          {lastPt && (
+            <g transform={`translate(${Math.min(lastPt.x - 45, width - 110)}, ${Math.max(lastPt.y - 45, 10)})`}>
+              <rect width="95" height="38" rx="6" fill="#1e1e1e" opacity="0.9" />
+              <text x="47.5" y="16" fill="#ffffff" fontSize="9" fontWeight="600" textAnchor="middle">{lastPt.month}</text>
+              <text x="47.5" y="30" fill="#ffffff" fontSize="10" fontWeight="700" textAnchor="middle">₹{Number(lastPt.revenue).toLocaleString('en-IN')}</text>
+            </g>
+          )}
+        </svg>
+      </div>
+    );
+  };
+
+  // ── Render Dynamic Donut Chart ─────────────────────────────
+  const renderDonutChart = () => {
+    const list = Array.isArray(statusData) && statusData.length > 0 ? statusData : [
+      { status: 'No Orders', count: 0 }
+    ];
+
+    const total = list.reduce((sum, item) => sum + Number(item.count || 0), 0);
+    const circumference = 251.2; // 2 * PI * r(40)
+
+    const statusColors = {
+      'Delivered': '#2e7d32',
+      'Processing': '#f57f17',
+      'Confirmed': '#0284c7',
+      'Shipped': '#1565c0',
+      'Cancelled': '#d32f2f',
+      'Returned': '#9333ea',
+      'Pending Payment': '#ea580c',
+      'Pending': '#eab308',
+      'Order Placed': '#6366f1'
+    };
+
+    const palette = ['#2e7d32', '#f57f17', '#1565c0', '#d32f2f', '#9333ea', '#0284c7', '#ea580c'];
+
+    let accumulatedOffset = 0;
+    const segments = list.map((item, i) => {
+      const count = Number(item.count || 0);
+      const pct = total > 0 ? (count / total) : 0;
+      const dash = pct * circumference;
+      const offset = -accumulatedOffset;
+      accumulatedOffset += dash;
+      const color = statusColors[item.status] || palette[i % palette.length];
+      return {
+        ...item,
+        count,
+        pct: Math.round(pct * 100),
+        dash,
+        offset,
+        color
+      };
+    });
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+          <svg viewBox="0 0 100 100" width="100%" height="100%">
+            {total === 0 ? (
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e2e8f0" strokeWidth="12" />
+            ) : (
+              segments.map((seg, i) => (
+                <circle
+                  key={i}
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="transparent"
+                  stroke={seg.color}
+                  strokeWidth="12"
+                  strokeDasharray={`${seg.dash} ${circumference}`}
+                  strokeDashoffset={seg.offset}
+                />
+              ))
+            )}
+          </svg>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <span style={{ fontSize: '18px', fontWeight: 800, color: '#2b2b2b' }}>{total.toLocaleString()}</span>
+            <span style={{ fontSize: '9px', color: '#999999', textTransform: 'uppercase', fontWeight: 600 }}>Total Orders</span>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {segments.map((seg, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: seg.color }} />
+              <span style={{ color: '#666666', width: '80px', textTransform: 'capitalize' }}>{seg.status}</span>
+              <strong style={{ color: '#2b2b2b' }}>{seg.count} ({seg.pct}%)</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.dashboardCard}>
@@ -30,116 +216,8 @@ function ChartCard({ title, type, selectOptions, children }) {
         )}
       </div>
       <div className={styles.cardBody} style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: '260px', justifyContent: 'center' }}>
-        {type === 'line' && (
-          <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-            {/* Custom SVG Line Chart */}
-            <svg viewBox="0 0 500 200" width="100%" height="100%">
-              <defs>
-                <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#d11b69" stopOpacity="0.2"/>
-                  <stop offset="100%" stopColor="#d11b69" stopOpacity="0.0"/>
-                </linearGradient>
-              </defs>
-              {/* Horizontal Gridlines */}
-              <line x1="40" y1="20" x2="480" y2="20" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="60" x2="480" y2="60" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="100" x2="480" y2="100" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="140" x2="480" y2="140" stroke="#f0f0f0" strokeWidth="1" />
-              <line x1="40" y1="170" x2="480" y2="170" stroke="#eaeaea" strokeWidth="1.5" />
-
-              {/* Y Axis Labels */}
-              <text x="10" y="24" fill="#999999" fontSize="10">₹2L</text>
-              <text x="10" y="64" fill="#999999" fontSize="10">₹1.5L</text>
-              <text x="10" y="104" fill="#999999" fontSize="10">₹1L</text>
-              <text x="10" y="144" fill="#999999" fontSize="10">₹50K</text>
-              <text x="15" y="174" fill="#999999" fontSize="10">₹0</text>
-
-              {/* Chart Line Path Area */}
-              <path 
-                d="M 40,140 Q 113,100 186,145 T 332,100 T 478,90 L 478,170 L 40,170 Z" 
-                fill="url(#chart-gradient)" 
-              />
-              <path 
-                d="M 40,140 Q 113,100 186,145 T 332,100 T 478,90" 
-                fill="none" 
-                stroke="#d11b69" 
-                strokeWidth="3" 
-                strokeLinecap="round" 
-              />
-
-              {/* Data points */}
-              <circle cx="40" cy="140" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="113" cy="100" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="186" cy="145" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="259" cy="120" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="332" cy="100" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="405" cy="115" r="4" fill="#ffffff" stroke="#d11b69" strokeWidth="2" />
-              <circle cx="478" cy="90" r="5" fill="#d11b69" />
-
-              {/* X Axis Labels */}
-              <text x="35" y="190" fill="#999999" fontSize="10">01 Jul</text>
-              <text x="105" y="190" fill="#999999" fontSize="10">05 Jul</text>
-              <text x="178" y="190" fill="#999999" fontSize="10">09 Jul</text>
-              <text x="251" y="190" fill="#999999" fontSize="10">13 Jul</text>
-              <text x="324" y="190" fill="#999999" fontSize="10">17 Jul</text>
-              <text x="450" y="190" fill="#999999" fontSize="10">21 Jul</text>
-
-              {/* Tooltip Overlay */}
-              <g transform="translate(370, 75)">
-                <rect width="90" height="42" rx="6" fill="#1e1e1e" opacity="0.9" />
-                <text x="45" y="18" fill="#ffffff" fontSize="9" fontWeight="600" textAnchor="middle">21 Jul 2026</text>
-                <text x="45" y="32" fill="#ffffff" fontSize="10" fontWeight="700" textAnchor="middle">₹1,45,230</text>
-              </g>
-            </svg>
-          </div>
-        )}
-
-        {type === 'donut' && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '20px' }}>
-            <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-              {/* Custom SVG Donut Chart */}
-              <svg viewBox="0 0 100 100" width="100%" height="100%">
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#2e7d32" strokeWidth="12" strokeDasharray="168.3 251.2" strokeDashoffset="0" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f57f17" strokeWidth="12" strokeDasharray="50.2 251.2" strokeDashoffset="-168.3" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1565c0" strokeWidth="12" strokeDasharray="20.1 251.2" strokeDashoffset="-218.5" />
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#d32f2f" strokeWidth="12" strokeDasharray="12.6 251.2" strokeDashoffset="-238.6" />
-              </svg>
-              {/* Absolute Central Labels */}
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <span style={{ fontSize: '16px', fontWeight: 800, color: '#2b2b2b' }}>1,245</span>
-                <span style={{ fontSize: '9px', color: '#999999', textTransform: 'uppercase', fontWeight: 600 }}>Total Orders</span>
-              </div>
-            </div>
-
-            {/* Donut Legend */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2e7d32' }} />
-                <span style={{ color: '#666666', width: '70px' }}>Delivered</span>
-                <strong style={{ color: '#2b2b2b' }}>835 (67%)</strong>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f57f17' }} />
-                <span style={{ color: '#666666', width: '70px' }}>Processing</span>
-                <strong style={{ color: '#2b2b2b' }}>245 (20%)</strong>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#1565c0' }} />
-                <span style={{ color: '#666666', width: '70px' }}>Shipped</span>
-                <strong style={{ color: '#2b2b2b' }}>98 (8%)</strong>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#d32f2f' }} />
-                <span style={{ color: '#666666', width: '70px' }}>Cancelled</span>
-                <strong style={{ color: '#2b2b2b' }}>67 (5%)</strong>
-              </div>
-            </div>
-          </div>
-        )}
-
+        {type === 'line' && renderLineChart()}
+        {type === 'donut' && renderDonutChart()}
         {children}
       </div>
     </div>

@@ -183,6 +183,12 @@ function ProductCard({
             </span>
           )}
         </div>
+
+        {/* Dynamic Rating & Review Count */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '12px', color: '#f59e0b', fontWeight: 600 }}>
+          <span>★ {product.rating ? Number(product.rating).toFixed(1) : '0.0'}</span>
+          <span style={{ color: '#64748b', fontSize: '11px', fontWeight: 400 }}>({product.reviewCount || 0})</span>
+        </div>
       </div>
     </div>
   );

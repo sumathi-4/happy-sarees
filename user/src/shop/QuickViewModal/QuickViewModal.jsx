@@ -5,6 +5,7 @@ import { FaHeart } from 'react-icons/fa';
 import { useToast } from '../../context/ToastContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import api from '../../services/api';
 import styles from './QuickViewModal.module.css';
 
 function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
@@ -13,6 +14,38 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const isWishlisted = isInWishlist(product?.id);
+
+  const [canReview, setCanReview] = useState(false);
+  const [existingReview, setExistingReview] = useState(null);
+  // Live dynamic rating fetched from reviews API (approved reviews only)
+  const [liveRating, setLiveRating] = useState(null);
+  const [liveReviewCount, setLiveReviewCount] = useState(null);
+
+  React.useEffect(() => {
+    if (product && product.id) {
+      // Fetch live approved rating stats
+      api.getReviews(product.id)
+        .then((res) => {
+          if (res && res.success) {
+            setLiveRating(res.averageRating !== undefined ? Number(res.averageRating) : 0);
+            setLiveReviewCount(res.count !== undefined ? Number(res.count) : 0);
+          }
+        })
+        .catch(() => {});
+
+      const token = localStorage.getItem('hs_token');
+      if (token) {
+        api.checkReviewEligibility(product.id)
+          .then((res) => {
+            if (res.success) {
+              setCanReview(Boolean(res.canReview));
+              setExistingReview(res.existingReview || null);
+            }
+          })
+          .catch(() => setCanReview(false));
+      }
+    }
+  }, [product]);
 
   if (!product) return null;
 
@@ -67,15 +100,36 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
                     <FiStar
                       key={i}
                       className={`${styles.starIcon} ${
-                        starIndex <= Math.round(product.rating || 4.8) ? styles.starFilled : ''
+                        starIndex <= Math.round(liveRating !== null ? liveRating : (product.rating || 0)) ? styles.starFilled : ''
                       }`}
                     />
                   );
                 })}
               </div>
               <span className={styles.ratingText}>
-                {product.rating || 4.8} ({product.ratingCount || product.reviewCount || 35} Reviews)
+                {liveRating !== null ? Number(liveRating).toFixed(1) : (product.rating ? Number(product.rating).toFixed(1) : '0.0')} ({liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0)} Reviews)
               </span>
+
+              {canReview && existingReview && (existingReview.status === 'approved' || existingReview.status === 'rejected') ? (
+                // Approved/Rejected: show status badge, no edit
+                <span style={{ marginLeft: 'auto', fontSize: '11px', color: existingReview.status === 'approved' ? '#15803d' : '#b91c1c', background: existingReview.status === 'approved' ? '#dcfce7' : '#fee2e2', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                  {existingReview.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                </span>
+              ) : canReview ? (
+                <button
+                  onClick={() => {
+                    if (onClose) onClose();
+                    navigate(`/product/${product.id}#customer-reviews`);
+                  }}
+                  style={{ marginLeft: 'auto', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {existingReview ? 'Edit Review' : 'Write Review'}
+                </button>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#64748b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                  Available after delivery.
+                </span>
+              )}
             </div>
 
             {/* Price Section */}

@@ -2,7 +2,7 @@ import React from 'react';
 import Hero from '../home/Hero/Hero';
 import SignatureCollections from '../home/SignatureCollections/SignatureCollections';
 import NewArrivals from '../home/NewArrivals/NewArrivals';
-import FeaturedBanner from '../home/FeaturedBanner/FeaturedBanner';
+import ShopByPrice from '../home/ShopByPrice/ShopByPrice';
 import BestSellers from '../home/BestSellers/BestSellers';
 import ShopByFabric from '../home/ShopByFabric/ShopByFabric';
 import WhyChooseUs from '../home/WhyChooseUs/WhyChooseUs';
@@ -16,7 +16,7 @@ function Home() {
       <Hero />
       <SignatureCollections />
       <NewArrivals />
-      <FeaturedBanner />
+      <ShopByPrice />
       <BestSellers />
       <ShopByFabric />
       <WhyChooseUs />

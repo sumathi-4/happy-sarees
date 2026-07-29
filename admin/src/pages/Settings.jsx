@@ -894,29 +894,6 @@ function Settings() {
                 </Field>
               </div>
 
-              {/* SMTP Email */}
-              <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', marginBottom: '16px' }}>
-                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#0f172a' }}>SMTP Email Configuration</h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <Toggle checked={settings.smtpEnabled} onChange={v => handleChange('smtpEnabled', v)} />
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Enable SMTP Transactional Emails</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field label="SMTP Host">
-                    <input className={styles.input} value={settings.smtpHost} onChange={e => handleChange('smtpHost', e.target.value)} />
-                  </Field>
-                  <Field label="SMTP Port">
-                    <input className={styles.input} type="number" value={settings.smtpPort} onChange={e => handleChange('smtpPort', Number(e.target.value))} />
-                  </Field>
-                  <Field label="SMTP Username">
-                    <input className={styles.input} value={settings.smtpUser} onChange={e => handleChange('smtpUser', e.target.value)} />
-                  </Field>
-                  <Field label="SMTP Password">
-                    <input className={styles.input} type="password" value={settings.smtpPass} onChange={e => handleChange('smtpPass', e.target.value)} />
-                  </Field>
-                </div>
-              </div>
-
               {/* Analytics & Meta Pixel */}
               <div style={{ gridColumn: '1 / -1' }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#0f172a' }}>Analytics & Tracking Pixels</h4>

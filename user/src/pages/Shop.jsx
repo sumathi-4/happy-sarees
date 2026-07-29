@@ -166,10 +166,22 @@ function Shop() {
     }
   });
 
-  // 8. Price limit filter
-  filteredProducts = filteredProducts.filter(p => p.price <= priceRange);
+  // 8. Price limit & range filter (from URL searchParams or slider)
+  const minPriceParam = searchParams.get('minPrice');
+  const maxPriceParam = searchParams.get('maxPrice');
 
-  // 8. Rating limit filter
+  if (minPriceParam !== null && !isNaN(minPriceParam)) {
+    const minP = Number(minPriceParam);
+    filteredProducts = filteredProducts.filter(p => p.price >= minP);
+  }
+  if (maxPriceParam !== null && !isNaN(maxPriceParam)) {
+    const maxP = Number(maxPriceParam);
+    filteredProducts = filteredProducts.filter(p => p.price <= maxP);
+  } else if (!minPriceParam) {
+    filteredProducts = filteredProducts.filter(p => p.price <= priceRange);
+  }
+
+  // 9. Rating limit filter
   if (minRating > 0) {
     filteredProducts = filteredProducts.filter(p => p.rating >= minRating);
   }

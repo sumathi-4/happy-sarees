@@ -10,6 +10,7 @@ router.get('/stats',            ...auth, ctrl.getStats);
 router.get('/sales-graph',      ...auth, ctrl.getSalesGraph);
 router.get('/order-status',     ...auth, ctrl.getOrderStatusChart);
 router.get('/recent-orders',    ...auth, ctrl.getRecentOrders);
+router.get('/top-selling',      ...auth, ctrl.getTopSelling);
 router.get('/low-stock',        ...auth, ctrl.getLowStock);
 router.get('/latest-customers', ...auth, ctrl.getLatestCustomers);
 router.get('/activities',       ...auth, ctrl.getActivities);

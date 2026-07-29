@@ -150,6 +150,16 @@ function AdminLayout() {
                           <span style={{ marginRight: '8px' }}>•</span> Master Data
                         </Link>
                       </li>
+                      <li>
+                        <Link 
+                          to="/ratings-reviews" 
+                          className={`${styles.menuItem} ${location.pathname === '/ratings-reviews' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ marginRight: '8px' }}>•</span> Ratings & Reviews
+                        </Link>
+                      </li>
                     </ul>
                   )}
                 </li>

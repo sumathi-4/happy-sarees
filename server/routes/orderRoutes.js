@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const authenticateToken = require('../middleware/auth');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -77,6 +78,22 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     await client.query('COMMIT');
+
+    // Trigger Centralized Email Notification Asynchronously
+    try {
+      emailService.sendNotification('ORDER_PLACED', {
+        id: order.id,
+        orderNumber: order.order_number,
+        totalAmount: Number(order.total_amount),
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status,
+        orderStatus: order.order_status,
+        shippingAddress,
+        items,
+        created_at: order.created_at,
+        customerEmail: req.user?.email
+      }).catch(err => console.error('[Order Email Async Error]:', err.message));
+    } catch (e) {}
 
     res.status(201).json({
       success: true,
@@ -274,6 +291,18 @@ router.post('/:id/return', authenticateToken, async (req, res) => {
       `INSERT INTO order_timeline (order_id, status, note) VALUES ($1, $2, $3)`,
       [orderId, 'Return Requested', reason ? `Return requested: ${reason}` : 'Customer requested order return']
     );
+
+    // Trigger Centralized Return Requested Email Asynchronously
+    try {
+      emailService.sendNotification('RETURN_REQUESTED', {
+        ...order,
+        id: orderId,
+        order_status: 'Returned',
+        return_status: 'Return Requested',
+        return_reason: reason,
+        customerEmail: req.user?.email
+      }).catch(err => console.error('[Return Request Email Async Error]:', err.message));
+    } catch (e) {}
 
     res.json({ success: true, message: 'Return request submitted successfully.' });
   } catch (error) {

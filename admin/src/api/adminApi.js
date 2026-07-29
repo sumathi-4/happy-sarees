@@ -45,6 +45,7 @@ export const dashboardApi = {
   getSalesGraph:     () => api.get('/dashboard/sales-graph'),
   getOrderStatus:    () => api.get('/dashboard/order-status'),
   getRecentOrders:   () => api.get('/dashboard/recent-orders'),
+  getTopSelling:     () => api.get('/dashboard/top-selling'),
   getLowStock:       () => api.get('/dashboard/low-stock'),
   getLatestCustomers:() => api.get('/dashboard/latest-customers'),
   getActivities:     () => api.get('/dashboard/activities'),
@@ -173,6 +174,18 @@ export const notificationsApi = {
 export const uploadApi = {
   uploadImage:  (imageData, filename) => api.post('/upload/image', { imageData, filename }),
   uploadImages: (images)              => api.post('/upload/images', { images }),
+};
+
+// ── Email Logs ─────────────────────────────────────────────
+export const emailLogsApi = {
+  getLogs: () => api.get('/email-logs'),
+};
+
+// ── Reviews ────────────────────────────────────────────────
+export const reviewsApi = {
+  getReviews:   ()           => api.get('/reviews'),
+  updateReview: (id, payload)=> api.put(`/reviews/${id}`, payload),
+  deleteReview: (id)         => api.delete(`/reviews/${id}`),
 };
 
 /**

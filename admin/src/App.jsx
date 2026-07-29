@@ -17,6 +17,7 @@ import Coupons from './pages/Coupons';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import ProfileSettings from './pages/ProfileSettings';
+import RatingsReviewsManagement from './pages/RatingsReviewsManagement';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 const router = createBrowserRouter([
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
           {
             path: '/master-data',
             element: <MasterDataManagement />,
+          },
+          {
+            path: '/ratings-reviews',
+            element: <RatingsReviewsManagement />,
           },
           {
             path: '/homepage',

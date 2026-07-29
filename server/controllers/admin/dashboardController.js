@@ -14,6 +14,9 @@ exports.getOrderStatusChart = async (req, res, next) => {
 exports.getRecentOrders = async (req, res, next) => {
   try { return success(res, { orders: await dashboardService.getRecentOrders() }); } catch (e) { next(e); }
 };
+exports.getTopSelling = async (req, res, next) => {
+  try { return success(res, { products: await dashboardService.getTopSellingProducts() }); } catch (e) { next(e); }
+};
 exports.getLowStock = async (req, res, next) => {
   try { return success(res, { products: await dashboardService.getLowStockProducts() }); } catch (e) { next(e); }
 };
@@ -23,3 +26,4 @@ exports.getLatestCustomers = async (req, res, next) => {
 exports.getActivities = async (req, res, next) => {
   try { return success(res, { activities: await dashboardService.getRecentActivities() }); } catch (e) { next(e); }
 };
+

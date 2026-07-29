@@ -28,6 +28,8 @@ const adminReportRoutes       = require('./routes/admin/adminReportRoutes');
 const adminSettingsRoutes     = require('./routes/admin/adminSettingsRoutes');
 const adminNotificationRoutes = require('./routes/admin/adminNotificationRoutes');
 const adminUploadRoutes       = require('./routes/admin/adminUploadRoutes');
+const adminEmailLogsRoutes    = require('./routes/admin/adminEmailLogsRoutes');
+const adminReviewRoutes       = require('./routes/admin/adminReviewRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -118,6 +120,8 @@ app.use('/api/admin/reports',       adminReportRoutes);
 app.use('/api/admin/settings',      adminSettingsRoutes);
 app.use('/api/admin/notifications', adminNotificationRoutes);
 app.use('/api/admin/upload',        adminUploadRoutes);
+app.use('/api/admin/email-logs',    adminEmailLogsRoutes);
+app.use('/api/admin/reviews',       adminReviewRoutes);
 
 // Global Production Error Handling Middleware
 app.use((err, req, res, next) => {

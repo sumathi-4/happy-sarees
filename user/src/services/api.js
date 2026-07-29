@@ -69,7 +69,13 @@ export const api = {
 
   // Customer Reviews APIs
   getReviews: (productId) => axiosInstance.get(`/reviews/product/${productId}`),
+  getApprovedReviews: () => axiosInstance.get('/reviews/approved'),
+  checkReviewEligibility: (productId) => axiosInstance.get(`/reviews/check-eligibility/${productId}`),
   addReview: (productId, reviewData) => axiosInstance.post(`/reviews/product/${productId}`, reviewData),
+  getMyReviews: () => axiosInstance.get('/reviews/my-reviews'),
+  getPendingReviewProducts: () => axiosInstance.get('/reviews/pending-products'),
+  updateReview: (id, reviewData) => axiosInstance.put(`/reviews/${id}`, reviewData),
+  deleteReview: (id) => axiosInstance.delete(`/reviews/${id}`),
 
   // User Addresses APIs
   getAddresses: () => axiosInstance.get('/addresses'),

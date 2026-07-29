@@ -33,6 +33,10 @@ const router = createBrowserRouter([
         element: <Shop />,
       },
       {
+        path: '/sarees',
+        element: <Shop />,
+      },
+      {
         path: PATHS.PRODUCT_DETAILS,
         element: <ProductDetails />,
       },

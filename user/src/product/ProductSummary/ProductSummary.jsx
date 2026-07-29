@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { FaStar, FaHeart } from 'react-icons/fa';
-import { FiHeart, FiShare2, FiShoppingCart, FiZap, FiCheckCircle, FiRefreshCw, FiTruck } from 'react-icons/fi';
+import { FiHeart, FiShare2, FiShoppingCart, FiZap, FiCheckCircle, FiRefreshCw, FiTruck, FiStar } from 'react-icons/fi';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import api from '../../services/api';
 import styles from './ProductSummary.module.css';
 
 function ProductSummary({ product, onAddToCart, onBuyNow }) {
@@ -11,6 +12,37 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
   const { addToCart } = useCart();
   const isWishlisted = isInWishlist(product?.id);
   const [copiedToast, setCopiedToast] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [existingReview, setExistingReview] = useState(null);
+  // Live dynamic rating fetched from reviews API (approved reviews only)
+  const [liveRating, setLiveRating] = useState(null);
+  const [liveReviewCount, setLiveReviewCount] = useState(null);
+
+  React.useEffect(() => {
+    if (product && product.id) {
+      // Fetch live approved rating stats
+      api.getReviews(product.id)
+        .then((res) => {
+          if (res && res.success) {
+            setLiveRating(res.averageRating !== undefined ? Number(res.averageRating) : 0);
+            setLiveReviewCount(res.count !== undefined ? Number(res.count) : 0);
+          }
+        })
+        .catch(() => {});
+
+      const token = localStorage.getItem('hs_token');
+      if (token) {
+        api.checkReviewEligibility(product.id)
+          .then((res) => {
+            if (res.success) {
+              setCanReview(Boolean(res.canReview));
+              setExistingReview(res.existingReview || null);
+            }
+          })
+          .catch(() => setCanReview(false));
+      }
+    }
+  }, [product]);
 
   if (!product) return null;
 
@@ -43,13 +75,45 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
         </p>
       )}
 
-      {/* Rating & Reviews Bar */}
+      {/* Rating & Reviews Bar — Live dynamic from approved reviews */}
       <div className={styles.ratingRow}>
-        <div className={styles.starBadge}>
-          <span>{product.rating || 4.8}</span>
-          <FaStar className={styles.starIcon} />
+        {/* 5-star golden fill row — same style as Quick View */}
+        <div className={styles.stars}>
+          {[...Array(5)].map((_, i) => {
+            const displayRating = liveRating !== null ? liveRating : (product.rating || 0);
+            return (
+              <FiStar
+                key={i}
+                className={`${styles.starIcon} ${i + 1 <= Math.round(displayRating) ? styles.starFilled : ''}`}
+              />
+            );
+          })}
         </div>
-        <span className={styles.reviewCount}>({product.reviewCount || 24} Verified Reviews)</span>
+        <span className={styles.ratingScore}>
+          {liveRating !== null ? Number(liveRating).toFixed(1) : (product.rating ? Number(product.rating).toFixed(1) : '0.0')}
+        </span>
+        <span className={styles.reviewCount}>({liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0)} Verified Reviews)</span>
+
+        {canReview && existingReview && (existingReview.status === 'approved' || existingReview.status === 'rejected') ? (
+          // Approved/Rejected: edit disabled, show status badge
+          <span style={{ marginLeft: '12px', fontSize: '12px', color: existingReview.status === 'approved' ? '#15803d' : '#b91c1c', background: existingReview.status === 'approved' ? '#dcfce7' : '#fee2e2', padding: '4px 10px', borderRadius: '12px', fontWeight: 600 }}>
+            {existingReview.status === 'approved' ? '✓ Review Approved' : '✗ Review Rejected'}
+          </span>
+        ) : canReview ? (
+          <button
+            onClick={() => {
+              const el = document.getElementById('customer-reviews');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            style={{ marginLeft: '12px', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+          >
+            {existingReview ? 'Edit Review' : 'Write Review'}
+          </button>
+        ) : (
+          <span style={{ marginLeft: '12px', fontSize: '12px', color: '#64748b', background: '#f1f5f9', padding: '4px 10px', borderRadius: '12px', fontWeight: 600 }}>
+            Available after delivery.
+          </span>
+        )}
       </div>
 
       {/* Prices display */}

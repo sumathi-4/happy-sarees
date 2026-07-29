@@ -1,0 +1,234 @@
+/* ============================================================
+   SHOP BY PRICE — 3D SCALLOPED CUTOUT CAROUSEL (HOUSE EDIT STYLE)
+   ============================================================ */
+
+.section {
+  padding: 65px 0 80px 0;
+  background-color: #faf5ef;
+  position: relative;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.title {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #3e1708;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.subtitleHeader {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #7a5843;
+  letter-spacing: 0.5px;
+  margin: 8px 0 16px 0;
+}
+
+.titleDivider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.line {
+  width: 90px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8B4513, transparent);
+}
+
+/* CAROUSEL WRAPPER & NAVIGATION */
+.carouselWrapper {
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.carousel {
+  display: flex;
+  gap: 32px;
+  padding: 20px 20px 40px 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.navBtn {
+  position: absolute;
+  top: 52%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 1px solid rgba(139, 69, 19, 0.15);
+  color: #3e1708;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(62, 23, 8, 0.12);
+  transition: all 0.3s ease;
+}
+
+.navBtn:hover {
+  background-color: #3e1708;
+  color: #ffffff;
+  border-color: #3e1708;
+  box-shadow: 0 8px 22px rgba(62, 23, 8, 0.35);
+}
+
+.prevBtn {
+  left: 6px;
+}
+
+.nextBtn {
+  right: 6px;
+}
+
+/* 3D SCALLOPED CARD CONTAINER */
+.cardContainer {
+  flex: 0 0 255px;
+  width: 255px;
+  height: 355px;
+  scroll-snap-align: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1);
+  filter: drop-shadow(0 14px 28px rgba(62, 23, 8, 0.14));
+}
+
+.cardContainer:hover {
+  transform: translateY(-12px) scale(1.03);
+  filter: drop-shadow(0 22px 40px rgba(62, 23, 8, 0.26));
+}
+
+/* SCALLOPED BADGE FRAME */
+.scallopedFrame {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  clip-path: url(#scallopedBadgeClip);
+  background-color: #3e1708;
+  overflow: hidden;
+}
+
+/* SAREE MODEL IMAGE */
+.sareeImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.cardContainer:hover .sareeImage {
+  transform: scale(1.08);
+}
+
+/* RICH CHOCOLATE GRADIENT FOOTER BADGE */
+.badgeFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44%;
+  background: linear-gradient(
+    to top, 
+    rgba(50, 16, 4, 0.96) 0%, 
+    rgba(62, 23, 8, 0.85) 55%, 
+    transparent 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 14px 18px 14px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.priceTitle {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.8px;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.collectionText {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #e6c896;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.flourishGraphic {
+  width: 100px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flourishSvg {
+  width: 100%;
+  height: 100%;
+}
+
+/* RESPONSIVE STYLING */
+@media (max-width: 1024px) {
+  .cardContainer {
+    flex: 0 0 230px;
+    width: 230px;
+    height: 325px;
+  }
+
+  .priceTitle {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 45px 0 60px 0;
+  }
+
+  .title {
+    font-size: 1.7rem;
+  }
+
+  .carousel {
+    gap: 20px;
+    padding: 15px 15px 30px 15px;
+  }
+
+  .cardContainer {
+    flex: 0 0 210px;
+    width: 210px;
+    height: 300px;
+  }
+}

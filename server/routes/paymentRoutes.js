@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const db = require('../db');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -166,6 +167,20 @@ router.post('/verify-signature', async (req, res) => {
       } catch (cartErr) {
         console.warn('[PaymentRoutes] Failed to clear cart after payment verification:', cartErr.message);
       }
+    }
+
+    if (updatedOrder) {
+      try {
+        emailService.sendNotification('PAYMENT_SUCCESS', {
+          ...updatedOrder,
+          id: updatedOrder.id,
+          orderNumber: updatedOrder.order_number,
+          totalAmount: Number(updatedOrder.total_amount),
+          paymentMethod: updatedOrder.payment_method || 'Pay Online',
+          paymentStatus: updatedOrder.payment_status || 'Paid',
+          orderStatus: updatedOrder.order_status || 'Confirmed'
+        }).catch(err => console.error('[Payment Success Email Async Error]:', err.message));
+      } catch (e) {}
     }
 
     res.json({
