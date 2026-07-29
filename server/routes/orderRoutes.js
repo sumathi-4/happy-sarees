@@ -46,6 +46,12 @@ router.post('/', authenticateToken, async (req, res) => {
       );
     }
 
+    // Auto timeline log initial creation
+    await client.query(
+      `INSERT INTO order_timeline (order_id, status, note) VALUES ($1, $2, $3)`,
+      [order.id, initialOrderStatus, 'Order created by customer']
+    );
+
     // Auto increment coupon usage in Neon DB
     if (couponCode) {
       const couponRes = await client.query(
@@ -95,27 +101,46 @@ router.post('/', authenticateToken, async (req, res) => {
 // 2. Get User Orders History
 router.get('/my-orders', authenticateToken, async (req, res) => {
   try {
-    const result = await db.query(
-      `SELECT o.*, 
-              json_agg(
-                json_build_object(
-                  'id', oi.id,
-                  'productId', oi.product_id,
-                  'quantity', oi.quantity,
-                  'price', oi.price_at_purchase,
-                  'productName', COALESCE(p.name, 'Silk Saree'),
-                  'fabric', COALESCE(p.fabric, 'Silk'),
-                  'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), '/src/assets/hero_saree_model.png')
-                )
-              ) as items
-       FROM orders o
-       LEFT JOIN order_items oi ON o.id = oi.order_id
-       LEFT JOIN products p ON oi.product_id = p.id
-       WHERE o.user_id = $1
-       GROUP BY o.id
-       ORDER BY o.created_at DESC`,
-      [req.user.id]
-    );
+    const [result, timelineRes] = await Promise.all([
+      db.query(
+        `SELECT o.*, 
+                json_agg(
+                  json_build_object(
+                    'id', oi.id,
+                    'productId', oi.product_id,
+                    'quantity', oi.quantity,
+                    'price', oi.price_at_purchase,
+                    'productName', COALESCE(p.name, 'Silk Saree'),
+                    'fabric', COALESCE(p.fabric, 'Silk'),
+                    'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), '/src/assets/hero_saree_model.png')
+                  )
+                ) as items
+         FROM orders o
+         LEFT JOIN order_items oi ON o.id = oi.order_id
+         LEFT JOIN products p ON oi.product_id = p.id
+         WHERE o.user_id = $1
+         GROUP BY o.id
+         ORDER BY o.created_at DESC`,
+        [req.user.id]
+      ),
+      db.query(
+        `SELECT ot.* FROM order_timeline ot 
+         JOIN orders o ON ot.order_id = o.id 
+         WHERE o.user_id = $1 
+         ORDER BY ot.created_at ASC`,
+        [req.user.id]
+      )
+    ]);
+
+    const timelineMap = {};
+    (timelineRes.rows || []).forEach(t => {
+      if (!timelineMap[t.order_id]) timelineMap[t.order_id] = [];
+      timelineMap[t.order_id].push({
+        status: t.status,
+        note: t.note,
+        date: t.created_at
+      });
+    });
 
     const orders = result.rows.map(o => {
       let addr = o.shipping_address;
@@ -124,6 +149,9 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
       }
 
       const rawItems = Array.isArray(o.items) ? o.items.filter(i => i && i.id) : [];
+      const orderTimeline = timelineMap[o.id] && timelineMap[o.id].length > 0
+        ? timelineMap[o.id]
+        : [{ status: o.order_status || 'Confirmed', note: 'Order placed', date: o.created_at }];
 
       return {
         id: o.id,
@@ -136,6 +164,12 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
         payment_method: o.payment_method || 'Pay Online',
         paymentStatus: o.payment_status || 'Pending',
         payment_status: o.payment_status || 'Pending',
+        returnStatus: o.return_status || 'No Request',
+        return_status: o.return_status || 'No Request',
+        returnReason: o.return_reason || '',
+        return_reason: o.return_reason || '',
+        returnRequestedAt: o.return_requested_at || null,
+        return_requested_at: o.return_requested_at || null,
         orderStatus: o.order_status || 'Confirmed',
         order_status: o.order_status || 'Confirmed',
         deliveryStatus: o.delivery_status || o.order_status || 'Processing',
@@ -158,7 +192,8 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
         courier_name: o.courier_name || 'Express Delivery',
         createdAt: o.created_at,
         created_at: o.created_at,
-        items: rawItems
+        items: rawItems,
+        timeline: orderTimeline
       };
     });
 
@@ -224,8 +259,14 @@ router.post('/:id/return', authenticateToken, async (req, res) => {
     }
 
     await db.query(
-      `UPDATE orders SET order_status = 'Return Requested', updated_at = NOW() WHERE id = $1`,
-      [orderId]
+      `UPDATE orders 
+       SET order_status = 'Returned',
+           return_status = 'Return Requested', 
+           return_reason = $1, 
+           return_requested_at = NOW(), 
+           updated_at = NOW() 
+       WHERE id = $2`,
+      [reason || 'Customer requested return', orderId]
     );
 
     // Auto timeline log

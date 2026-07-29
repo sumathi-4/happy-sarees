@@ -67,3 +67,26 @@ exports.updateNotes = async (req, res, next) => {
     return success(res, { order }, 'Internal staff notes updated successfully.');
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
+
+exports.updatePaymentStatus = async (req, res, next) => {
+  try {
+    const { paymentStatus } = req.body;
+    if (!paymentStatus) return error(res, 'Payment status is required.', 400);
+    const order = await orderService.updatePaymentStatus(parseInt(req.params.id), paymentStatus, req.adminUser?.adminId);
+    return success(res, { order }, `Payment status updated to ${paymentStatus}.`);
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.approveReturn = async (req, res, next) => {
+  try {
+    const order = await orderService.approveReturn(parseInt(req.params.id), req.adminUser?.adminId);
+    return success(res, { order }, 'Return request approved & refund processed automatically.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};
+
+exports.rejectReturn = async (req, res, next) => {
+  try {
+    const order = await orderService.rejectReturn(parseInt(req.params.id), req.adminUser?.adminId);
+    return success(res, { order }, 'Return request rejected.');
+  } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
+};

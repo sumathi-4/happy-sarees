@@ -138,6 +138,14 @@
     background-color: #e8f5e9;
     color: #2e7d32;
   }
+  &.returned {
+    background-color: #efebe9;
+    color: #4e342e;
+  }
+  &.cancelled {
+    background-color: #ffebee;
+    color: #c62828;
+  }
 }
 
 .totalPrice {

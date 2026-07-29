@@ -31,6 +31,8 @@ function MasterDataManagement() {
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null); // null if adding
   const [itemName, setItemName] = useState('');
+  const [itemImageData, setItemImageData] = useState('');
+  const [itemDescription, setItemDescription] = useState('');
   const [itemStatus, setItemStatus] = useState('Active');
   const [itemSortOrder, setItemSortOrder] = useState('');
 
@@ -110,6 +112,8 @@ function MasterDataManagement() {
       // Edit mode
       updateMasterItem(selectedType, editingItem.id, {
         name: itemName.trim(),
+        imageData: itemImageData,
+        description: itemDescription,
         status: itemStatus,
         sortOrder: sortOrderVal
       });
@@ -118,6 +122,8 @@ function MasterDataManagement() {
       // Add mode
       addMasterItem(selectedType, {
         name: itemName.trim(),
+        imageData: itemImageData,
+        description: itemDescription,
         status: itemStatus,
         sortOrder: sortOrderVal
       });
@@ -127,6 +133,8 @@ function MasterDataManagement() {
     setShowItemModal(false);
     setEditingItem(null);
     setItemName('');
+    setItemImageData('');
+    setItemDescription('');
     setItemStatus('Active');
     setItemSortOrder('');
   };
@@ -134,9 +142,11 @@ function MasterDataManagement() {
   // Open Edit Modal
   const openEditModal = (item) => {
     setEditingItem(item);
-    setItemName(item.name);
-    setItemStatus(item.status);
-    setItemSortOrder(item.sortOrder.toString());
+    setItemName(item.name || '');
+    setItemImageData(item.imageData || item.image_data || item.image || '');
+    setItemDescription(item.description || '');
+    setItemStatus(item.status || (item.isActive ? 'Active' : 'Inactive'));
+    setItemSortOrder((item.sortOrder ?? item.sort_order ?? '').toString());
     setShowItemModal(true);
   };
 
@@ -260,8 +270,49 @@ function MasterDataManagement() {
                   type="text" 
                   value={itemName} 
                   onChange={(e) => setItemName(e.target.value)} 
-                  placeholder="e.g. Silk, Banarasi, Lavender" 
+                  placeholder="e.g. Wedding, Festive, Silk" 
                   required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Image URL / Upload</label>
+                <input 
+                  type="text" 
+                  value={itemImageData} 
+                  onChange={(e) => setItemImageData(e.target.value)} 
+                  placeholder="Paste image URL (e.g. https://... or data:image/...)" 
+                  style={{ marginBottom: '6px' }}
+                />
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setItemImageData(reader.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  style={{ fontSize: '12px' }}
+                />
+                {itemImageData && (
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={itemImageData} alt="Preview" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd' }} />
+                    <button type="button" onClick={() => setItemImageData('')} style={{ fontSize: '11px', color: '#e53935', background: 'none', border: 'none', cursor: 'pointer' }}>Remove Image</button>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Description / Subtitle</label>
+                <textarea
+                  value={itemDescription}
+                  onChange={(e) => setItemDescription(e.target.value)}
+                  placeholder="Short description for this option (optional)"
+                  rows={2}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px' }}
                 />
               </div>
 
@@ -542,10 +593,19 @@ function MasterDataManagement() {
           {/* Grid list elements */}
           {paginatedItems.length > 0 ? (
             <div>
-              <DataTable headers={['NAME', 'STATUS', 'SORT ORDER', 'ACTIONS']}>
-                {paginatedItems.map((item) => (
-                  <tr key={item.id}>
-                    <td style={{ fontWeight: 600, color: '#2b2b2b' }}>{item.name}</td>
+              <DataTable headers={['IMAGE', 'NAME', 'STATUS', 'SORT ORDER', 'ACTIONS']}>
+                {paginatedItems.map((item) => {
+                  const img = item.imageData || item.image_data || item.image;
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        {img ? (
+                          <img src={img} alt={item.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #eee' }} />
+                        ) : (
+                          <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🖼️</div>
+                        )}
+                      </td>
+                      <td style={{ fontWeight: 600, color: '#2b2b2b' }}>{item.name}</td>
                     <td>
                       <button 
                         onClick={() => handleToggleStatus(item)}
@@ -569,8 +629,9 @@ function MasterDataManagement() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </DataTable>
+                );
+              })}
+            </DataTable>
 
               {/* Pagination controls */}
               <div className={styles.paginationRow}>

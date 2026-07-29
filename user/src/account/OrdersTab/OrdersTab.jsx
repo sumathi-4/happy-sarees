@@ -43,6 +43,12 @@ function OrdersTab({ orders: parentOrders }) {
               date: o.created_at || o.createdAt ? new Date(o.created_at || o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently',
               status: o.order_status || o.orderStatus || 'Confirmed',
               paymentStatus: o.payment_status || o.paymentStatus || 'Pending',
+              returnStatus: o.return_status || o.returnStatus || 'No Request',
+              return_status: o.return_status || o.returnStatus || 'No Request',
+              returnReason: o.return_reason || o.returnReason || '',
+              return_reason: o.return_reason || o.returnReason || '',
+              returnRequestedAt: o.return_requested_at || o.returnRequestedAt || null,
+              return_requested_at: o.return_requested_at || o.returnRequestedAt || null,
               paymentMethod: o.payment_method || o.paymentMethod || 'Pay Online',
               totalPrice: Number(o.total_amount || o.totalAmount || 0),
               shippingAddress: addrStr,
@@ -78,82 +84,70 @@ function OrdersTab({ orders: parentOrders }) {
   const handleCancelOrder = async (orderDbId) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
       try {
-        const token = localStorage.getItem('hs_user_token');
-        const res = await fetch(`http://localhost:5001/api/orders/${orderDbId}/cancel`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
-        if (data.success) {
+        const res = await api.cancelOrder(orderDbId);
+        if (res.success) {
           alert('Order cancelled successfully.');
           fetchUserOrders();
         } else {
-          alert(data.message || 'Failed to cancel order.');
+          alert(res.message || 'Failed to cancel order.');
         }
       } catch (err) {
-        alert('Network error while cancelling order.');
+        alert(err.message || 'Network error while cancelling order.');
       }
     }
   };
 
   const handleReturnOrder = async (orderDbId) => {
     const reason = window.prompt('Please enter a reason for your return request:');
-    if (reason !== null) {
+    if (reason !== null && reason.trim() !== '') {
       try {
-        const token = localStorage.getItem('hs_user_token');
-        const res = await fetch(`http://localhost:5001/api/orders/${orderDbId}/return`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ reason })
-        });
-        const data = await res.json();
-        if (data.success) {
+        const res = await api.returnOrder(orderDbId, reason.trim());
+        if (res.data?.success || res.success) {
           alert('Return request submitted successfully.');
+          setOrders(prev => prev.map(o => (o.dbId === orderDbId || o.id === orderDbId) ? {
+            ...o,
+            status: 'Returned',
+            order_status: 'Returned',
+            returnStatus: 'Return Requested',
+            return_status: 'Return Requested',
+            returnReason: reason.trim(),
+            return_reason: reason.trim(),
+            returnRequestedAt: new Date().toISOString(),
+            return_requested_at: new Date().toISOString()
+          } : o));
           fetchUserOrders();
         } else {
-          alert(data.message || 'Failed to submit return request.');
+          alert(res.message || 'Failed to submit return request.');
         }
       } catch (err) {
-        alert('Network error while submitting return request.');
+        alert(err.message || 'Network error while submitting return request.');
       }
     }
   };
 
-  const filteredOrders = orders.filter((ord) => {
-    if (filter === 'All') return true;
-    const st = (ord.status || '').toLowerCase();
-    const flt = filter.toLowerCase();
-    return st === flt;
-  });
-
-  const toggleExpand = (id) => {
-    setExpandedOrderId(expandedOrderId === id ? null : id);
+  const toggleExpand = (orderId) => {
+    setExpandedOrderId(prev => prev === orderId ? null : orderId);
   };
 
+  const filteredOrders = orders.filter(order => {
+    if (filter === 'All') return true;
+    return order.status === filter;
+  });
+
   return (
-    <div className={styles.tabWrapper}>
-      <div className={styles.headerRow}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2 className={styles.tabTitle}>My Orders</h2>
-          <button
-            onClick={fetchUserOrders}
-            title="Refresh Orders"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d11b69', display: 'flex', alignItems: 'center' }}
-          >
-            <FiRefreshCw style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-          </button>
+    <div className={styles.ordersTab}>
+      {/* Header */}
+      <div className={styles.tabHeader}>
+        <div>
+          <h3 className={styles.tabTitle}>My Order History</h3>
+          <p className={styles.tabSub}>Track ongoing packages and view previous purchases</p>
         </div>
         <span className={styles.subCount}>{orders.length} Total Orders</span>
       </div>
 
       {/* Filter Pills */}
       <div className={styles.filterBar}>
-        {['All', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'].map((st) => (
+        {['All', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Returned', 'Cancelled'].map((st) => (
           <button
             key={st}
             onClick={() => setFilter(st)}
@@ -167,7 +161,7 @@ function OrdersTab({ orders: parentOrders }) {
       {loading && orders.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
           <FiPackage style={{ fontSize: '2rem', opacity: 0.5, marginBottom: '10px' }} />
-          <p>Loading your orders from Neon PostgreSQL...</p>
+          <p>Loading your orders...</p>
         </div>
       ) : filteredOrders.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#888', background: '#fafafa', borderRadius: '12px', border: '1px dashed #ddd' }}>
@@ -180,6 +174,8 @@ function OrdersTab({ orders: parentOrders }) {
         <div className={styles.ordersList}>
           {filteredOrders.map((order) => {
             const isExpanded = expandedOrderId === order.id;
+            const retStatus = order.returnStatus || order.return_status || 'No Request';
+            const payStatus = order.paymentStatus || order.payment_status || 'Pending';
 
             return (
               <div key={order.id} className={styles.orderCard}>
@@ -196,6 +192,19 @@ function OrdersTab({ orders: parentOrders }) {
                     <span className={`${styles.statusBadge} ${styles[(order.status || 'confirmed').toLowerCase().replace(/\s+/g, '')] || styles.processing}`}>
                       {order.status || 'Confirmed'}
                     </span>
+                    {retStatus !== 'No Request' && (
+                      <span 
+                        className={styles.statusBadge} 
+                        style={{ 
+                          backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? '#ffebee' : '#fff5f8'), 
+                          color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? '#c62828' : '#d11b69'), 
+                          border: retStatus === 'Refunded' ? '1px solid #7dd3fc' : (retStatus === 'Return Rejected' ? '1px solid #ffcdd2' : '1px solid #f8bbd0'),
+                          marginLeft: '6px'
+                        }}
+                      >
+                        {retStatus}
+                      </span>
+                    )}
                     <strong className={styles.totalPrice}>₹{(order.totalPrice || 0).toLocaleString()}</strong>
                     <button className={styles.expandBtn}>
                       {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
@@ -207,7 +216,12 @@ function OrdersTab({ orders: parentOrders }) {
                 <div className={styles.itemsPreview}>
                   {(order.items || []).map((item) => (
                     <div key={item.id} className={styles.itemRow}>
-                      <img src={item.image} alt={item.name} className={styles.itemThumb} />
+                      <img 
+                        src={item.image || '/src/assets/hero_saree_model.png'} 
+                        alt={item.name} 
+                        className={styles.itemThumb} 
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                      />
                       <div className={styles.itemInfo}>
                         <h5 className={styles.itemName}>{item.name}</h5>
                         <span className={styles.itemMeta}>Fabric: {item.fabric} | Qty: {item.quantity}</span>
@@ -228,7 +242,7 @@ function OrdersTab({ orders: parentOrders }) {
                       <div className={styles.detailBox}>
                         <h6><FiCreditCard style={{ marginRight: '4px' }} /> Payment Details</h6>
                         <p><strong>Method:</strong> {order.paymentMethod || 'Pay Online'}</p>
-                        <p><strong>Status:</strong> {order.paymentStatus || 'Pending'}</p>
+                        <p><strong>Status:</strong> {payStatus}</p>
                         {order.razorpayPaymentId && (
                           <p style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
                             Ref ID: {order.razorpayPaymentId}
@@ -236,16 +250,34 @@ function OrdersTab({ orders: parentOrders }) {
                         )}
                       </div>
                       <div className={styles.detailBox}>
-                        <h6><FiTruck style={{ marginRight: '4px' }} /> Order Status & Tracking</h6>
-                        <p><strong>Status:</strong> {order.status}</p>
+                        <h6><FiTruck style={{ marginRight: '4px' }} /> Order & Return Status</h6>
+                        <p><strong>Order Status:</strong> {order.status}</p>
+                        <p><strong>Return Status:</strong> <span style={{ fontWeight: '700', color: retStatus === 'Refunded' ? '#2e7d32' : (retStatus === 'Return Requested' ? '#d11b69' : '#555') }}>{retStatus}</span></p>
                         {order.trackingNumber && (
                           <>
-                            <p><strong>Courier:</strong> {order.courierName || 'Express Courier'}</p>
+                            <p style={{ marginTop: '4px' }}><strong>Courier:</strong> {order.courierName || 'Express Courier'}</p>
                             <p><strong>AWB / Tracking:</strong> {order.trackingNumber}</p>
                           </>
                         )}
                       </div>
                     </div>
+
+                    {/* Return status details alert if return initiated */}
+                    {retStatus !== 'No Request' && (
+                      <div style={{ marginTop: '14px', padding: '12px 16px', borderRadius: '8px', backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? '#ffebee' : '#fff5f8'), border: retStatus === 'Refunded' ? '1px solid #7dd3fc' : (retStatus === 'Return Rejected' ? '1px solid #ffcdd2' : '1px solid #f8bbd0') }}>
+                        <strong style={{ fontSize: '13.5px', color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? '#c62828' : '#d11b69') }}>🔄 Return Status: {retStatus}</strong>
+                        {(order.returnReason || order.return_reason) && (
+                          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#444' }}>
+                            <strong>Reason:</strong> "{order.returnReason || order.return_reason}"
+                          </p>
+                        )}
+                        {(order.returnRequestedAt || order.return_requested_at) && (
+                          <p style={{ margin: '3px 0 0 0', fontSize: '11px', color: '#777' }}>
+                            Requested on: {new Date(order.returnRequestedAt || order.return_requested_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Customer Actions Bar: Cancel / Return */}
                     <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -268,21 +300,42 @@ function OrdersTab({ orders: parentOrders }) {
                       )}
 
                       {order.status === 'Delivered' && (
-                        <button
-                          onClick={() => handleReturnOrder(order.dbId || order.id)}
-                          style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#d11b69',
-                            border: 'none',
-                            color: '#fff',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Request Return
-                        </button>
+                        <>
+                          {(retStatus === 'No Request' || !retStatus) ? (
+                            <button
+                              onClick={() => handleReturnOrder(order.dbId || order.id)}
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#d11b69',
+                                border: 'none',
+                                color: '#fff',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Return Order
+                            </button>
+                          ) : retStatus === 'Return Requested' ? (
+                            <button
+                              disabled
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#fff0f5',
+                                border: '1px solid #f8bbd0',
+                                color: '#d11b69',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'not-allowed',
+                                opacity: 0.95
+                              }}
+                            >
+                              Return Request Submitted
+                            </button>
+                          ) : null}
+                        </>
                       )}
                     </div>
                   </div>

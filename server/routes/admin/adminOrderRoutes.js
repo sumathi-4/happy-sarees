@@ -12,6 +12,9 @@ router.post('/:id/refund',    adminAuth, requirePermission('orders','manage'), c
 router.put('/:id/cancel',     adminAuth, requirePermission('orders','manage'), ctrl.cancel);
 router.get('/:id/invoice',    adminAuth, requirePermission('orders','view'),   ctrl.getInvoice);
 router.put('/:id/notes',      adminAuth, requirePermission('orders','edit'),   ctrl.updateNotes);
+router.put('/:id/payment-status', adminAuth, requirePermission('orders','edit'), ctrl.updatePaymentStatus);
+router.put('/:id/approve-return', adminAuth, requirePermission('orders','edit'), ctrl.approveReturn);
+router.put('/:id/reject-return',  adminAuth, requirePermission('orders','edit'), ctrl.rejectReturn);
 router.delete('/:id',         adminAuth, requirePermission('orders','manage'), ctrl.deleteOrder);
 
 module.exports = router;

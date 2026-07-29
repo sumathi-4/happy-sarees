@@ -1057,6 +1057,10 @@ export function AdminDataProvider({ children }) {
             newMasterData[key] = rawList.map(item => ({
               id: item.id,
               name: item.name,
+              slug: item.slug || item.name.toLowerCase().trim().replace(/\s+/g, '-'),
+              description: item.description || '',
+              imageData: item.image_data || item.imageData || item.image || '',
+              image_data: item.image_data || item.imageData || item.image || '',
               status: item.is_active ? 'Active' : 'Inactive',
               isActive: item.is_active,
               sortOrder: item.sort_order || 0

@@ -489,6 +489,12 @@
 .order_cancelled { background-color: #ffebee; color: #c62828; }
 .order_returned { background-color: #efebe9; color: #4e342e; }
 
+.return_no_request { background-color: #f5f5f5; color: #757575; }
+.return_return_requested { background-color: #fff0f5; color: #d11b69; border: 1px solid #f8bbd0; }
+.return_return_approved { background-color: #e8f5e9; color: #2e7d32; }
+.return_return_rejected { background-color: #ffebee; color: #c62828; }
+.return_refunded { background-color: #e0f2fe; color: #0284c7; }
+
 .delivery_not_processed { background-color: #f5f5f5; color: #616161; }
 .delivery_ready_to_ship { background-color: #ede7f6; color: #673ab7; }
 .delivery_in_transit { background-color: #e3f2fd; color: #1565c0; }
@@ -1130,4 +1136,15 @@
     border: none;
     padding: 0;
   }
+}
+
+.itemCountText {
+  display: inline-block;
+  background-color: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
 }

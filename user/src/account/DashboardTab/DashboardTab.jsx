@@ -126,6 +126,7 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
                     src={order.items?.[0]?.image || '/src/assets/hero_saree_model.png'}
                     alt={order.items?.[0]?.name || 'Saree'}
                     className={styles.orderThumb}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
                   />
                   <div className={styles.orderMeta}>
                     <h4 className={styles.orderName}>{order.items?.[0]?.name || 'Silk Saree'}</h4>
@@ -165,7 +166,12 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
                 return (
                   <div key={prod.id} className={styles.recCard}>
                     <div className={styles.recImgFrame}>
-                      <img src={prod.image} alt={prod.name} className={styles.recImg} />
+                      <img 
+                        src={prod.image || prod.image_url || '/src/assets/hero_saree_model.png'} 
+                        alt={prod.name} 
+                        className={styles.recImg} 
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                      />
                       <button onClick={() => toggleWishlist(prod)} className={styles.recHeartBtn}>
                         {isWish ? <FaHeart style={{ color: '#e91e63' }} /> : <FiHeart />}
                       </button>

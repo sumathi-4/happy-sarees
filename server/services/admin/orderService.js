@@ -13,6 +13,11 @@ const VALID_STATUSES = [
   'Out For Delivery',
   'Delivered',
   'Cancelled',
+  'Returned'
+];
+
+const VALID_RETURN_STATUSES = [
+  'No Request',
   'Return Requested',
   'Return Approved',
   'Return Rejected',
@@ -24,7 +29,7 @@ class OrderService {
   // ── List Orders ────────────────────────────────────────────
   async getAll(query) {
     const { page, limit, offset } = parsePagination(query, 15);
-    const { search, status, paymentStatus, dateFrom, dateTo, sort } = query;
+    const { search, status, returnStatus, paymentStatus, dateFrom, dateTo, sort } = query;
 
     let where = [`1=1`];
     const params = [];
@@ -36,6 +41,10 @@ class OrderService {
     if (status) {
       params.push(status);
       where.push(`o.order_status = $${params.length}`);
+    }
+    if (returnStatus) {
+      params.push(returnStatus);
+      where.push(`o.return_status = $${params.length}`);
     }
     if (paymentStatus) {
       params.push(paymentStatus);
@@ -54,7 +63,7 @@ class OrderService {
     const orderBy = buildOrderBy(sort, ['total_amount','created_at','order_status'], 'o.created_at DESC');
 
     params.push(limit, offset);
-    const [data, countRes, timelineRes] = await Promise.all([
+    const [data, countRes, timelineRes, itemsRes] = await Promise.all([
       db.query(
         `SELECT o.*, u.full_name as customer_name, u.email as customer_email, u.phone as customer_phone
          FROM orders o LEFT JOIN users u ON o.user_id = u.id
@@ -64,7 +73,12 @@ class OrderService {
         params
       ),
       db.query(`SELECT COUNT(*) FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE ${whereClause}`, params.slice(0,-2)),
-      db.query(`SELECT ot.*, au.name as created_by_name FROM order_timeline ot LEFT JOIN admin_users au ON ot.created_by = au.id ORDER BY ot.created_at ASC`)
+      db.query(`SELECT ot.*, au.name as created_by_name FROM order_timeline ot LEFT JOIN admin_users au ON ot.created_by = au.id ORDER BY ot.created_at ASC`),
+      db.query(`SELECT oi.*, p.name as product_name, p.sku, p.fabric,
+                       COALESCE(pi.image_data, pi.image_url, '/src/assets/hero_saree_model.png') as image
+                FROM order_items oi
+                LEFT JOIN products p ON oi.product_id = p.id
+                LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = true`)
     ]);
 
     const timelineMap = {};
@@ -78,6 +92,24 @@ class OrderService {
         completed: true,
         createdBy: t.created_by_name || 'System',
         date: t.created_at
+      });
+    });
+
+    const itemsMap = {};
+    (itemsRes.rows || []).forEach(i => {
+      if (!itemsMap[i.order_id]) itemsMap[i.order_id] = [];
+      itemsMap[i.order_id].push({
+        id: i.id,
+        productId: i.product_id,
+        productName: i.product_name || 'Silk Saree',
+        name: i.product_name || 'Silk Saree',
+        sku: i.sku || 'HS-001',
+        fabric: i.fabric || 'Silk',
+        quantity: i.quantity,
+        qty: i.quantity,
+        price: Number(i.price_at_purchase),
+        total: Number(i.price_at_purchase) * i.quantity,
+        image: i.image
       });
     });
 
@@ -101,6 +133,8 @@ class OrderService {
               { status: r.order_status || 'Confirmed', time: 'Updated', completed: true }
             ];
 
+        const realItems = itemsMap[r.id] || [];
+
         return {
           id: r.id,
           orderNumber: r.order_number || `HS-ORD-${r.id}`,
@@ -113,6 +147,12 @@ class OrderService {
           order_status: r.order_status || 'Confirmed',
           paymentStatus: r.payment_status || 'Pending',
           payment_status: r.payment_status || 'Pending',
+          returnStatus: r.return_status || 'No Request',
+          return_status: r.return_status || 'No Request',
+          returnReason: r.return_reason || '',
+          return_reason: r.return_reason || '',
+          returnRequestedAt: r.return_requested_at || null,
+          return_requested_at: r.return_requested_at || null,
           paymentMethod: r.payment_method || 'Pay Online',
           payment_method: r.payment_method || 'Pay Online',
           deliveryStatus: r.delivery_status || r.order_status || 'Processing',
@@ -131,6 +171,8 @@ class OrderService {
           adminNotes: r.admin_notes || '',
           admin_notes: r.admin_notes || '',
           timeline: realTimeline,
+          items: realItems,
+          products: realItems,
           date: r.created_at ? new Date(r.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-',
           orderDate: r.created_at ? new Date(r.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-',
           createdAt: r.created_at,
@@ -181,6 +223,9 @@ class OrderService {
       amount:         Number(o.total_amount),
       status:         o.order_status,
       paymentStatus:  o.payment_status,
+      returnStatus:   o.return_status || 'No Request',
+      returnReason:   o.return_reason || '',
+      returnRequestedAt: o.return_requested_at || null,
       paymentMethod:  o.payment_method,
       customer:       { name: o.customer_name, email: o.customer_email, phone: o.customer_phone },
       shippingAddress: o.shipping_address,
@@ -219,16 +264,26 @@ class OrderService {
 
     const isRefunded = status === 'Refunded';
     const isCancelled = status === 'Cancelled';
-
-    await db.query(
-      `UPDATE orders 
-       SET order_status = $1, 
-           payment_status = CASE WHEN $1 = 'Refunded' THEN 'Refunded' ELSE payment_status END, 
-           updated_at = NOW() 
-           ${isCancelled ? ', cancelled_at = NOW()' : ''} 
-       WHERE id = $2`,
-      [status, id]
-    );
+    if (status === 'Refunded') {
+      await db.query(
+        `UPDATE orders 
+         SET order_status = $1, 
+             payment_status = 'Refunded', 
+             updated_at = NOW() 
+             ${isCancelled ? ', cancelled_at = NOW()' : ''} 
+         WHERE id = $2`,
+        [status, id]
+      );
+    } else {
+      await db.query(
+        `UPDATE orders 
+         SET order_status = $1, 
+             updated_at = NOW() 
+             ${isCancelled ? ', cancelled_at = NOW()' : ''} 
+         WHERE id = $2`,
+        [status, id]
+      );
+    }
 
     // Log automatically to timeline
     await db.query(
@@ -300,6 +355,67 @@ class OrderService {
       `UPDATE orders SET admin_notes = $1, updated_at = NOW() WHERE id = $2`,
       [adminNotes, id]
     );
+    return this.getById(id);
+  }
+
+  // ── Update Payment Status ──────────────────────────────────
+  async updatePaymentStatus(id, paymentStatus, adminUserId) {
+    await db.query(
+      `UPDATE orders SET payment_status = $1, updated_at = NOW() WHERE id = $2`,
+      [paymentStatus, id]
+    );
+    await db.query(
+      `INSERT INTO order_timeline (order_id, status, note, created_by) VALUES ($1, $2, $3, $4)`,
+      [id, paymentStatus === 'Paid' ? 'Payment Received' : paymentStatus, `Payment status updated to ${paymentStatus}`, adminUserId || null]
+    );
+    return this.getById(id);
+  }
+
+  // ── Approve Return Request ──────────────────────────────────
+  async approveReturn(id, adminUserId) {
+    const orderRes = await db.query('SELECT * FROM orders WHERE id = $1', [id]);
+    if (orderRes.rows.length === 0) throw { status: 404, message: 'Order not found.' };
+
+    const order = orderRes.rows[0];
+
+    // Automatically set order_status = 'Returned', return_status = 'Refunded' and payment_status = 'Refunded'
+    await db.query(
+      `UPDATE orders 
+       SET order_status = 'Returned',
+           return_status = 'Refunded', 
+           payment_status = 'Refunded', 
+           updated_at = NOW() 
+       WHERE id = $1`,
+      [id]
+    );
+
+    await db.query(
+      `INSERT INTO order_timeline (order_id, status, note, created_by) VALUES ($1, $2, $3, $4)`,
+      [id, 'Return Approved', `Return request approved. Refund processed automatically (${order.payment_method || 'COD'})`, adminUserId || null]
+    );
+
+    return this.getById(id);
+  }
+
+  // ── Reject Return Request ───────────────────────────────────
+  async rejectReturn(id, adminUserId) {
+    const orderRes = await db.query('SELECT * FROM orders WHERE id = $1', [id]);
+    if (orderRes.rows.length === 0) throw { status: 404, message: 'Order not found.' };
+
+    await db.query(
+      `UPDATE orders 
+       SET order_status = 'Delivered',
+           return_status = 'Return Rejected', 
+           updated_at = NOW() 
+       WHERE id = $1`,
+      [id]
+    );
+
+    await db.query(
+      `INSERT INTO order_timeline (order_id, status, note, created_by) VALUES ($1, $2, $3, $4)`,
+      [id, 'Return Rejected', 'Return request rejected by admin', adminUserId || null]
+    );
+
     return this.getById(id);
   }
 }

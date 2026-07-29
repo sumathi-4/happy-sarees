@@ -78,7 +78,12 @@ function RecentlyViewed({ products: passedProducts = [] }) {
             <div key={item.id} className={styles.miniCard}>
               <div className={styles.imageFrame}>
                 <Link to={`/product/${item.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-                  <img src={item.image} alt={item.name} className={styles.miniImg} />
+                  <img 
+                    src={item.image || item.image_url || '/src/assets/hero_saree_model.png'} 
+                    alt={item.name} 
+                    className={styles.miniImg} 
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                  />
                 </Link>
                 <button
                   onClick={() => toggleWishlist(item)}

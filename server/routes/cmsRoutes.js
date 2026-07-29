@@ -113,6 +113,38 @@ router.get('/navigation', async (req, res) => {
   }
 });
 
+// 3b. Get Public Shop by Occasion Data (Dynamically from Neon DB)
+router.get('/occasions', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT mi.id, mi.name, mi.slug, mi.description, mi.image_data, mi.sort_order, mi.is_active
+       FROM master_items mi
+       JOIN master_types mt ON mi.type_id = mt.id
+       WHERE (mt.slug = 'occasions' OR mt.slug = 'occasion') AND mi.is_active = true
+       ORDER BY mi.sort_order ASC, mi.name ASC`
+    );
+
+    const occasions = result.rows.map(row => {
+      const cleanSlug = row.slug || row.name.toLowerCase().trim().replace(/\s+/g, '-');
+      return {
+        id: row.id,
+        name: row.name,
+        slug: cleanSlug,
+        description: row.description,
+        image: row.image_data,
+        sortOrder: row.sort_order,
+        isActive: row.is_active,
+        path: `/shop?occasion=${encodeURIComponent(cleanSlug)}`
+      };
+    });
+
+    res.json({ success: true, occasions });
+  } catch (err) {
+    console.error('[cmsRoutes] Public Occasions fetch error:', err.message);
+    res.status(500).json({ success: false, message: 'Server error fetching occasions.' });
+  }
+});
+
 // 4. Get All Public Master Data (For Website Filters - Respects show_in_filters)
 router.get('/master-data', async (req, res) => {
   try {

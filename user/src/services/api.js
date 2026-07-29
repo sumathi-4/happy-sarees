@@ -59,6 +59,8 @@ export const api = {
   // Orders APIs
   createOrder: (orderData) => axiosInstance.post('/orders', orderData),
   getMyOrders: () => axiosInstance.get('/orders/my-orders'),
+  cancelOrder: (orderId) => axiosInstance.put(`/orders/${orderId}/cancel`),
+  returnOrder: (orderId, reason) => axiosInstance.post(`/orders/${orderId}/return`, { reason }),
 
   // Wishlist APIs
   getWishlist: () => axiosInstance.get('/wishlist'),
@@ -90,6 +92,7 @@ export const api = {
   getNavigationMenu: () => axiosInstance.get('/cms/navigation'),
   getMasterData: () => axiosInstance.get('/cms/master-data'),
   getSpecTypes: () => axiosInstance.get('/cms/spec-types'),
+  getOccasions: () => axiosInstance.get('/cms/occasions'),
 
   // Coupon & Offer APIs
   getAvailableCoupons: () => axiosInstance.get('/cms/available-coupons'),

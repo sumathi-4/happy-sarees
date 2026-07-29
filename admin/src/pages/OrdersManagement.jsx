@@ -24,6 +24,7 @@ function OrdersManagement() {
   // Search & Filter state variables
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [returnFilter, setReturnFilter] = useState('All');
   const [paymentFilter, setPaymentFilter] = useState('All');
   const [deliveryFilter, setDeliveryFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All');
@@ -70,14 +71,19 @@ function OrdersManagement() {
       });
     }
 
-    // Status filtering
+    // Order Status filtering
     if (statusFilter !== 'All') {
-      list = list.filter(o => o.orderStatus === statusFilter);
+      list = list.filter(o => (o.orderStatus || o.order_status) === statusFilter);
+    }
+
+    // Return Status filtering
+    if (returnFilter !== 'All') {
+      list = list.filter(o => (o.returnStatus || o.return_status || 'No Request') === returnFilter);
     }
 
     // Payment filtering
     if (paymentFilter !== 'All') {
-      list = list.filter(o => o.paymentStatus === paymentFilter);
+      list = list.filter(o => (o.paymentStatus || o.payment_status) === paymentFilter);
     }
 
     // Delivery filtering
@@ -118,31 +124,33 @@ function OrdersManagement() {
   // Analytics helper metrics (Dynamic calculation from live database orders)
   const totalOrdersCount = orders.length;
 
+  const pendingOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'pending').length;
+  const confirmedOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'confirmed').length;
+  const packedOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'packed').length;
+  const shippedOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'shipped').length;
+  const deliveredOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'delivered').length;
+  const cancelledOrdersCount = orders.filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() === 'cancelled').length;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todaysOrdersCount = orders.filter(o => {
+    const d = o.createdAt || o.created_at || o.orderDate || o.date;
+    if (!d) return false;
+    return String(d).includes(todayStr);
+  }).length;
+
   const paidOrders = orders.filter(o => {
     const pay = String(o.paymentStatus || o.payment_status || '').toLowerCase();
     const ord = String(o.orderStatus || o.order_status || '').toLowerCase();
-    return pay === 'paid' || ord === 'delivered' || ord === 'shipped';
+    return pay === 'paid' && ord !== 'cancelled' && ord !== 'refunded';
   });
 
   const totalRevenueSum = paidOrders.reduce((sum, o) => sum + Number(o.totalAmount || o.total_amount || 0), 0);
   const grossRevenueSum = orders
-    .filter(o => String(o.orderStatus || o.order_status || '').toLowerCase() !== 'cancelled')
+    .filter(o => !['cancelled', 'refunded'].includes(String(o.orderStatus || o.order_status || '').toLowerCase()))
     .reduce((sum, o) => sum + Number(o.totalAmount || o.total_amount || 0), 0);
   const displayRevenue = totalRevenueSum > 0 ? totalRevenueSum : grossRevenueSum;
 
   const averageOrderVal = totalOrdersCount > 0 ? Math.round(displayRevenue / totalOrdersCount) : 0;
-
-  const pendingOrdersCount = orders.filter(o => {
-    const st = String(o.orderStatus || o.order_status || '').toLowerCase();
-    const del = String(o.deliveryStatus || o.delivery_status || '').toLowerCase();
-    return st === 'pending' || st === 'confirmed' || st === 'processing' || del === 'pending' || del === 'confirmed';
-  }).length;
-
-  const deliveredOrdersCount = orders.filter(o => {
-    const st = String(o.orderStatus || o.order_status || '').toLowerCase();
-    const del = String(o.deliveryStatus || o.delivery_status || '').toLowerCase();
-    return st === 'delivered' || del === 'delivered';
-  }).length;
 
   // Dynamic Payment Methods breakdown (Only actual methods in DB)
   const paymentMethodsBreakdown = (() => {
@@ -272,6 +280,107 @@ function OrdersManagement() {
             status: newStatus,
             paymentStatus: isRefund ? 'Refunded' : o.paymentStatus,
             payment_status: isRefund ? 'Refunded' : (o.payment_status || o.paymentStatus)
+          } 
+        : o
+    ));
+
+    if (refreshOrders) {
+      refreshOrders();
+    }
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!activeOrder || !activeOrder.id) return;
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch(`http://localhost:5001/api/admin/orders/${activeOrder.id}/payment-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ paymentStatus: 'Paid' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerToast(`Payment marked as Paid in Neon DB.`);
+      }
+    } catch (e) {
+      console.warn('API update payment status warning:', e.message);
+    }
+
+    setOrders(prev => prev.map(o => 
+      o.id === activeOrder.id 
+        ? { ...o, paymentStatus: 'Paid', payment_status: 'Paid' } 
+        : o
+    ));
+
+    if (refreshOrders) {
+      refreshOrders();
+    }
+  };
+
+  const handleApproveReturn = async () => {
+    if (!activeOrder || !activeOrder.id) return;
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch(`http://localhost:5001/api/admin/orders/${activeOrder.id}/approve-return`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerToast('Return request approved & refund processed automatically!');
+      }
+    } catch (e) {
+      console.warn('API approve return warning:', e.message);
+    }
+
+    setOrders(prev => prev.map(o => 
+      o.id === activeOrder.id 
+        ? { 
+            ...o, 
+            returnStatus: 'Refunded', 
+            return_status: 'Refunded',
+            paymentStatus: 'Refunded',
+            payment_status: 'Refunded'
+          } 
+        : o
+    ));
+
+    if (refreshOrders) {
+      refreshOrders();
+    }
+  };
+
+  const handleRejectReturn = async () => {
+    if (!activeOrder || !activeOrder.id) return;
+    try {
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      const res = await fetch(`http://localhost:5001/api/admin/orders/${activeOrder.id}/reject-return`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerToast('Return request rejected.');
+      }
+    } catch (e) {
+      console.warn('API reject return warning:', e.message);
+    }
+
+    setOrders(prev => prev.map(o => 
+      o.id === activeOrder.id 
+        ? { 
+            ...o, 
+            returnStatus: 'Return Rejected', 
+            return_status: 'Return Rejected'
           } 
         : o
     ));
@@ -503,11 +612,8 @@ function OrdersManagement() {
                 <option value="Shipped">Shipped</option>
                 <option value="Out For Delivery">Out For Delivery</option>
                 <option value="Delivered">Delivered</option>
+                <option value="Returned">Returned</option>
                 <option value="Cancelled">Cancelled</option>
-                <option value="Return Requested">Return Requested</option>
-                <option value="Return Approved">Return Approved</option>
-                <option value="Return Rejected">Return Rejected</option>
-                <option value="Refunded">Refunded</option>
               </select>
             </div>
             <div className={styles.modalFooter}>
@@ -677,14 +783,20 @@ function OrdersManagement() {
 
             <div className={styles.filterSelects}>
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="All">All Statuses</option>
+                <option value="All">All Order Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Confirmed">Confirmed</option>
                 <option value="Packed">Packed</option>
                 <option value="Shipped">Shipped</option>
                 <option value="Out For Delivery">Out For Delivery</option>
                 <option value="Delivered">Delivered</option>
+                <option value="Returned">Returned</option>
                 <option value="Cancelled">Cancelled</option>
+              </select>
+
+              <select value={returnFilter} onChange={(e) => setReturnFilter(e.target.value)}>
+                <option value="All">All Returns</option>
+                <option value="No Request">No Request</option>
                 <option value="Return Requested">Return Requested</option>
                 <option value="Return Approved">Return Approved</option>
                 <option value="Return Rejected">Return Rejected</option>
@@ -733,7 +845,8 @@ function OrdersManagement() {
                   <th>Items</th>
                   <th>Amount</th>
                   <th>Payment</th>
-                  <th>Status</th>
+                  <th>Order Status</th>
+                  <th>Return Status</th>
                   <th>Date</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -746,6 +859,7 @@ function OrdersManagement() {
                     const itemsCount = itemsList.reduce((sum, p) => sum + Number(p.qty || p.quantity || 1), 0);
                     const payStatus = order.paymentStatus || order.payment_status || 'Pending';
                     const ordStatus = order.orderStatus || order.order_status || 'Confirmed';
+                    const retStatus = order.returnStatus || order.return_status || 'No Request';
                     const totalAmt = Number(order.totalAmount || order.total_amount || order.amount || 0);
 
                     return (
@@ -776,14 +890,9 @@ function OrdersManagement() {
                           </div>
                         </td>
                         <td>
-                          <div className={styles.thumbsWrapper}>
-                            {itemsList.slice(0, 2).map((p, idx) => (
-                              <img key={idx} src={p.image || p.image_url || '/src/assets/hero_saree_model.png'} alt={p.name || p.productName || 'Saree'} className={styles.tinyThumbImg} />
-                            ))}
-                            {itemsList.length > 2 && (
-                              <span className={styles.extraItemsPill}>+{itemsList.length - 2}</span>
-                            )}
-                          </div>
+                          <span className={styles.itemCountText}>
+                            {itemsCount} {itemsCount === 1 ? 'Item' : 'Items'}
+                          </span>
                         </td>
                         <td>
                           <strong style={{ color: '#2b2b2b' }}>₹{totalAmt.toLocaleString('en-IN')}</strong>
@@ -799,6 +908,11 @@ function OrdersManagement() {
                         <td>
                           <span className={`${styles.statusBadge} ${styles['order_' + ordStatus.toLowerCase().replace(/\s+/g, '_')]}`}>
                             {ordStatus}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`${styles.statusBadge} ${styles['return_' + retStatus.toLowerCase().replace(/\s+/g, '_')]}`}>
+                            {retStatus}
                           </span>
                         </td>
                         <td>
@@ -877,7 +991,6 @@ function OrdersManagement() {
                 const activeTimeline = Array.isArray(activeOrder.timeline) ? activeOrder.timeline : [];
                 const activePayStatus = activeOrder.paymentStatus || activeOrder.payment_status || 'Pending';
                 const activeOrdStatus = activeOrder.orderStatus || activeOrder.order_status || 'Confirmed';
-                const activeDelivStatus = activeOrder.deliveryStatus || activeOrder.delivery_status || activeOrdStatus;
                 const activeTotalAmount = Number(activeOrder.totalAmount || activeOrder.total_amount || activeOrder.amount || 0);
 
                 return (
@@ -901,6 +1014,53 @@ function OrdersManagement() {
                 {/* Subtab Content: DETAILS */}
                 {activeSubTab === 'details' && (
                   <div className={styles.tabContentPanel}>
+                    {(() => {
+                      const activeRetStatus = activeOrder.returnStatus || activeOrder.return_status || 'No Request';
+                      return (
+                        <>
+                          {/* Return Management Action (Prominently displayed when return_status is Return Requested) */}
+                          {activeRetStatus === 'Return Requested' && (
+                            <div className={styles.actionsPanel} style={{ border: '2px solid #d11b69', backgroundColor: '#fff5f8', marginBottom: '16px' }}>
+                              <h5 className={styles.sectionHeading} style={{ color: '#d11b69' }}>⚠️ Return Requested by Customer — Action Required</h5>
+                              {(activeOrder.returnReason || activeOrder.return_reason) && (
+                                <p style={{ fontSize: '12.5px', color: '#444', margin: '4px 0 10px 0' }}>
+                                  <strong>Return Reason:</strong> "{activeOrder.returnReason || activeOrder.return_reason}"
+                                </p>
+                              )}
+                              <div className={styles.adminConsoleGrid}>
+                                <button 
+                                  className={styles.actionBtn} 
+                                  style={{ backgroundColor: '#2e7d32', color: '#fff', padding: '10px 16px', fontWeight: '700' }}
+                                  onClick={handleApproveReturn}
+                                >
+                                  Approve Return
+                                </button>
+                                <button 
+                                  className={styles.actionBtnCancel} 
+                                  style={{ backgroundColor: '#d32f2f', color: '#fff', padding: '10px 16px', fontWeight: '700' }}
+                                  onClick={handleRejectReturn}
+                                >
+                                  Reject Return
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Return Status Card if return is in progress or completed */}
+                          {activeRetStatus !== 'No Request' && activeRetStatus !== 'Return Requested' && (
+                            <div className={styles.infoSection} style={{ marginBottom: '16px' }}>
+                              <h5 className={styles.sectionHeading} style={{ color: '#d11b69' }}>🔄 Return & Refund Status</h5>
+                              <div className={styles.infoCard} style={{ backgroundColor: '#fff5f8', border: '1px solid #f8bbd0' }}>
+                                <div className={styles.metaLabelVal}><span>Return Status:</span><strong style={{ color: activeRetStatus === 'Refunded' ? '#2e7d32' : (activeRetStatus === 'Return Rejected' ? '#d32f2f' : '#d11b69') }}>{activeRetStatus}</strong></div>
+                                {(activeOrder.returnReason || activeOrder.return_reason) && (
+                                  <div className={styles.metaLabelVal}><span>Reason:</span><span>"{activeOrder.returnReason || activeOrder.return_reason}"</span></div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                     
                     {/* Customer details info */}
                     <div className={styles.infoSection}>
@@ -936,7 +1096,12 @@ function OrdersManagement() {
                       <div className={styles.productsList}>
                         {activeProducts.map((item, idx) => (
                           <div key={idx} className={styles.itemRow}>
-                            <img src={item.image || item.image_url || '/src/assets/hero_saree_model.png'} alt={item.name || item.productName || 'Saree'} className={styles.itemThumb} />
+                            <img 
+                              src={item.image || item.image_url || '/src/assets/hero_saree_model.png'} 
+                              alt={item.name || item.productName || 'Saree'} 
+                              className={styles.itemThumb} 
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                            />
                             <div style={{ flex: 1 }}>
                               <strong className={styles.itemNameText}>{item.name || item.productName || 'Silk Saree'}</strong>
                               <div className={styles.itemMetaText}>SKU: {item.sku || 'HS-001'} | Fabric: {item.fabric || 'Silk'}</div>
@@ -989,21 +1154,13 @@ function OrdersManagement() {
                             setShowStatusModal(true);
                           }}>Update Status</button>
 
-                          {activeOrdStatus === 'Return Requested' && (
-                            <>
-                              <button 
-                                className={styles.actionBtn} 
-                                onClick={() => handleQuickStatusChange('Return Approved', 'Return approved by admin')}
-                              >
-                                Approve Return
-                              </button>
-                              <button 
-                                className={styles.actionBtnCancel} 
-                                onClick={() => handleQuickStatusChange('Return Rejected', 'Return rejected by admin')}
-                              >
-                                Reject Return
-                              </button>
-                            </>
+                          {activePayStatus !== 'Paid' && (
+                            <button 
+                              className={styles.actionBtn} 
+                              onClick={handleMarkAsPaid}
+                            >
+                              Mark COD as Paid
+                            </button>
                           )}
 
                           <button 
@@ -1014,13 +1171,14 @@ function OrdersManagement() {
                             Process Refund
                           </button>
 
-                          <button 
-                            className={styles.actionBtnCancel} 
-                            disabled={activeOrdStatus === 'Cancelled'} 
-                            onClick={handleCancelOrder}
-                          >
-                            Cancel Order
-                          </button>
+                          {['Pending', 'Confirmed'].includes(activeOrdStatus) && (
+                            <button 
+                              className={styles.actionBtnCancel} 
+                              onClick={handleCancelOrder}
+                            >
+                              Cancel Order
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1126,7 +1284,22 @@ function OrdersManagement() {
                               <strong style={{ fontSize: '13px', color: '#2b2b2b' }}>{step.status}</strong>
                               {step.note && <p style={{ fontSize: '11.5px', color: '#555555', margin: '2px 0 0 0' }}>{step.note}</p>}
                               <p style={{ fontSize: '11px', color: '#888888', margin: '3px 0 0 0' }}>
-                                {step.time || step.date ? String(step.time || step.date).split(',')[0] : 'System Event'} {step.createdBy ? ` • By ${step.createdBy}` : ''}
+                                {(() => {
+                                  const rawDate = step.time || step.date;
+                                  if (!rawDate) return 'System Event';
+                                  const d = new Date(rawDate);
+                                  if (!isNaN(d.getTime())) {
+                                    return d.toLocaleString('en-IN', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    });
+                                  }
+                                  return String(rawDate);
+                                })()} {step.createdBy ? ` • By ${step.createdBy}` : ''}
                               </p>
                             </div>
                           </div>
