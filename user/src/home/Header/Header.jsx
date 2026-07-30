@@ -122,7 +122,7 @@ function Header() {
     { label: 'Occasions', path: PATHS.SHOP, hasDropdown: true, dropdownType: 'occasions' },
     { label: 'Fabrics', path: PATHS.SHOP, hasDropdown: true, dropdownType: 'fabrics' },
     { label: 'New Arrivals', path: PATHS.NEW_ARRIVALS, hasDropdown: false },
-    { label: 'Sale', path: PATHS.SHOP, hasDropdown: false }
+    { label: 'Sale', path: PATHS.SALE, hasDropdown: false }
   ];
 
   return (

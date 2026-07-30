@@ -100,6 +100,12 @@ class ProductService {
         price:        Number(r.price),
         originalPrice: r.original_price ? Number(r.original_price) : null,
         mrp:          r.original_price ? Number(r.original_price) : Number(r.price),
+        discountPercentage: (r.original_price && Number(r.original_price) > Number(r.price))
+          ? Math.round(((Number(r.original_price) - Number(r.price)) / Number(r.original_price)) * 100)
+          : (r.discount_percentage ? Number(r.discount_percentage) : 0),
+        discount_percentage: (r.original_price && Number(r.original_price) > Number(r.price))
+          ? Math.round(((Number(r.original_price) - Number(r.price)) / Number(r.original_price)) * 100)
+          : (r.discount_percentage ? Number(r.discount_percentage) : 0),
         fabric:       r.fabric,
         color:        r.color,
         pattern:      r.pattern,
@@ -330,7 +336,7 @@ class ProductService {
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [productId, strVal, strVal, data.name, i, isCover]
+          [productId, strVal, null, data.name, i, isCover]
         );
       }
     }
@@ -474,7 +480,7 @@ class ProductService {
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [id, strVal, strVal, data.name || existing.name, i, isCover]
+          [id, strVal, null, data.name || existing.name, i, isCover]
         );
       }
     }

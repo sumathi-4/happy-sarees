@@ -37,6 +37,10 @@ const router = createBrowserRouter([
         element: <Shop />,
       },
       {
+        path: PATHS.SALE,
+        element: <Shop isSalePage={true} />,
+      },
+      {
         path: PATHS.PRODUCT_DETAILS,
         element: <ProductDetails />,
       },

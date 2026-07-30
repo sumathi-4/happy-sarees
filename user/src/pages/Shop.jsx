@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { PRODUCTS } from '../data/mockData';
 import api from '../services/api';
 import Breadcrumb from '../shop/Breadcrumb/Breadcrumb';
@@ -10,7 +10,9 @@ import QuickViewModal from '../shop/QuickViewModal/QuickViewModal';
 import { useWishlist } from '../context/WishlistContext';
 import styles from './Shop.module.css';
 
-function Shop() {
+function Shop({ isSalePage: isSaleProp }) {
+  const location = useLocation();
+  const isSalePage = Boolean(isSaleProp || location.pathname === '/sale');
   const [searchParams, setSearchParams] = useSearchParams();
   const { wishlist, toggleWishlist } = useWishlist();
   const wishlistedIds = wishlist.map(item => Number(item.id || item.productId));
@@ -120,6 +122,16 @@ function Shop() {
   // --------------------------------------------------
   let filteredProducts = [...productsList];
 
+  // 0. Sale Page Filter (Display ONLY products with an active discount)
+  if (isSalePage) {
+    filteredProducts = filteredProducts.filter(p => {
+      const discountPercentage = Number(p.discountPercentage ?? p.discount_percentage ?? 0);
+      const price = Number(p.price || 0);
+      const originalPrice = Number(p.originalPrice ?? p.original_price ?? 0);
+      return discountPercentage > 0 || (originalPrice > 0 && price < originalPrice);
+    });
+  }
+
   // 1. Search filter
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
@@ -215,13 +227,15 @@ function Shop() {
   const slicedProducts = filteredProducts.slice(0, visibleCount);
 
   // Breadcrumb Category text resolver
-  let breadcrumbCategory = 'All Sarees';
-  if (selectedCollections.length === 1) {
-    breadcrumbCategory = selectedCollections[0];
-  } else if (selectedFabrics.length === 1) {
-    breadcrumbCategory = `${selectedFabrics[0]} Collection`;
-  } else if (selectedOccasions.length === 1) {
-    breadcrumbCategory = `${selectedOccasions[0]} Occasion`;
+  let breadcrumbCategory = isSalePage ? 'Sale Sarees' : 'All Sarees';
+  if (!isSalePage) {
+    if (selectedCollections.length === 1) {
+      breadcrumbCategory = selectedCollections[0];
+    } else if (selectedFabrics.length === 1) {
+      breadcrumbCategory = `${selectedFabrics[0]} Collection`;
+    } else if (selectedOccasions.length === 1) {
+      breadcrumbCategory = `${selectedOccasions[0]} Occasion`;
+    }
   }
 
   return (

@@ -12,7 +12,8 @@ function ProductCard({
   product,
   onQuickView,
   onAddToCart,
-  onToggleWishlist
+  onToggleWishlist,
+  imageFrameStyle
 }) {
   const navigate = useNavigate();
   const toast = useToast();
@@ -92,7 +93,7 @@ function ProductCard({
   return (
     <div className={styles.cardContainer} onClick={handleCardClick}>
       {/* Product Image Frame */}
-      <div className={styles.imageFrame}>
+      <div className={styles.imageFrame} style={imageFrameStyle}>
         <Link to={`/product/${product.id}`} className={styles.imageLink}>
           <img
             src={images[currentImgIndex]}

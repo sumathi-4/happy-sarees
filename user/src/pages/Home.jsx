@@ -1,6 +1,7 @@
 import React from 'react';
 import Hero from '../home/Hero/Hero';
 import SignatureCollections from '../home/SignatureCollections/SignatureCollections';
+import PromotionalBanner from '../home/PromotionalBanner/PromotionalBanner';
 import NewArrivals from '../home/NewArrivals/NewArrivals';
 import ShopByPrice from '../home/ShopByPrice/ShopByPrice';
 import BestSellers from '../home/BestSellers/BestSellers';
@@ -15,6 +16,7 @@ function Home() {
     <div>
       <Hero />
       <SignatureCollections />
+      <PromotionalBanner />
       <NewArrivals />
       <ShopByPrice />
       <BestSellers />

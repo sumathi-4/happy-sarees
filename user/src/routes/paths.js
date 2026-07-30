@@ -15,6 +15,7 @@ export const PATHS = {
   CONTACT: '/contact',
   COLLECTIONS: '/collections',
   NEW_ARRIVALS: '/new-arrivals',
+  SALE: '/sale',
   SEARCH: '/search',
 };
 
