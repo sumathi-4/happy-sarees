@@ -12,7 +12,7 @@ router.get('/', authenticateToken, async (req, res) => {
       `SELECT w.id as wishlist_id, w.created_at as added_at, p.* 
        FROM wishlist w
        JOIN products p ON w.product_id = p.id
-       WHERE w.user_id = $1 AND p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published')
+       WHERE w.user_id = $1 AND p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published' OR LOWER(p.status) = 'active')
        ORDER BY w.created_at DESC`,
       [req.user.id]
     );

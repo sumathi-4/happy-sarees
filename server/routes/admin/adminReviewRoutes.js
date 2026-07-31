@@ -90,6 +90,14 @@ router.put('/:id', async (req, res) => {
 
     const updatedReview = updateRes.rows[0];
 
+    if (newStatus === 'approved' && review.status !== 'approved' && review.user_id) {
+      db.query(
+        `INSERT INTO notifications (user_id, title, message, type)
+         VALUES ($1, $2, $3, 'review')`,
+        [review.user_id, 'Review Approved! 🎉', `Your review for product #${review.product_id} has been approved by Admin and is now published.`]
+      ).catch(e => console.error('Review Notification Error:', e));
+    }
+
     // Recalculate product rating dynamically
     await recalculateProductRating(updatedReview.product_id);
 

@@ -24,7 +24,9 @@ function ProfileTab({ userProfile }) {
       setSaving(true);
       const res = await updateProfile({
         name: profileData.name,
-        phone: profileData.phone
+        phone: profileData.phone,
+        gender: profileData.gender || 'Female',
+        dob: profileData.dob || ''
       });
       setSaving(false);
       if (res?.success !== false) {

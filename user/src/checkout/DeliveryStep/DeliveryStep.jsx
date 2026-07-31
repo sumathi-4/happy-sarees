@@ -35,6 +35,19 @@ function DeliveryStep({
     return Number(opt.shipping_charge || opt.price || 0);
   };
 
+  const handleNextClick = () => {
+    if (!selectedOptionId || options.length === 0) {
+      alert('Please select a delivery option to continue.');
+      return;
+    }
+    const currentSelected = options.find(o => o.id === selectedOptionId);
+    if (!currentSelected) {
+      alert('Please select a valid delivery option to continue.');
+      return;
+    }
+    onNextStep();
+  };
+
   return (
     <div className={styles.stepCard}>
       <div className={styles.headerRow}>
@@ -119,7 +132,7 @@ function DeliveryStep({
         <button onClick={onPrevStep} className={styles.backBtn}>
           Back to Address
         </button>
-        <button onClick={onNextStep} className={styles.nextBtn} disabled={options.length === 0}>
+        <button onClick={handleNextClick} className={styles.nextBtn} disabled={options.length === 0}>
           Continue to Payment Method
         </button>
       </div>

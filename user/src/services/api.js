@@ -50,6 +50,11 @@ export const api = {
   googleLogin: (googleData) => axiosInstance.post('/auth/google', googleData),
   getProfile: () => axiosInstance.get('/auth/me'),
   updateProfile: (profileData) => axiosInstance.put('/auth/profile', profileData),
+  changePassword: (passwordData) => axiosInstance.put('/auth/change-password', passwordData),
+
+  // Notifications APIs
+  getNotifications: () => axiosInstance.get('/notifications'),
+  markNotificationsRead: () => axiosInstance.put('/notifications/read-all'),
 
   // Products APIs
   getProducts: (params = {}) => axiosInstance.get('/products', { params }),

@@ -80,8 +80,8 @@ function MasterDataManagement() {
     }
   };
 
-  // Get list of master types dynamically
-  const masterKeys = Object.keys(masterData);
+  // Get list of master types dynamically (unique plural categories)
+  const masterKeys = Object.keys(masterData).filter(key => key.endsWith('s') || !masterData[key + 's']);
 
   // Get active items
   const activeItems = masterData[selectedType] || [];

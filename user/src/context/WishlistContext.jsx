@@ -22,23 +22,46 @@ export function WishlistProvider({ children }) {
 
   // Fetch wishlist from Neon DB backend API if authenticated
   const fetchWishlist = useCallback(async () => {
+    let localItems = [];
+    try {
+      const saved = localStorage.getItem(LOCAL_WISHLIST_KEY);
+      localItems = saved ? JSON.parse(saved) : [];
+    } catch (e) {}
+
     if (!isAuthenticated) {
-      try {
-        const saved = localStorage.getItem(LOCAL_WISHLIST_KEY);
-        setWishlist(saved ? JSON.parse(saved) : []);
-      } catch (e) {}
+      setWishlist(localItems);
       return;
     }
 
     try {
       const res = await api.getWishlist();
+      let dbList = [];
       if (res && res.success && Array.isArray(res.wishlist)) {
-        setWishlist(res.wishlist);
+        dbList = res.wishlist;
       } else if (res && Array.isArray(res)) {
-        setWishlist(res);
+        dbList = res;
+      }
+
+      if (dbList.length > 0) {
+        setWishlist(dbList);
+        try { localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(dbList)); } catch (e) {}
+      } else if (localItems.length > 0) {
+        // Sync local guest items to Neon DB for newly logged-in customer
+        setWishlist(localItems);
+        localItems.forEach(item => {
+          const pId = item.id || item.productId;
+          if (pId) {
+            api.addToWishlist(pId).catch(() => {});
+          }
+        });
+      } else {
+        setWishlist([]);
       }
     } catch (err) {
       console.warn('[WishlistContext] Live fetch warning:', err.message);
+      if (localItems.length > 0) {
+        setWishlist(localItems);
+      }
     }
   }, [isAuthenticated]);
 
@@ -46,20 +69,18 @@ export function WishlistProvider({ children }) {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  // Sync guest wishlist to localStorage
+  // Sync wishlist to localStorage whenever it changes
   useEffect(() => {
-    if (!isAuthenticated) {
-      try {
-        localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(wishlist));
-      } catch (e) {}
-    }
-  }, [wishlist, isAuthenticated]);
+    try {
+      localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(wishlist));
+    } catch (e) {}
+  }, [wishlist]);
 
   // Check if a product ID is in wishlist
   const isInWishlist = useCallback((productId) => {
     if (!productId) return false;
     const numId = Number(productId);
-    return wishlist.some(item => Number(item.id) === numId || Number(item.productId) === numId);
+    return wishlist.some(item => Number(item.id || item.productId) === numId);
   }, [wishlist]);
 
   // Toggle wishlist state for a product
@@ -72,7 +93,11 @@ export function WishlistProvider({ children }) {
 
     if (inList) {
       // Remove from wishlist
-      setWishlist(prev => prev.filter(item => Number(item.id) !== Number(prodId) && Number(item.productId) !== Number(prodId)));
+      setWishlist(prev => {
+        const next = prev.filter(item => Number(item.id || item.productId) !== Number(prodId));
+        try { localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(next)); } catch (e) {}
+        return next;
+      });
       showToast(`Removed "${product.name || 'Saree'}" from your wishlist`, 'info');
       if (isAuthenticated) {
         api.removeFromWishlist(prodId).catch(err => console.error('Wishlist remove API error:', err));
@@ -92,7 +117,11 @@ export function WishlistProvider({ children }) {
         shortDescription: product.shortDescription || '',
         inStock: product.inStock ?? true
       };
-      setWishlist(prev => [newItem, ...prev.filter(item => Number(item.id) !== Number(prodId))]);
+      setWishlist(prev => {
+        const next = [newItem, ...prev.filter(item => Number(item.id || item.productId) !== Number(prodId))];
+        try { localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(next)); } catch (e) {}
+        return next;
+      });
       showToast(`Saved "${product.name || 'Saree'}" to your wishlist! ♥`, 'success');
       if (isAuthenticated) {
         api.addToWishlist(prodId).catch(err => console.error('Wishlist add API error:', err));
@@ -103,7 +132,11 @@ export function WishlistProvider({ children }) {
   // Explicit remove
   const removeFromWishlist = useCallback(async (productId) => {
     if (!productId) return;
-    setWishlist(prev => prev.filter(item => Number(item.id) !== Number(productId) && Number(item.productId) !== Number(productId)));
+    setWishlist(prev => {
+      const next = prev.filter(item => Number(item.id || item.productId) !== Number(productId));
+      try { localStorage.setItem(LOCAL_WISHLIST_KEY, JSON.stringify(next)); } catch (e) {}
+      return next;
+    });
     showToast('Removed item from wishlist', 'info');
     if (isAuthenticated) {
       api.removeFromWishlist(productId).catch(err => console.error('Wishlist remove API error:', err));

@@ -185,7 +185,7 @@ const { uploadToCloudinary } = require('../services/cloudinaryService');
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, full_name as name, email, phone, role, avatar, is_blocked, block_reason, created_at FROM users WHERE id = $1',
+      'SELECT id, full_name as name, email, phone, gender, dob, role, avatar, is_blocked, block_reason, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -207,7 +207,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 // 5. Update Profile / Upload Avatar to Cloudinary / Remove Avatar
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const { name, phone, avatar, removeAvatar } = req.body;
+    const { name, phone, gender, dob, avatar, removeAvatar } = req.body;
     let finalAvatarUrl = null;
 
     if (removeAvatar) {
@@ -226,8 +226,15 @@ router.put('/profile', authenticateToken, async (req, res) => {
     }
 
     const result = await db.query(
-      `UPDATE users SET full_name = COALESCE($1, full_name), phone = COALESCE($2, phone), avatar = $3, updated_at = NOW() WHERE id = $4 RETURNING id, full_name as name, email, phone, role, avatar`,
-      [name || null, phone || null, finalAvatarUrl, req.user.id]
+      `UPDATE users 
+       SET full_name = COALESCE($1, full_name), 
+           phone = COALESCE($2, phone), 
+           gender = COALESCE($3, gender), 
+           dob = COALESCE($4, dob), 
+           avatar = $5, 
+           updated_at = NOW() 
+       WHERE id = $6 RETURNING id, full_name as name, email, phone, gender, dob, role, avatar`,
+      [name || null, phone || null, gender || null, dob || null, finalAvatarUrl, req.user.id]
     );
 
     if (result.rows.length === 0) {
@@ -243,6 +250,38 @@ router.put('/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update Profile Error:', error);
     res.status(500).json({ success: false, message: 'Server error updating profile.' });
+  }
+});
+
+// 6. Change Password (Customer & Admin)
+router.put('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Current password and new password are required.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long.' });
+    }
+
+    const userRes = await db.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User account not found.' });
+    }
+
+    const user = userRes.rows[0];
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, req.user.id]);
+
+    res.json({ success: true, message: 'Password updated successfully! Please use your new password on next login.' });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update password.' });
   }
 });
 

@@ -2,11 +2,29 @@ const express = require('express');
 const db = require('../db');
 const authenticateToken = require('../middleware/auth');
 
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
 
+// Optional Auth Middleware
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) {
+    try {
+      const verified = jwt.verify(token, process.env.JWT_SECRET || 'happysarees_secret_key_2026');
+      req.user = verified;
+    } catch (e) {}
+  }
+  next();
+}
+
 // 1. Get User Addresses
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
+    if (!req.user?.id) {
+      return res.json({ success: true, addresses: [] });
+    }
     const result = await db.query(
       `SELECT * FROM addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
       [req.user.id]
@@ -19,12 +37,20 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // 2. Add New Address
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { fullName, phone, streetAddress, city, state, pincode, isDefault } = req.body;
 
     if (!fullName || !phone || !streetAddress || !city || !state || !pincode) {
       return res.status(400).json({ success: false, message: 'All address fields are required.' });
+    }
+
+    if (!req.user?.id) {
+      return res.status(201).json({
+        success: true,
+        message: 'Guest address accepted.',
+        address: { id: `addr_${Date.now()}`, full_name: fullName, phone, street_address: streetAddress, city, state, pincode }
+      });
     }
 
     if (isDefault) {

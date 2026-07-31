@@ -1044,7 +1044,11 @@ export function AdminDataProvider({ children }) {
       if (Array.isArray(typesList)) {
         const newMasterData = {};
         for (const typeObj of typesList) {
-          const key = typeObj.slug.replace(/-/g, '_');
+          const rawSlug = (typeObj.slug || typeObj.name || '').toLowerCase().trim();
+          const cleanKey = rawSlug.replace(/-/g, '_');
+          const pluralKey = cleanKey.endsWith('s') ? cleanKey : cleanKey + 's';
+          const singularKey = cleanKey.endsWith('s') ? cleanKey.slice(0, -1) : cleanKey;
+
           try {
             const itemsRes = await fetch(`http://localhost:5001/api/admin/master-data/${typeObj.slug}?limit=200`, {
               headers: { Authorization: `Bearer ${token}` }
@@ -1054,19 +1058,26 @@ export function AdminDataProvider({ children }) {
               ? itemsData.data
               : (Array.isArray(itemsData.items) ? itemsData.items : (itemsData.data?.items || []));
 
-            newMasterData[key] = rawList.map(item => ({
+            const formattedItems = rawList.map(item => ({
               id: item.id,
               name: item.name,
               slug: item.slug || item.name.toLowerCase().trim().replace(/\s+/g, '-'),
               description: item.description || '',
               imageData: item.image_data || item.imageData || item.image || '',
               image_data: item.image_data || item.imageData || item.image || '',
+              colorHex: item.color_hex || item.colorHex || '',
+              color_hex: item.color_hex || item.colorHex || '',
               status: item.is_active ? 'Active' : 'Inactive',
               isActive: item.is_active,
               sortOrder: item.sort_order || 0
             }));
+
+            newMasterData[pluralKey] = formattedItems;
+            newMasterData[singularKey] = formattedItems;
+            if (!newMasterData[cleanKey]) newMasterData[cleanKey] = formattedItems;
           } catch (e) {
-            newMasterData[key] = [];
+            newMasterData[pluralKey] = [];
+            newMasterData[singularKey] = [];
           }
         }
 

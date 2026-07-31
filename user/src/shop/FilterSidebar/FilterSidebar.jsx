@@ -60,9 +60,8 @@ function FilterSidebar({
     let isMounted = true;
     api.getMasterData()
       .then(res => {
-        if (isMounted && res && res.masterData) {
-          const liveData = { ...DEFAULT_FILTER_DATA, ...res.masterData };
-          setFilterData(liveData);
+        if (isMounted && res && res.masterData && Object.keys(res.masterData).length > 0) {
+          setFilterData(res.masterData);
         }
       })
       .catch(err => console.warn('[FilterSidebar] Master data load warning:', err.message));

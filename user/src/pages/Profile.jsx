@@ -25,11 +25,25 @@ function Profile() {
   const { cartCount } = useCart();
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   const activeTab = searchParams.get('tab') || 'dashboard';
 
+  const fetchNotifications = () => {
+    api.getNotifications()
+      .then((data) => {
+        if (data.success && Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+          setUnreadNotifCount(data.unreadCount || 0);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     let isMounted = true;
+    fetchNotifications();
     api.getMyOrders()
       .then((data) => {
         if (!isMounted) return;
@@ -103,10 +117,20 @@ function Profile() {
     return () => { isMounted = false; };
   }, [activeTab]);
 
+  const handleMarkNotificationsRead = async () => {
+    try {
+      await api.markNotificationsRead();
+      setUnreadNotifCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    } catch (e) {}
+  };
+
   const userProfile = {
     name: user?.name || user?.email?.split('@')[0] || 'Valued Customer',
     email: user?.email || '',
     phone: user?.phone || '',
+    gender: user?.gender || 'Female',
+    dob: user?.dob || '',
     memberTier: user?.memberTier || 'Registered Member',
     rewardPoints: Number(user?.rewardPoints || 0),
     totalSpent: orders.reduce((sum, o) => sum + Number(o.totalPrice || 0), 0),
@@ -118,6 +142,7 @@ function Profile() {
     cartCount: Number(cartCount || 0),
     addressCount: Number(addresses.length || 0),
     totalOrders: Number(orders.length || 0),
+    unreadNotificationsCount: Number(unreadNotifCount || 0),
     avatar: user?.avatar || null
   };
 
@@ -199,7 +224,7 @@ function Profile() {
             )}
 
             {activeTab === 'notifications' && (
-              <NotificationsTab />
+              <NotificationsTab notifications={notifications} onMarkRead={handleMarkNotificationsRead} />
             )}
           </div>
         </div>

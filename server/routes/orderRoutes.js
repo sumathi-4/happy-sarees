@@ -98,6 +98,14 @@ router.post('/', optionalAuth, async (req, res) => {
     // Trigger Centralized Email Notification Asynchronously for COD
     if (!isOnline) {
       try {
+        if (req.user?.id) {
+          await client.query(
+            `INSERT INTO notifications (user_id, title, message, type)
+             VALUES ($1, $2, $3, 'order')`,
+            [req.user.id, `Order #${order.order_number} Placed!`, `Your order #${order.order_number} has been received and is being processed. Total: ₹${order.total_amount}`]
+          );
+        }
+        
         emailService.sendNotification('ORDER_PLACED', {
           id: order.id,
           orderNumber: order.order_number,

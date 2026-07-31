@@ -16,6 +16,18 @@ function ReviewStep({
 
   const handleOrderClick = () => {
     if (loading) return;
+    if (!selectedAddress || (!selectedAddress.name && !selectedAddress.full_name) || !selectedAddress.phone || (!selectedAddress.house && !selectedAddress.street_address && !selectedAddress.street) || !selectedAddress.city || !selectedAddress.pincode) {
+      alert('A valid shipping address is mandatory to place an order. Please go back to Step 1 and provide a complete address.');
+      return;
+    }
+    if (!selectedDelivery) {
+      alert('A delivery option selection is mandatory to place an order.');
+      return;
+    }
+    if (!selectedPayment) {
+      alert('A payment method selection is mandatory to place an order.');
+      return;
+    }
     if (!agreedTerms) {
       alert('Please agree to the Terms & Conditions before placing your order.');
       return;

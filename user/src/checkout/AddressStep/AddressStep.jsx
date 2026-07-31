@@ -26,11 +26,9 @@ function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onAdd
     }));
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.pincode) {
-      alert('Please fill in required fields (Name, Phone, Pincode).');
-      return;
+  const saveAndGetAddress = () => {
+    if (!formData.name || !formData.phone || !formData.pincode || !formData.city || (!formData.house && !formData.street)) {
+      return null;
     }
     const newAddress = {
       id: `addr_${Date.now()}`,
@@ -41,7 +39,7 @@ function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onAdd
       house: formData.house || '',
       street: `${formData.street || ''} ${formData.area || ''}`.trim() || formData.house,
       city: formData.city,
-      state: formData.state,
+      state: formData.state || 'Tamil Nadu',
       pincode: formData.pincode,
       isDefault: addresses.length === 0
     };
@@ -51,6 +49,42 @@ function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onAdd
       onSelectAddress(newAddress.id);
     }
     setShowAddForm(false);
+    return newAddress;
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const saved = saveAndGetAddress();
+    if (!saved) {
+      alert('Please fill in mandatory fields: Full Name, Mobile Number, House/Street, City, Pincode.');
+    }
+  };
+
+  const handleNextClick = () => {
+    if (showAddForm) {
+      if (formData.name || formData.phone || formData.house || formData.city || formData.pincode) {
+        const saved = saveAndGetAddress();
+        if (!saved) {
+          alert('Please fill in mandatory fields: Full Name, Mobile Number, House/Street, City, Pincode.');
+          return;
+        }
+        onNextStep();
+        return;
+      }
+    }
+
+    if (!selectedAddressId || addresses.length === 0) {
+      alert('Please enter or select a valid shipping address to continue.');
+      return;
+    }
+
+    const currentSelected = addresses.find(a => a.id === selectedAddressId);
+    if (!currentSelected) {
+      alert('Please select a valid shipping address to continue.');
+      return;
+    }
+
+    onNextStep();
   };
 
   return (
@@ -225,7 +259,7 @@ function AddressStep({ addresses = [], selectedAddressId, onSelectAddress, onAdd
       )}
 
       <div className={styles.footerRow}>
-        <button onClick={onNextStep} className={styles.nextBtn}>
+        <button onClick={handleNextClick} className={styles.nextBtn}>
           Continue to Delivery Options
         </button>
       </div>

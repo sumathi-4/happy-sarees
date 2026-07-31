@@ -23,16 +23,25 @@ class MasterDataService {
     }));
   }
 
+  // Helper to query master_types by slug or ID flexibly (singular/plural)
+  getTypeQuery() {
+    return `SELECT * FROM master_types 
+            WHERE slug = $1 
+               OR slug = $1 || 's' 
+               OR slug = RTRIM($1, 's') 
+               OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') 
+               OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') || 's'
+               OR REPLACE(slug, '-', '_') = RTRIM(REPLACE($1, '-', '_'), 's')
+               OR id::text = $1`;
+  }
+
   // ── List Items by Type Slug ────────────────────────────────
   async getItems(typeSlug, query = {}) {
-    const typeRes = await db.query(
-      `SELECT * FROM master_types WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1`,
-      [typeSlug]
-    );
+    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
     if (typeRes.rows.length === 0) throw { status: 404, message: `Master type '${typeSlug}' not found.` };
 
     const type = typeRes.rows[0];
-    const { page, limit, offset } = parsePagination(query, 20);
+    const { page, limit, offset } = parsePagination(query, 200);
     const { search, status } = query;
 
     let where = [`type_id = $1`];
@@ -72,10 +81,7 @@ class MasterDataService {
 
   // ── Create Item ────────────────────────────────────────────
   async createItem(typeSlug, data) {
-    const typeRes = await db.query(
-      `SELECT id FROM master_types WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1`,
-      [typeSlug]
-    );
+    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
     if (typeRes.rows.length === 0) throw { status: 404, message: `Type '${typeSlug}' not found.` };
 
     const typeId = typeRes.rows[0].id;
@@ -94,11 +100,13 @@ class MasterDataService {
 
   // ── Update Item ────────────────────────────────────────────
   async updateItem(typeSlug, id, data) {
+    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
+    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
+
+    const typeId = typeRes.rows[0].id;
     const existing = await db.query(
-      `SELECT mi.* FROM master_items mi
-       JOIN master_types mt ON mi.type_id = mt.id
-       WHERE mi.id = $1 AND (mt.slug = $2 OR REPLACE(mt.slug, '-', '_') = REPLACE($2, '-', '_') OR mt.id::text = $2)`,
-      [id, typeSlug]
+      `SELECT * FROM master_items WHERE id = $1 AND type_id = $2`,
+      [id, typeId]
     );
     if (existing.rows.length === 0) throw { status: 404, message: 'Master item not found.' };
 
@@ -128,12 +136,13 @@ class MasterDataService {
 
   // ── Delete Item ────────────────────────────────────────────
   async deleteItem(typeSlug, id) {
+    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
+    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
+
+    const typeId = typeRes.rows[0].id;
     const res = await db.query(
-      `DELETE FROM master_items mi
-       USING master_types mt
-       WHERE mi.type_id = mt.id AND mi.id = $1 AND (mt.slug = $2 OR REPLACE(mt.slug, '-', '_') = REPLACE($2, '-', '_') OR mt.id::text = $2)
-       RETURNING mi.id`,
-      [id, typeSlug]
+      `DELETE FROM master_items WHERE id = $1 AND type_id = $2 RETURNING id`,
+      [id, typeId]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Item not found.' };
     return true;
@@ -141,12 +150,15 @@ class MasterDataService {
 
   // ── Toggle Status ──────────────────────────────────────────
   async toggleItem(typeSlug, id) {
+    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
+    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
+
+    const typeId = typeRes.rows[0].id;
     const res = await db.query(
       `UPDATE master_items SET is_active = NOT is_active, updated_at = NOW()
-       WHERE id = $1
-         AND type_id = (SELECT id FROM master_types WHERE slug = $2 OR REPLACE(slug, '-', '_') = REPLACE($2, '-', '_') OR id::text = $2)
+       WHERE id = $1 AND type_id = $2
        RETURNING *`,
-      [id, typeSlug]
+      [id, typeId]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Item not found.' };
     return { ...res.rows[0], isActive: res.rows[0].is_active };

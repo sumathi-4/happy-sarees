@@ -12,6 +12,19 @@ function PaymentStep({
   codMaxAmount = 5000,
   loading = false
 }) {
+  const handleNextClick = () => {
+    if (!selectedPaymentId || methods.length === 0) {
+      alert('Please select a payment method to continue.');
+      return;
+    }
+    const currentSelected = methods.find(m => m.id === selectedPaymentId);
+    if (!currentSelected) {
+      alert('Please select a valid payment method to continue.');
+      return;
+    }
+    onNextStep();
+  };
+
   return (
     <div className={styles.stepCard}>
       <div className={styles.headerRow}>
@@ -106,7 +119,7 @@ function PaymentStep({
                       </div>
                     </div>
                     <button
-                      onClick={onNextStep}
+                      onClick={handleNextClick}
                       style={{
                         marginTop: '12px',
                         width: '100%',
@@ -148,7 +161,7 @@ function PaymentStep({
         <button onClick={onPrevStep} className={styles.backBtn}>
           Back to Delivery
         </button>
-        <button onClick={onNextStep} className={styles.nextBtn} disabled={methods.length === 0}>
+        <button onClick={handleNextClick} className={styles.nextBtn} disabled={methods.length === 0}>
           Continue to Order Review
         </button>
       </div>

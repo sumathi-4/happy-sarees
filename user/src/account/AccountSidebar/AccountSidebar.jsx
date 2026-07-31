@@ -30,7 +30,7 @@ function AccountSidebar({ activeTab, onSelectTab, userProfile, onLogout }) {
     { id: 'reviews', label: 'Reviews & Ratings', icon: FiStar },
     { id: 'profile', label: 'Personal Information', icon: FiUser },
     { id: 'password', label: 'Change Password', icon: FiLock },
-    { id: 'notifications', label: 'Notifications', icon: FiBell, badge: 5 },
+    { id: 'notifications', label: 'Notifications', icon: FiBell, badge: userProfile.unreadNotificationsCount },
     { id: 'logout', label: 'Logout', icon: FiLogOut, isLogout: true }
   ];
 

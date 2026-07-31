@@ -297,8 +297,23 @@ class OrderService {
 
     const updatedOrder = await this.getById(id);
 
-    // Send email ONLY if status actually changed to prevent duplicate emails
+    // Send in-app notification & email ONLY if status actually changed to prevent duplicate notifications
     if (oldStatus !== status) {
+      const orderUserRes = await db.query('SELECT user_id, order_number FROM orders WHERE id = $1', [id]);
+      const targetUserId = orderUserRes.rows[0]?.user_id;
+      const orderNum = orderUserRes.rows[0]?.order_number || updatedOrder.orderNumber;
+      if (targetUserId) {
+        db.query(
+          `INSERT INTO notifications (user_id, title, message, type)
+           VALUES ($1, $2, $3, 'order')`,
+          [
+            targetUserId,
+            `Order #${orderNum} Status Updated`,
+            `Your order #${orderNum} status has been updated to '${status}'.`
+          ]
+        ).catch(err => console.error('[Order Notification Error]:', err.message));
+      }
+
       const typeMap = {
         'Packed': 'PACKED',
         'Shipped': 'SHIPPED',

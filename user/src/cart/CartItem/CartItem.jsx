@@ -4,15 +4,26 @@ import { FaStar } from 'react-icons/fa';
 import { FiTrash2, FiHeart } from 'react-icons/fi';
 import styles from './CartItem.module.css';
 
+const defaultSareeImg = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg';
+
 function CartItem({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) {
   if (!item) return null;
+  const itemImgSrc = item.image || item.product_image || item.image_url || defaultSareeImg;
 
   return (
     <div className={styles.cartCard}>
       {/* Product Image Frame */}
       <div className={styles.imageFrame}>
         <Link to={`/product/${item.productId || item.id}`} className={styles.imageLink}>
-          <img src={item.image} alt={item.name} className={styles.productImg} />
+          <img
+            src={itemImgSrc}
+            alt={item.name}
+            className={styles.productImg}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = defaultSareeImg;
+            }}
+          />
         </Link>
         {item.discountBadge && (
           <span className={styles.discountBadge}>{item.discountBadge}</span>

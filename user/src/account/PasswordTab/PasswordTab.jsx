@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiLock, FiEye, FiEyeOff, FiCheck } from 'react-icons/fi';
+import api from '../../services/api';
 import styles from './PasswordTab.module.css';
 
 function PasswordTab() {
@@ -9,15 +10,37 @@ function PasswordTab() {
     confirm: ''
   });
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (passwords.newPass.length < 6) {
+      alert('New password must be at least 6 characters long.');
+      return;
+    }
     if (passwords.newPass !== passwords.confirm) {
       alert('New passwords do not match.');
       return;
     }
-    alert('Password updated successfully!');
-    setPasswords({ current: '', newPass: '', confirm: '' });
+
+    try {
+      setLoading(true);
+      const res = await api.changePassword({
+        currentPassword: passwords.current,
+        newPassword: passwords.newPass
+      });
+      setLoading(false);
+      if (res && res.success) {
+        alert(res.message || 'Password updated successfully! Please use your new password on next login.');
+        setPasswords({ current: '', newPass: '', confirm: '' });
+      } else {
+        alert(res?.message || 'Failed to update password.');
+      }
+    } catch (err) {
+      setLoading(false);
+      const msg = err.response?.data?.message || err.message || 'Failed to update password.';
+      alert(msg);
+    }
   };
 
   return (

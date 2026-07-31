@@ -74,16 +74,14 @@ function Shop({ isSalePage: isSaleProp, isNewArrivalsPage: isNewArrivalsProp }) 
   useEffect(() => {
     const fabric = searchParams.get('fabric');
     if (fabric) {
-      const capFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
-      setSelectedFabrics([capFabric]);
+      setSelectedFabrics([fabric]);
     } else {
       setSelectedFabrics([]);
     }
 
     const occasion = searchParams.get('occasion');
     if (occasion) {
-      const capOccasion = occasion.charAt(0).toUpperCase() + occasion.slice(1);
-      setSelectedOccasions([capOccasion]);
+      setSelectedOccasions([occasion]);
     } else {
       setSelectedOccasions([]);
     }
@@ -157,22 +155,30 @@ function Shop({ isSalePage: isSaleProp, isNewArrivalsPage: isNewArrivalsProp }) 
 
   // 3. Fabric filter
   if (selectedFabrics.length > 0) {
-    filteredProducts = filteredProducts.filter(p => selectedFabrics.includes(p.fabric));
+    filteredProducts = filteredProducts.filter(p => p.fabric && selectedFabrics.some(sf => {
+      const s1 = String(sf).toLowerCase().trim();
+      const s2 = String(p.fabric).toLowerCase().trim();
+      return s1 === s2 || s1.replace(/[-\s]+/g, '') === s2.replace(/[-\s]+/g, '');
+    }));
   }
 
   // 4. Occasion filter
   if (selectedOccasions.length > 0) {
-    filteredProducts = filteredProducts.filter(p => selectedOccasions.includes(p.occasion));
+    filteredProducts = filteredProducts.filter(p => p.occasion && selectedOccasions.some(so => {
+      const s1 = String(so).toLowerCase().trim();
+      const s2 = String(p.occasion).toLowerCase().trim();
+      return s1 === s2 || s1.replace(/[-\s]+/g, '') === s2.replace(/[-\s]+/g, '');
+    }));
   }
 
   // 5. Color filter
   if (selectedColors.length > 0) {
-    filteredProducts = filteredProducts.filter(p => selectedColors.includes(p.color));
+    filteredProducts = filteredProducts.filter(p => p.color && selectedColors.some(sc => String(sc).toLowerCase().trim() === String(p.color).toLowerCase().trim()));
   }
 
   // 6. Pattern filter
   if (selectedPatterns.length > 0) {
-    filteredProducts = filteredProducts.filter(p => selectedPatterns.includes(p.pattern));
+    filteredProducts = filteredProducts.filter(p => p.pattern && selectedPatterns.some(sp => String(sp).toLowerCase().trim() === String(p.pattern).toLowerCase().trim()));
   }
 
   // 7. Dynamic Custom Master Type Filters

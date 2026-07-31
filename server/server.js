@@ -15,6 +15,8 @@ const cmsRoutes = require('./routes/cmsRoutes');
 const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 
+const notificationRoutes = require('./routes/notificationRoutes');
+
 // ── Admin Routes ──────────────────────────────────────────
 const adminAuthRoutes         = require('./routes/admin/adminAuthRoutes');
 const adminDashboardRoutes    = require('./routes/admin/adminDashboardRoutes');
@@ -87,6 +89,7 @@ app.use('/api/cart',      cartRoutes);
 app.use('/api/cms',       cmsRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
 app.use('/api/payment',   paymentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Public Store Settings Route (for Customer Website & Footer/Header)
 app.get('/api/settings', async (req, res, next) => {

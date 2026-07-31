@@ -158,12 +158,22 @@ router.get('/master-data', async (req, res) => {
 
     const masterData = {};
     for (const row of dbRes.rows) {
-      const type = row.type_slug;
-      if (!masterData[type]) masterData[type] = [];
-      if (type === 'colors') {
-        masterData[type].push({ name: row.name, hex: row.color_hex || '#e0e0e0' });
+      const slug = (row.type_slug || '').toLowerCase().trim();
+      const pluralKey = slug.endsWith('s') ? slug : slug + 's';
+      const singularKey = slug.endsWith('s') ? slug.slice(0, -1) : slug;
+
+      if (!masterData[pluralKey]) masterData[pluralKey] = [];
+      if (!masterData[singularKey]) masterData[singularKey] = masterData[pluralKey];
+
+      if (pluralKey === 'colors') {
+        const itemObj = { id: row.id, name: row.name, hex: row.color_hex || '#e0e0e0' };
+        if (!masterData[pluralKey].some(c => c.name === row.name)) {
+          masterData[pluralKey].push(itemObj);
+        }
       } else {
-        masterData[type].push(row.name);
+        if (!masterData[pluralKey].includes(row.name)) {
+          masterData[pluralKey].push(row.name);
+        }
       }
     }
 
