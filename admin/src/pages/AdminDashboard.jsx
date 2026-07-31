@@ -269,10 +269,10 @@ function AdminDashboard() {
                 <div key={p.id} className={styles.productItem}>
                   <div className={styles.productInfoLeft}>
                     <img 
-                      src={p.image || '/src/assets/hero_saree_model.png'} 
+                      src={p.image || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                       alt={p.name} 
                       className={styles.productThumb} 
-                      onError={(e) => { e.target.src = '/src/assets/hero_saree_model.png'; }}
+                      onError={(e) => { e.target.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                     />
                     <div className={styles.productMeta}>
                       <span className={styles.productName} title={p.name}>{p.name}</span>
@@ -296,10 +296,10 @@ function AdminDashboard() {
                 <div key={p.id} className={styles.productItem}>
                   <div className={styles.productInfoLeft}>
                     <img 
-                      src={p.image || '/src/assets/hero_saree_model.png'} 
+                      src={p.image || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                       alt={p.name} 
                       className={styles.productThumb} 
-                      onError={(e) => { e.target.src = '/src/assets/hero_saree_model.png'; }}
+                      onError={(e) => { e.target.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                     />
                     <div className={styles.productMeta}>
                       <span className={styles.productName} title={p.name}>{p.name}</span>

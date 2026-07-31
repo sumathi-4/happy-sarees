@@ -53,7 +53,7 @@ function Profile() {
             fabric: i.fabric || 'Silk',
             quantity: Number(i.quantity || 1),
             price: Number(i.price || i.price_at_purchase || 0),
-            image: i.image || i.image_url || '/src/assets/hero_saree_model.png'
+            image: i.image || i.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'
           }));
 
           return {
@@ -118,7 +118,7 @@ function Profile() {
     cartCount: Number(cartCount || 0),
     addressCount: Number(addresses.length || 0),
     totalOrders: Number(orders.length || 0),
-    avatar: user?.avatar || '/src/assets/hero_saree_model.png'
+    avatar: user?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'
   };
 
   const handleSelectTab = (tabId) => {

@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
         id: row.id,
         productId: row.product_id,
         productName: row.product_name || `Product #${row.product_id}`,
-        productImage: row.product_image || '/src/assets/hero_saree_model.png',
+        productImage: row.product_image || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg',
         customerName: row.reviewer_name || 'Customer',
         customerEmail: row.user_email || 'customer@happysarees.com',
         rating: Number(row.rating) || 5,

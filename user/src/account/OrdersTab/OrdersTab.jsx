@@ -34,7 +34,7 @@ function OrdersTab({ orders: parentOrders }) {
               fabric: i.fabric || 'Silk',
               quantity: Number(i.quantity || 1),
               price: Number(i.price || i.price_at_purchase || 0),
-              image: i.image || i.image_url || '/src/assets/hero_saree_model.png'
+              image: i.image || i.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'
             }));
 
             return {
@@ -217,10 +217,10 @@ function OrdersTab({ orders: parentOrders }) {
                   {(order.items || []).map((item) => (
                     <div key={item.id} className={styles.itemRow}>
                       <img 
-                        src={item.image || '/src/assets/hero_saree_model.png'} 
+                        src={item.image || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                         alt={item.name} 
                         className={styles.itemThumb} 
-                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                       />
                       <div className={styles.itemInfo}>
                         <h5 className={styles.itemName}>{item.name}</h5>

@@ -38,7 +38,7 @@ function ProductDetails() {
               id: p.id,
               name: p.name,
               price: p.price,
-              image: p.image || (Array.isArray(p.images) ? p.images[0] : '/src/assets/hero_saree_model.png')
+              image: p.image || (Array.isArray(p.images) ? p.images[0] : 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg')
             };
             const updated = [newItem, ...filtered].slice(0, 10);
             localStorage.setItem('hs_recently_viewed', JSON.stringify(updated));

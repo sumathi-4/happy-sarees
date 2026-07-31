@@ -23,9 +23,9 @@ async function seedDatabase() {
 
     // 3. Create Categories
     const categories = [
-      { name: 'Kanchipuram Silk', slug: 'kanchipuram-silk', image: '/src/assets/wedding_saree.png' },
-      { name: 'Banarasi Silk', slug: 'banarasi-silk', image: '/src/assets/hero_saree_model.png' },
-      { name: 'Organza Sarees', slug: 'organza-sarees', image: '/src/assets/festive_saree.png' },
+      { name: 'Kanchipuram Silk', slug: 'kanchipuram-silk', image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg' },
+      { name: 'Banarasi Silk', slug: 'banarasi-silk', image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg' },
+      { name: 'Organza Sarees', slug: 'organza-sarees', image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg' },
       { name: 'Chanderi Silk', slug: 'chanderi-silk', image: 'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop' }
     ];
 
@@ -67,9 +67,9 @@ async function seedDatabase() {
         rating: 4.9,
         review_count: 248,
         images: [
-          '/src/assets/hero_saree_model.png',
-          '/src/assets/wedding_saree.png',
-          '/src/assets/festive_saree.png'
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg'
         ]
       },
       {
@@ -98,9 +98,9 @@ async function seedDatabase() {
         rating: 4.8,
         review_count: 192,
         images: [
-          '/src/assets/wedding_saree.png',
-          '/src/assets/hero_saree_model.png',
-          '/src/assets/festive_saree.png'
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg'
         ]
       },
       {
@@ -129,9 +129,9 @@ async function seedDatabase() {
         rating: 4.6,
         review_count: 15,
         images: [
-          '/src/assets/festive_saree.png',
-          '/src/assets/hero_saree_model.png',
-          '/src/assets/wedding_saree.png'
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg'
         ]
       },
       {
@@ -161,8 +161,8 @@ async function seedDatabase() {
         review_count: 84,
         images: [
           'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop',
-          '/src/assets/hero_saree_model.png',
-          '/src/assets/wedding_saree.png'
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg',
+          'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg'
         ]
       }
     ];

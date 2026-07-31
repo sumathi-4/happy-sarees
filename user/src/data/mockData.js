@@ -16,7 +16,7 @@ export const HERO_SLIDES = [
     subtitle: "TIMELESS BEAUTY",
     boldTitle: "for Every Occasion",
     description: "Discover our exclusive range of premium sarees, crafted for every moment of your life. From rich traditional weaves to lightweight contemporary designs, find your perfect grace.",
-    image: "/src/assets/hero_saree_model.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
     primaryCta: "Shop Now",
     secondaryCta: "Explore Collections"
   }
@@ -29,7 +29,7 @@ export const SIGNATURE_COLLECTIONS = [
     title: "Wedding Elegance",
     subtitle: "WEDDING COLLECTION",
     description: "Celebrate your grand celebrations with our majestic traditional weaves.",
-    image: "/src/assets/wedding_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
     ctaText: "Explore Collection"
   },
   {
@@ -37,7 +37,7 @@ export const SIGNATURE_COLLECTIONS = [
     title: "Bridal Royal",
     subtitle: "BRIDAL COLLECTION",
     description: "Look like royalty on your special day in our handwoven pure zaris.",
-    image: "/src/assets/festive_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     ctaText: "Explore Collection"
   },
   {
@@ -64,7 +64,7 @@ export const CATEGORIES = [
     id: 1,
     title: "Silk Sarees",
     count: "150+ Products",
-    image: "/src/assets/hero_saree_model.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
     path: "/shop?category=silk"
   },
   {
@@ -85,14 +85,14 @@ export const CATEGORIES = [
     id: 4,
     title: "Banarasi",
     count: "80+ Products",
-    image: "/src/assets/wedding_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
     path: "/shop?category=banarasi"
   },
   {
     id: 5,
     title: "Kanchipuram",
     count: "110+ Products",
-    image: "/src/assets/festive_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     path: "/shop?category=kanchipuram"
   },
   {
@@ -130,7 +130,7 @@ export const FABRICS = [
   {
     id: 4,
     name: "Tissue",
-    image: "/src/assets/wedding_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
     path: "/shop?fabric=tissue"
   },
   {
@@ -142,7 +142,7 @@ export const FABRICS = [
   {
     id: 6,
     name: "Georgette",
-    image: "/src/assets/festive_saree.png",
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     path: "/shop?fabric=georgette"
   }
 ];
@@ -206,21 +206,21 @@ export const WATCH_AND_BUY_VIDEOS = [
     id: 1,
     title: "How to Drape Silk Saree",
     duration: "02:45",
-    thumbnail: "/src/assets/hero_saree_model.png",
+    thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
     productId: "p1"
   },
   {
     id: 2,
     title: "Banarasi Saree Showcase",
     duration: "01:58",
-    thumbnail: "/src/assets/wedding_saree.png",
+    thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
     productId: "p5"
   },
   {
     id: 3,
     title: "Festive Look Ideas",
     duration: "03:20",
-    thumbnail: "/src/assets/festive_saree.png",
+    thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     productId: "p3"
   },
   {
@@ -266,9 +266,9 @@ export const SAMPLE_PRODUCT_DETAIL = {
   inStock: true,
   stockCount: 8,
   images: [
-    "/src/assets/hero_saree_model.png",
-    "/src/assets/wedding_saree.png",
-    "/src/assets/festive_saree.png",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop"
   ],
@@ -280,19 +280,19 @@ export const SAMPLE_PRODUCT_DETAIL = {
       id: 1,
       title: "How to drape Kanchipuram Silk Saree perfectly",
       duration: "02:45",
-      thumbnail: "/src/assets/hero_saree_model.png"
+      thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
     },
     {
       id: 2,
       title: "Kanchipuram Silk Saree Details & Quality",
       duration: "01:32",
-      thumbnail: "/src/assets/wedding_saree.png"
+      thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
     },
     {
       id: 3,
       title: "Perfect Saree for Wedding Season",
       duration: "03:10",
-      thumbnail: "/src/assets/festive_saree.png"
+      thumbnail: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
     }
   ],
   reviewsList: [
@@ -304,9 +304,9 @@ export const SAMPLE_PRODUCT_DETAIL = {
       rating: 5,
       comment: "Absolutely stunning saree! The quality is exceptional and the color is exactly as shown. Perfect for my sister's wedding.",
       photos: [
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png",
-        "/src/assets/festive_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
       ]
     },
     {
@@ -317,8 +317,8 @@ export const SAMPLE_PRODUCT_DETAIL = {
       rating: 5,
       comment: "Pure silk feel and beautiful zari work. Packaging was excellent. Highly recommended!",
       photos: [
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
       ]
     },
     {
@@ -329,8 +329,8 @@ export const SAMPLE_PRODUCT_DETAIL = {
       rating: 5,
       comment: "Very elegant and traditional look. Received so many compliments! Worth every penny.",
       photos: [
-        "/src/assets/wedding_saree.png",
-        "/src/assets/festive_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
       ]
     }
   ],
@@ -353,7 +353,7 @@ export const SAMPLE_PRODUCT_DETAIL = {
       originalPrice: 6900,
       rating: 4.6,
       ratingCount: 78,
-      image: "/src/assets/wedding_saree.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
     },
     {
       id: "rel3",
@@ -373,7 +373,7 @@ export const SAMPLE_PRODUCT_DETAIL = {
       originalPrice: 7300,
       rating: 4.8,
       ratingCount: 112,
-      image: "/src/assets/hero_saree_model.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
     },
     {
       id: "rel5",
@@ -393,7 +393,7 @@ export const SAMPLE_PRODUCT_DETAIL = {
       originalPrice: 5400,
       rating: 4.5,
       ratingCount: 59,
-      image: "/src/assets/festive_saree.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
     }
   ],
   recentlyViewed: [
@@ -401,13 +401,13 @@ export const SAMPLE_PRODUCT_DETAIL = {
       id: "rv1",
       name: "Kanchipuram Pure Silk Saree",
       price: 6999,
-      image: "/src/assets/hero_saree_model.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
     },
     {
       id: "rv2",
       name: "Banarasi Silk Saree Pink",
       price: 6499,
-      image: "/src/assets/wedding_saree.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
     },
     {
       id: "rv3",
@@ -419,7 +419,7 @@ export const SAMPLE_PRODUCT_DETAIL = {
       id: "rv4",
       name: "Tissue Silk Saree Peach",
       price: 5499,
-      image: "/src/assets/festive_saree.png"
+      image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
     },
     {
       id: "rv5",
@@ -458,9 +458,9 @@ export const getProductById = (id) => {
       image: foundInProducts.image,
       images: [
         foundInProducts.image,
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png",
-        "/src/assets/festive_saree.png",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
         "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop"
       ]
     };
@@ -480,9 +480,9 @@ export const getProductById = (id) => {
       image: foundInRelated.image,
       images: [
         foundInRelated.image,
-        "/src/assets/wedding_saree.png",
-        "/src/assets/festive_saree.png",
-        "/src/assets/hero_saree_model.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
       ]
     };
   }
@@ -498,8 +498,8 @@ export const getProductById = (id) => {
       image: foundInRecent.image,
       images: [
         foundInRecent.image,
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
       ]
     };
   }
@@ -520,9 +520,9 @@ export const getProductById = (id) => {
       image: foundInWishlist.image,
       images: [
         foundInWishlist.image,
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png",
-        "/src/assets/festive_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
       ]
     };
   }
@@ -541,8 +541,8 @@ export const getProductById = (id) => {
       image: foundInCart.image,
       images: [
         foundInCart.image,
-        "/src/assets/hero_saree_model.png",
-        "/src/assets/wedding_saree.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
       ]
     };
   }
@@ -560,7 +560,7 @@ export const getProductById = (id) => {
       image: foundInRec.image,
       images: [
         foundInRec.image,
-        "/src/assets/hero_saree_model.png"
+        "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
       ]
     };
   }
@@ -584,7 +584,7 @@ export const MOCK_WISHLIST_ITEMS = [
     rating: 4.8,
     ratingCount: 248,
     inStock: true,
-    image: "/src/assets/hero_saree_model.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
   },
   {
     id: "w2",
@@ -616,7 +616,7 @@ export const MOCK_WISHLIST_ITEMS = [
     rating: 4.6,
     ratingCount: 134,
     inStock: true,
-    image: "/src/assets/wedding_saree.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
   },
   {
     id: "w4",
@@ -646,7 +646,7 @@ export const MOCK_WISHLIST_ITEMS = [
     rating: 4.6,
     ratingCount: 76,
     inStock: true,
-    image: "/src/assets/festive_saree.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
   },
   {
     id: "w6",
@@ -715,7 +715,7 @@ export const MOCK_CART_ITEMS = [
     rating: 4.8,
     ratingCount: 248,
     quantity: 1,
-    image: "/src/assets/hero_saree_model.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
   },
   {
     id: "c2",
@@ -754,7 +754,7 @@ export const MOCK_CART_ITEMS = [
     rating: 4.6,
     ratingCount: 134,
     quantity: 1,
-    image: "/src/assets/wedding_saree.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
   }
 ];
 
@@ -795,7 +795,7 @@ export const RECOMMENDED_PRODUCTS = [
     discountBadge: "15% OFF",
     rating: 4.6,
     ratingCount: 76,
-    image: "/src/assets/festive_saree.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
   },
   {
     id: "rec2",
@@ -934,7 +934,7 @@ export const MOCK_USER_PROFILE = {
   totalSpent: 45296,
   totalSaved: 6250,
   memberSince: "May 2024",
-  avatar: "/src/assets/hero_saree_model.png"
+  avatar: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
 };
 
 export const MOCK_ACCOUNT_ORDERS = [
@@ -953,7 +953,7 @@ export const MOCK_ACCOUNT_ORDERS = [
         color: "Magenta",
         price: 6999,
         quantity: 1,
-        image: "/src/assets/hero_saree_model.png"
+        image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
       }
     ]
   },
@@ -991,7 +991,7 @@ export const MOCK_ACCOUNT_ORDERS = [
         color: "Lavender",
         price: 4299,
         quantity: 1,
-        image: "/src/assets/wedding_saree.png"
+        image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
       }
     ]
   }
@@ -1005,7 +1005,7 @@ export const MOCK_USER_REVIEWS = [
     date: "14 May, 2024",
     title: "Breathtaking quality & vibrant zari work!",
     comment: "The saree arrived in pristine luxury packaging. The silk texture is super rich and authentic. Highly recommended for weddings!",
-    image: "/src/assets/hero_saree_model.png"
+    image: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
   },
   {
     id: "rev2",
@@ -1110,7 +1110,7 @@ export const MOCK_CUSTOMER_TESTIMONIALS = [
     rating: 5,
     quote: "The Kanchipuram silk saree I ordered for my sister's wedding was beyond gorgeous! The zari luster and softness left everyone in awe.",
     saree: "Pure Kanchipuram Silk",
-    avatar: "/src/assets/hero_saree_model.png"
+    avatar: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
   },
   {
     id: "t2",
@@ -1128,7 +1128,7 @@ export const MOCK_CUSTOMER_TESTIMONIALS = [
     rating: 5,
     quote: "Exceptional customer service! They even helped me customize my blouse stitching size perfectly. Truly living up to their name!",
     saree: "Organza Floral Saree",
-    avatar: "/src/assets/wedding_saree.png"
+    avatar: "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
   }
 ];
 

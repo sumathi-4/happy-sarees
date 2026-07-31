@@ -98,8 +98,8 @@ function MasterDataManagement() {
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
   const paginatedItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Handle Add/Edit item submit
-  const handleItemSubmit = (e) => {
+  // Handle Item Submit (Add or Edit)
+  const handleItemSubmit = async (e) => {
     e.preventDefault();
     if (!itemName.trim()) {
       alert("Name is required.");
@@ -110,7 +110,7 @@ function MasterDataManagement() {
 
     if (editingItem) {
       // Edit mode
-      updateMasterItem(selectedType, editingItem.id, {
+      await updateMasterItem(selectedType, editingItem.id, {
         name: itemName.trim(),
         imageData: itemImageData,
         description: itemDescription,
@@ -120,7 +120,7 @@ function MasterDataManagement() {
       triggerToast(`Updated "${itemName}" successfully.`);
     } else {
       // Add mode
-      addMasterItem(selectedType, {
+      await addMasterItem(selectedType, {
         name: itemName.trim(),
         imageData: itemImageData,
         description: itemDescription,
@@ -139,6 +139,17 @@ function MasterDataManagement() {
     setItemSortOrder('');
   };
 
+  // Open Add Modal
+  const openAddModal = () => {
+    setEditingItem(null);
+    setItemName('');
+    setItemImageData('');
+    setItemDescription('');
+    setItemStatus('Active');
+    setItemSortOrder((activeItems.length + 1).toString());
+    setShowItemModal(true);
+  };
+
   // Open Edit Modal
   const openEditModal = (item) => {
     setEditingItem(item);
@@ -151,17 +162,17 @@ function MasterDataManagement() {
   };
 
   // Toggle status directly in table row
-  const handleToggleStatus = (item) => {
+  const handleToggleStatus = async (item) => {
     const nextStatus = item.status === 'Active' ? 'Inactive' : 'Active';
-    updateMasterItem(selectedType, item.id, { status: nextStatus });
+    await updateMasterItem(selectedType, item.id, { status: nextStatus });
     triggerToast(`Status for "${item.name}" changed to ${nextStatus}.`);
   };
 
   // Execute Delete
-  const handleDeleteExecute = () => {
+  const handleDeleteExecute = async () => {
     const targetItem = activeItems.find(x => x.id === deleteConfirmId);
     if (targetItem) {
-      deleteMasterItem(selectedType, deleteConfirmId);
+      await deleteMasterItem(selectedType, deleteConfirmId);
       triggerToast(`Removed "${targetItem.name}" from ${formatTypeLabel(selectedType)}.`);
     }
     setDeleteConfirmId(null);

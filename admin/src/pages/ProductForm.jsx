@@ -29,7 +29,7 @@ function ProductForm() {
     sku: '',
     shortDescription: '',
     longDescription: '',
-    status: 'Draft',
+    status: 'Published',
     fabric: '',
     occasion: '',
     color: '',
@@ -880,38 +880,10 @@ function ProductForm() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <label className={styles.toggleLabel}>
-                      <input type="checkbox" name="showOnHomepage" checked={formData.showOnHomepage} onChange={handleInputChange} className={styles.checkbox} />
-                      <div className={styles.toggleText}>
-                        <strong>Show on Homepage</strong>
-                        <span>Display product across main homepage grids.</span>
-                      </div>
-                    </label>
-                    <label className={styles.toggleLabel}>
                       <input type="checkbox" name="newArrival" checked={formData.newArrival} onChange={handleInputChange} className={styles.checkbox} />
                       <div className={styles.toggleText}>
                         <strong>New Arrival</strong>
                         <span>Appears in the New Arrivals collection.</span>
-                      </div>
-                    </label>
-                    <label className={styles.toggleLabel}>
-                      <input type="checkbox" name="bestSeller" checked={formData.bestSeller} onChange={handleInputChange} className={styles.checkbox} />
-                      <div className={styles.toggleText}>
-                        <strong>Best Seller</strong>
-                        <span>Appears in the Best Sellers collection.</span>
-                      </div>
-                    </label>
-                    <label className={styles.toggleLabel}>
-                      <input type="checkbox" name="featuredCollection" checked={formData.featuredCollection} onChange={handleInputChange} className={styles.checkbox} />
-                      <div className={styles.toggleText}>
-                        <strong>Featured Collection</strong>
-                        <span>Appears in Featured Collections curation.</span>
-                      </div>
-                    </label>
-                    <label className={styles.toggleLabel}>
-                      <input type="checkbox" name="saleProduct" checked={formData.saleProduct} onChange={handleInputChange} className={styles.checkbox} />
-                      <div className={styles.toggleText}>
-                        <strong>Sale Product</strong>
-                        <span>Appears in Special Deals & Sale collection.</span>
                       </div>
                     </label>
                   </div>

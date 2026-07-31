@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ANNOUNCEMENT_MESSAGES } from '../../data/mockData';
 import api from '../../services/api';
 import styles from './AnnouncementBar.module.css';
@@ -159,14 +160,14 @@ function AnnouncementBar() {
         </span>
       </div>
 
-      {/* Nav Buttons (Previous / Next) */}
+      {/* Nav Buttons (Previous / Next Icons Only) */}
       {announcements.length > 1 && (
         <div className={styles.navControls}>
-          <button className={styles.navBtn} onClick={handlePrev} title="Previous Announcement">
-            ‹ Prev
+          <button className={styles.navBtn} onClick={handlePrev} title="Previous Announcement" aria-label="Previous Announcement">
+            <FiChevronLeft size={16} />
           </button>
-          <button className={styles.navBtn} onClick={handleNext} title="Next Announcement">
-            Next ›
+          <button className={styles.navBtn} onClick={handleNext} title="Next Announcement" aria-label="Next Announcement">
+            <FiChevronRight size={16} />
           </button>
         </div>
       )}

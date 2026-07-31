@@ -35,7 +35,7 @@ function About() {
       <section className={styles.heroBannerSection}>
         <div className={styles.heroImgFrame}>
           <img
-            src="/src/assets/wedding_saree.png"
+            src="https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
             alt="Happy Sarees Heritage"
             className={styles.heroImg}
           />
@@ -54,7 +54,7 @@ function About() {
             <div className={styles.storyImgCol}>
               <div className={styles.storyImgWrapper}>
                 <img
-                  src="/src/assets/hero_saree_model.png"
+                  src="https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
                   alt="Happy Sarees Boutique Story"
                   className={styles.storyImg}
                 />
@@ -165,7 +165,7 @@ function About() {
 
             <div className={styles.craftImgCol}>
               <img
-                src="/src/assets/festive_saree.png"
+                src="https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg"
                 alt="Happy Sarees Craftsmanship"
                 className={styles.craftImg}
               />

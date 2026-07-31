@@ -78,21 +78,26 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
       {/* Rating & Reviews Bar — Live dynamic from approved reviews */}
       <div className={styles.ratingRow}>
         {/* 5-star golden fill row — same style as Quick View */}
-        <div className={styles.stars}>
-          {[...Array(5)].map((_, i) => {
-            const displayRating = liveRating !== null ? liveRating : (product.rating || 0);
-            return (
-              <FiStar
-                key={i}
-                className={`${styles.starIcon} ${i + 1 <= Math.round(displayRating) ? styles.starFilled : ''}`}
-              />
-            );
-          })}
-        </div>
-        <span className={styles.ratingScore}>
-          {liveRating !== null ? Number(liveRating).toFixed(1) : (product.rating ? Number(product.rating).toFixed(1) : '0.0')}
-        </span>
-        <span className={styles.reviewCount}>({liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0)} Verified Reviews)</span>
+        {(() => {
+          const effectiveCount = liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0);
+          const effectiveRating = effectiveCount > 0 ? (liveRating !== null ? liveRating : (product.rating || 0)) : 0;
+          return (
+            <>
+              <div className={styles.stars}>
+                {[...Array(5)].map((_, i) => (
+                  <FiStar
+                    key={i}
+                    className={`${styles.starIcon} ${effectiveCount > 0 && i + 1 <= Math.round(effectiveRating) ? styles.starFilled : ''}`}
+                  />
+                ))}
+              </div>
+              <span className={styles.ratingScore}>
+                {effectiveCount > 0 ? Number(effectiveRating).toFixed(1) : '0.0'}
+              </span>
+              <span className={styles.reviewCount}>({effectiveCount} Verified Reviews)</span>
+            </>
+          );
+        })()}
 
         {canReview && existingReview && (existingReview.status === 'approved' || existingReview.status === 'rejected') ? (
           // Approved/Rejected: edit disabled, show status badge

@@ -27,7 +27,7 @@ function Shop({ isSalePage: isSaleProp }) {
   const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedPatterns, setSelectedPatterns] = useState([]);
-  const [priceRange, setPriceRange] = useState(25000);
+  const [priceRange, setPriceRange] = useState(500000);
   const [minRating, setMinRating] = useState(0);
   const [blouseFilter, setBlouseFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
@@ -105,7 +105,7 @@ function Shop({ isSalePage: isSaleProp }) {
     setSelectedColors([]);
     setSelectedPatterns([]);
     setDynamicFilters({});
-    setPriceRange(25000);
+    setPriceRange(500000);
     setMinRating(0);
     setBlouseFilter('all');
     setAvailabilityFilter('all');

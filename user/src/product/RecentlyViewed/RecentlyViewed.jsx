@@ -79,10 +79,10 @@ function RecentlyViewed({ products: passedProducts = [] }) {
               <div className={styles.imageFrame}>
                 <Link to={`/product/${item.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
                   <img 
-                    src={item.image || item.image_url || '/src/assets/hero_saree_model.png'} 
+                    src={item.image || item.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                     alt={item.name} 
                     className={styles.miniImg} 
-                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                   />
                 </Link>
                 <button

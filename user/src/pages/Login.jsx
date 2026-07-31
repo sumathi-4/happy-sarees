@@ -62,7 +62,7 @@ function Login() {
           {/* Left Column: Lifestyle Banner */}
           <div className={styles.leftCol}>
             <AuthBanner
-              image="/src/assets/hero_saree_model.png"
+              image="https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
               headline="Timeless Sarees For Every You"
             />
           </div>

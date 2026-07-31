@@ -71,9 +71,9 @@ function SignatureCollections() {
         // Fallback default dynamic array if offline
         if (isMounted) {
           setOccasions([
-            { id: 1, name: 'Wedding Elegance', slug: 'wedding', image: '/src/assets/wedding_saree.png' },
+            { id: 1, name: 'Wedding Elegance', slug: 'wedding', image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg' },
             { id: 2, name: 'Bridal Royal', slug: 'bridal', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop' },
-            { id: 3, name: 'Festival Glamour', slug: 'festive', image: '/src/assets/festive_saree.png' },
+            { id: 3, name: 'Festival Glamour', slug: 'festive', image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg' },
             { id: 4, name: 'Office Grace', slug: 'office', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop' },
             { id: 5, name: 'Party Favs', slug: 'party', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=800&auto=format&fit=crop' }
           ]);
@@ -92,8 +92,8 @@ function SignatureCollections() {
 
   function getFallbackImage(name) {
     const lower = (name || '').toLowerCase();
-    if (lower.includes('wedding')) return '/src/assets/wedding_saree.png';
-    if (lower.includes('festive')) return '/src/assets/festive_saree.png';
+    if (lower.includes('wedding')) return 'https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg';
+    if (lower.includes('festive')) return 'https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg';
     if (lower.includes('bridal')) return 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop';
     if (lower.includes('office')) return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop';
     return 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop';

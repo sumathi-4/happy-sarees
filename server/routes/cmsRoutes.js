@@ -138,32 +138,10 @@ router.get('/occasions', async (req, res) => {
       };
     });
 
-    let finalOccasions = occasions;
-    if (!finalOccasions || finalOccasions.length === 0) {
-      finalOccasions = [
-        { id: 1, name: 'Wedding', slug: 'wedding', path: '/shop?occasion=wedding' },
-        { id: 2, name: 'Reception', slug: 'reception', path: '/shop?occasion=reception' },
-        { id: 3, name: 'Party Wear', slug: 'party', path: '/shop?occasion=party' },
-        { id: 4, name: 'Office Wear', slug: 'office', path: '/shop?occasion=office' },
-        { id: 5, name: 'Daily Wear', slug: 'daily-wear', path: '/shop?occasion=daily-wear' },
-        { id: 6, name: 'Festive', slug: 'festive', path: '/shop?occasion=festive' },
-        { id: 7, name: 'Bridal', slug: 'bridal', path: '/shop?occasion=bridal' }
-      ];
-    }
-
-    res.json({ success: true, occasions: finalOccasions });
+    res.json({ success: true, occasions });
   } catch (err) {
-    console.warn('[cmsRoutes] Public Occasions fetch notice:', err.message);
-    const defaultOccasions = [
-      { id: 1, name: 'Wedding', slug: 'wedding', path: '/shop?occasion=wedding' },
-      { id: 2, name: 'Reception', slug: 'reception', path: '/shop?occasion=reception' },
-      { id: 3, name: 'Party Wear', slug: 'party', path: '/shop?occasion=party' },
-      { id: 4, name: 'Office Wear', slug: 'office', path: '/shop?occasion=office' },
-      { id: 5, name: 'Daily Wear', slug: 'daily-wear', path: '/shop?occasion=daily-wear' },
-      { id: 6, name: 'Festive', slug: 'festive', path: '/shop?occasion=festive' },
-      { id: 7, name: 'Bridal', slug: 'bridal', path: '/shop?occasion=bridal' }
-    ];
-    res.json({ success: true, occasions: defaultOccasions });
+    console.error('[cmsRoutes] Public Occasions fetch error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -189,29 +167,10 @@ router.get('/master-data', async (req, res) => {
       }
     }
 
-    if (!masterData.fabrics || masterData.fabrics.length === 0) {
-      masterData.fabrics = ['Silk', 'Cotton', 'Linen', 'Organza', 'Georgette', 'Tissue', 'Banarasi', 'Kanchipuram', 'Chiffon'];
-    }
-    if (!masterData.occasions || masterData.occasions.length === 0) {
-      masterData.occasions = ['Wedding', 'Reception', 'Party Wear', 'Office Wear', 'Daily Wear', 'Festive', 'Bridal'];
-    }
-
     res.json({ success: true, masterData });
   } catch (err) {
-    console.warn('[cmsRoutes] Master Data fetch notice:', err.message);
-    res.json({
-      success: true,
-      masterData: {
-        fabrics: ['Silk', 'Cotton', 'Linen', 'Organza', 'Georgette', 'Tissue', 'Banarasi', 'Kanchipuram', 'Chiffon'],
-        occasions: ['Wedding', 'Reception', 'Party Wear', 'Office Wear', 'Daily Wear', 'Festive', 'Bridal'],
-        colors: [
-          { name: 'Red', hex: '#d11b69' },
-          { name: 'Pink', hex: '#ff69b4' },
-          { name: 'Gold', hex: '#ffd700' },
-          { name: 'Blue', hex: '#1e90ff' }
-        ]
-      }
-    });
+    console.error('[cmsRoutes] Master Data fetch error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

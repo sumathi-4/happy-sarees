@@ -1097,10 +1097,10 @@ function OrdersManagement() {
                         {activeProducts.map((item, idx) => (
                           <div key={idx} className={styles.itemRow}>
                             <img 
-                              src={item.image || item.image_url || '/src/assets/hero_saree_model.png'} 
+                              src={item.image || item.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                               alt={item.name || item.productName || 'Saree'} 
                               className={styles.itemThumb} 
-                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                             />
                             <div style={{ flex: 1 }}>
                               <strong className={styles.itemNameText}>{item.name || item.productName || 'Silk Saree'}</strong>

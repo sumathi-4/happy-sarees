@@ -6,7 +6,7 @@ function FeaturedBanner() {
     <section className={styles.section}>
       <div className={styles.bannerContainer}>
         <img 
-          src="/src/assets/festive_saree.png" 
+          src="https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg" 
           alt="Royal Banarasi Collection Banner" 
           className={styles.bgImage} 
         />

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import styles from './Hero.module.css';
 
-import banner1 from '../../assets/hero_banners/hero_banner_1.jpg';
-import banner2 from '../../assets/hero_banners/hero_banner_2.jpg';
-import banner3 from '../../assets/hero_banners/hero_banner_3.jpg';
-import banner4 from '../../assets/hero_banners/hero_banner_4.jpg';
+const banner1 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785476992/happy_sarees/site_assets/hero_banners/xpykrshdixjmpsitocm8.jpg';
+const banner2 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785476994/happy_sarees/site_assets/hero_banners/vhqyulqza1xhns1a4cme.jpg';
+const banner3 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785476996/happy_sarees/site_assets/hero_banners/vitdixax6vbhaxp3wslp.jpg';
+const banner4 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785476998/happy_sarees/site_assets/hero_banners/rtg73ngzkyutzme47lxm.jpg';
 
 const HERO_SLIDES = [
   {

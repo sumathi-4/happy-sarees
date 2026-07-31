@@ -92,45 +92,47 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
             <h3 className={styles.productName}>{product.name}</h3>
 
             {/* Rating Stars */}
-            <div className={styles.ratingRow}>
-              <div className={styles.stars}>
-                {[...Array(5)].map((_, i) => {
-                  const starIndex = i + 1;
-                  return (
-                    <FiStar
-                      key={i}
-                      className={`${styles.starIcon} ${
-                        starIndex <= Math.round(liveRating !== null ? liveRating : (product.rating || 0)) ? styles.starFilled : ''
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-              <span className={styles.ratingText}>
-                {liveRating !== null ? Number(liveRating).toFixed(1) : (product.rating ? Number(product.rating).toFixed(1) : '0.0')} ({liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0)} Reviews)
-              </span>
+            {(() => {
+              const effectiveCount = liveReviewCount !== null ? liveReviewCount : (product.reviewCount || 0);
+              const effectiveRating = effectiveCount > 0 ? (liveRating !== null ? liveRating : (product.rating || 0)) : 0;
+              return (
+                <div className={styles.ratingRow}>
+                  <div className={styles.stars}>
+                    {[...Array(5)].map((_, i) => (
+                      <FiStar
+                        key={i}
+                        className={`${styles.starIcon} ${
+                          effectiveCount > 0 && (i + 1) <= Math.round(effectiveRating) ? styles.starFilled : ''
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className={styles.ratingText}>
+                    {effectiveCount > 0 ? Number(effectiveRating).toFixed(1) : '0.0'} ({effectiveCount} Reviews)
+                  </span>
 
-              {canReview && existingReview && (existingReview.status === 'approved' || existingReview.status === 'rejected') ? (
-                // Approved/Rejected: show status badge, no edit
-                <span style={{ marginLeft: 'auto', fontSize: '11px', color: existingReview.status === 'approved' ? '#15803d' : '#b91c1c', background: existingReview.status === 'approved' ? '#dcfce7' : '#fee2e2', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
-                  {existingReview.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
-                </span>
-              ) : canReview ? (
-                <button
-                  onClick={() => {
-                    if (onClose) onClose();
-                    navigate(`/product/${product.id}#customer-reviews`);
-                  }}
-                  style={{ marginLeft: 'auto', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  {existingReview ? 'Edit Review' : 'Write Review'}
-                </button>
-              ) : (
-                <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#64748b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
-                  Available after delivery.
-                </span>
-              )}
-            </div>
+                  {canReview && existingReview && (existingReview.status === 'approved' || existingReview.status === 'rejected') ? (
+                    <span style={{ marginLeft: 'auto', fontSize: '11px', color: existingReview.status === 'approved' ? '#15803d' : '#b91c1c', background: existingReview.status === 'approved' ? '#dcfce7' : '#fee2e2', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                      {existingReview.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                    </span>
+                  ) : canReview ? (
+                    <button
+                      onClick={() => {
+                        if (onClose) onClose();
+                        navigate(`/product/${product.id}#customer-reviews`);
+                      }}
+                      style={{ marginLeft: 'auto', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      {existingReview ? 'Edit Review' : 'Write Review'}
+                    </button>
+                  ) : (
+                    <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#64748b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                      Available after delivery.
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Price Section */}
             <div className={styles.priceRow}>

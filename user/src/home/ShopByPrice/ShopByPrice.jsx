@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './ShopByPrice.module.css';
 
-import cutout1 from '../../assets/price_cutouts/price_cutout_1.png';
-import cutout2 from '../../assets/price_cutouts/price_cutout_2.png';
-import cutout3 from '../../assets/price_cutouts/price_cutout_3.png';
-import cutout4 from '../../assets/price_cutouts/price_cutout_4.png';
+const cutout1 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477013/happy_sarees/site_assets/price_cutouts/cgr7fkcsw84lhsgtslf7.png';
+const cutout2 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477014/happy_sarees/site_assets/price_cutouts/iszyfx20414jbu7j3ueu.png';
+const cutout3 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477015/happy_sarees/site_assets/price_cutouts/f7szjystkkrzyjfg0pad.png';
+const cutout4 = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477016/happy_sarees/site_assets/price_cutouts/jpxagh6bdogjtmnl07py.png';
 
 const PRICE_CATEGORIES = [
   {

@@ -21,6 +21,13 @@ async function adminRequest(method, path, body = null) {
   const data = await res.json();
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('hs_admin_token');
+      localStorage.removeItem('hs_admin_user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
     const err = new Error(data.message || 'API request failed');
     err.status = res.status;
     err.data = data;

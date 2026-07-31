@@ -310,11 +310,11 @@ class ProductService {
         data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
         data.blouseIncluded ?? true, data.blouseSize, data.height || data.sareeLength, data.width || data.sareeWidth, data.weight, washCareToSave,
         autoSku, inStock, stockCount,
-        data.isBestSeller ?? data.bestSeller ?? false, data.isNewArrival ?? data.newArrival ?? false,
-        data.featuredOnHomepage ?? data.showOnHomepage ?? false,
+        data.isBestSeller ?? data.bestSeller ?? false, data.isNewArrival ?? data.newArrival ?? true,
+        data.featuredOnHomepage ?? data.showOnHomepage ?? true,
         data.isTrending ?? data.trendingProduct ?? false,
-        data.status || 'published',
-        data.rating || 4.8, data.reviewCount || 0,
+        (data.status && data.status.toLowerCase() === 'draft') ? 'published' : (data.status ? data.status.toLowerCase() : 'published'),
+        data.rating || 0, data.reviewCount || 0,
         data.videoUrl ?? data.video_url ?? null, data.videoData ?? data.video_data ?? null,
         JSON.stringify(customMasterData)
       ]
@@ -325,14 +325,19 @@ class ProductService {
     const productId = res.rows[0].id;
 
     // Insert images
-    const imagesList = data.images || data.galleryImages || [];
-    if (Array.isArray(imagesList)) {
+    const rawList = [];
+    if (data.image) rawList.push(data.image);
+    if (Array.isArray(data.galleryImages)) rawList.push(...data.galleryImages);
+    if (Array.isArray(data.images)) rawList.push(...data.images);
+    const imagesList = Array.from(new Set(rawList)).filter(Boolean);
+
+    if (imagesList.length > 0) {
       for (let i = 0; i < imagesList.length; i++) {
         const img = imagesList[i];
         const rawStr = typeof img === 'string' ? img : (img ? (img.url || img.image_url || img.data || img.image_data) : null);
         if (!rawStr) continue;
         const strVal = await uploadToCloudinary(rawStr);
-        const isCover = data.image ? (rawStr === data.image || strVal === data.image) : (i === 0);
+        const isCover = (i === 0);
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -462,10 +467,10 @@ class ProductService {
     if (imagesList.length > 0) {
       await db.query(`DELETE FROM product_images WHERE product_id = $1`, [id]);
       const { uploadToCloudinary } = require('../cloudinaryService');
-      for (let i = 0; i < imagesList.length; i++) {
-        const img = imagesList[i];
+
+      const uploadPromises = imagesList.map(async (img, i) => {
         const rawStr = typeof img === 'string' ? img : (img ? (img.url || img.image_url || img.data || img.image_data) : null);
-        if (!rawStr || typeof rawStr !== 'string' || rawStr.trim() === '') continue;
+        if (!rawStr || typeof rawStr !== 'string' || rawStr.trim() === '') return null;
 
         let strVal = rawStr;
         try {
@@ -474,13 +479,18 @@ class ProductService {
           console.error('[productService.update] Cloudinary upload error:', cErr.message);
         }
 
-        if (!strVal) continue;
-
+        if (!strVal) return null;
         const isCover = (rawCover && (rawStr === rawCover || strVal === rawCover)) || (i === 0);
+        return { strVal, isCover, index: i };
+      });
+
+      const uploadedImages = (await Promise.all(uploadPromises)).filter(Boolean);
+
+      for (const item of uploadedImages) {
         await db.query(
           `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [id, strVal, null, data.name || existing.name, i, isCover]
+          [id, item.strVal, null, data.name || existing.name, item.index, item.isCover]
         );
       }
     }

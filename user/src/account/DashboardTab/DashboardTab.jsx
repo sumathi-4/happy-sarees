@@ -123,10 +123,10 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
               recentOrders.slice(0, 3).map((order) => (
                 <div key={order.id} className={styles.orderItem}>
                   <img
-                    src={order.items?.[0]?.image || '/src/assets/hero_saree_model.png'}
+                    src={order.items?.[0]?.image || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'}
                     alt={order.items?.[0]?.name || 'Saree'}
                     className={styles.orderThumb}
-                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                   />
                   <div className={styles.orderMeta}>
                     <h4 className={styles.orderName}>{order.items?.[0]?.name || 'Silk Saree'}</h4>
@@ -167,10 +167,10 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
                   <div key={prod.id} className={styles.recCard}>
                     <div className={styles.recImgFrame}>
                       <img 
-                        src={prod.image || prod.image_url || '/src/assets/hero_saree_model.png'} 
+                        src={prod.image || prod.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
                         alt={prod.name} 
                         className={styles.recImg} 
-                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/src/assets/hero_saree_model.png'; }}
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
                       />
                       <button onClick={() => toggleWishlist(prod)} className={styles.recHeartBtn}>
                         {isWish ? <FaHeart style={{ color: '#e91e63' }} /> : <FiHeart />}

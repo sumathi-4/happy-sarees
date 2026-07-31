@@ -170,7 +170,7 @@ router.post('/google', async (req, res) => {
         email: user.email,
         phone: user.phone || '',
         role: user.role,
-        avatar: picture || '/src/assets/hero_saree_model.png'
+        avatar: picture || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'
       }
     });
   } catch (error) {

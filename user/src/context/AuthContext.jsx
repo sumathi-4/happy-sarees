@@ -17,7 +17,7 @@ export const DEFAULT_MOCK_USER = {
   totalSpent: 45296,
   totalSaved: 6250,
   memberSince: "May 2024",
-  avatar: "/src/assets/hero_saree_model.png"
+  avatar: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
 };
 
 export function AuthProvider({ children }) {

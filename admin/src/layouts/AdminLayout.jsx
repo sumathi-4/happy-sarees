@@ -8,7 +8,7 @@ import {
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/AdminLayout.module.css';
-import logoImg from '../../../user/src/assets/logo.jpg';
+import logoImg from '../../../userhttps://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function AdminLayout() {
   const { adminUser, adminLogout } = useAdminAuth();
@@ -99,7 +99,7 @@ function AdminLayout() {
 
         {!isSidebarCollapsed && (
           <div className={styles.adminProfileBox}>
-            <img src={adminUser?.avatar || '/src/assets/hero_saree_model.png'} alt={adminUser?.name} className={styles.adminAvatar} />
+            <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt={adminUser?.name} className={styles.adminAvatar} />
             <div className={styles.adminInfoText}>
               <span className={styles.adminName}>{adminUser?.name || 'Admin'}</span>
               <span className={styles.adminRole}>{adminUser?.role || 'Super Admin'}</span>
@@ -316,14 +316,14 @@ function AdminLayout() {
         <div className={styles.sidebarFooter}>
           {(!isSidebarCollapsed || isMobileOpen) ? (
             <div className={styles.footerUser}>
-              <img src={adminUser?.avatar || '/src/assets/hero_saree_model.png'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '11px', fontWeight: 600, color: '#2b2b2b' }}>{adminUser?.name}</span>
                 <span style={{ fontSize: '9px', color: '#999999' }}>{adminUser?.role}</span>
               </div>
             </div>
           ) : (
-            <img src={adminUser?.avatar || '/src/assets/hero_saree_model.png'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+            <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
           )}
           <button onClick={handleLogout} className={styles.footerMenuBtn} title="Logout">
             <FiLogOut />
@@ -377,7 +377,7 @@ function AdminLayout() {
                 setIsNotifOpen(false);
               }}
             >
-              <img src={adminUser?.avatar || '/src/assets/hero_saree_model.png'} alt="Admin" className={styles.adminAvatar} style={{ border: '2px solid rgba(209,27,105,0.1)' }} />
+              <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" className={styles.adminAvatar} style={{ border: '2px solid rgba(209,27,105,0.1)' }} />
               <div className={styles.headerAdminText}>
                 <span className={styles.headerAdminName}>{adminUser?.name || 'Admin'}</span>
                 <span className={styles.headerAdminRole}>{adminUser?.role || 'Super Admin'}</span>

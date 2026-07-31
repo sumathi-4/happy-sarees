@@ -4,7 +4,7 @@ import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi';
 import { PATHS } from '../../routes/paths';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import styles from './Footer.module.css';
-import logoImg from '../../assets/logo.jpg';
+const logoImg = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function Footer() {
   const { storeSettings } = useStoreSettings();

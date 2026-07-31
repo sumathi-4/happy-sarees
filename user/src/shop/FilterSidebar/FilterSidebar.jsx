@@ -258,16 +258,16 @@ function FilterSidebar({
               </div>
               <input
                 type="range"
-                min="1000"
-                max="10000"
-                step="500"
+                min="500"
+                max="500000"
+                step="1000"
                 value={priceRange}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
                 className={styles.sliderInput}
               />
               <div className={styles.priceLimits}>
-                <span>₹1,000</span>
-                <span>₹10,000</span>
+                <span>₹500</span>
+                <span>₹5,00,000</span>
               </div>
             </div>
           </div>

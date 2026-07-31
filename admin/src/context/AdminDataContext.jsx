@@ -1186,7 +1186,7 @@ export function AdminDataProvider({ children }) {
   const addMasterItem = async (type, item) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1194,20 +1194,20 @@ export function AdminDataProvider({ children }) {
         },
         body: JSON.stringify(item)
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to add item');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Add master item error:', err.message);
-      const items = masterData[type] || [];
-      const newId = `${type.charAt(0)}${items.length + 1}_${Date.now()}`;
-      const newItem = { id: newId, name: item.name, status: item.status || 'Active', sortOrder: Number(item.sortOrder) || (items.length + 1) };
-      setMasterData({ ...masterData, [type]: [...items, newItem] });
     }
   };
 
   const updateMasterItem = async (type, itemId, updatedFields) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1215,33 +1215,37 @@ export function AdminDataProvider({ children }) {
         },
         body: JSON.stringify(updatedFields)
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to update item');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Update master item error:', err.message);
-      const items = masterData[type] || [];
-      setMasterData({ ...masterData, [type]: items.map(item => item.id === itemId ? { ...item, ...updatedFields } : item) });
     }
   };
 
   const deleteMasterItem = async (type, itemId) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to delete item');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Delete master item error:', err.message);
-      const items = masterData[type] || [];
-      setMasterData({ ...masterData, [type]: items.filter(item => item.id !== itemId) });
     }
   };
 
   const addMasterType = async (typeName, options = {}) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch('http://localhost:5001/api/admin/master-data/types', {
+      const res = await fetch('http://localhost:5001/api/admin/master-data/types', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1249,20 +1253,20 @@ export function AdminDataProvider({ children }) {
         },
         body: JSON.stringify({ name: typeName, ...options })
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to add type');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Add master type error:', err.message);
-      const key = typeName.toLowerCase().trim().replace(/\s+/g, '_');
-      if (!masterData[key]) {
-        setMasterData({ ...masterData, [key]: [] });
-      }
     }
   };
 
   const updateMasterType = async (typeKey, updatedData) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1270,6 +1274,10 @@ export function AdminDataProvider({ children }) {
         },
         body: JSON.stringify(updatedData)
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to update type');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Update master type error:', err.message);
@@ -1279,16 +1287,17 @@ export function AdminDataProvider({ children }) {
   const deleteMasterType = async (typeKey) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to delete type');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Delete master type error:', err.message);
-      const updated = { ...masterData };
-      delete updated[typeKey];
-      setMasterData(updated);
     }
   };
 

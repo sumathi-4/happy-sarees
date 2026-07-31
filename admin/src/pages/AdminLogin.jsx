@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import styles from '../styles/AdminLogin.module.css';
-import logoImg from '../../../user/src/assets/logo.jpg';
+import logoImg from '../../../userhttps://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function AdminLogin() {
   const { adminLogin } = useAdminAuth();

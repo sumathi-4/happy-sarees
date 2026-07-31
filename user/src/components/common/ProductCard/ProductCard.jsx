@@ -27,9 +27,9 @@ function ProductCard({
   // Multi-image gallery fallback: if product.images is an array, use it; otherwise provide multi-angle gallery images
   const defaultGallery = [
     product.image,
-    "/src/assets/hero_saree_model.png",
-    "/src/assets/wedding_saree.png",
-    "/src/assets/festive_saree.png",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg",
+    "https://res.cloudinary.com/emp49xie/image/upload/v1785476990/happy_sarees/site_assets/xf6gc8iclofggsacglzg.jpg",
     "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?q=80&w=600&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=600&auto=format&fit=crop"
   ].filter(Boolean);
@@ -187,7 +187,7 @@ function ProductCard({
 
         {/* Dynamic Rating & Review Count */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '12px', color: '#f59e0b', fontWeight: 600 }}>
-          <span>★ {product.rating ? Number(product.rating).toFixed(1) : '0.0'}</span>
+          <span>★ {(product.reviewCount && Number(product.reviewCount) > 0 && product.rating) ? Number(product.rating).toFixed(1) : '0.0'}</span>
           <span style={{ color: '#64748b', fontSize: '11px', fontWeight: 400 }}>({product.reviewCount || 0})</span>
         </div>
       </div>

@@ -89,7 +89,7 @@ function Register() {
           {/* Left Column: Lifestyle Banner */}
           <div className={styles.leftCol}>
             <AuthBanner
-              image="/src/assets/wedding_saree.png"
+              image="https://res.cloudinary.com/emp49xie/image/upload/v1785477020/happy_sarees/site_assets/nul8u04jbmradvbmugy8.jpg"
               headline="Crafted Luxury For Unforgettable Moments"
             />
           </div>

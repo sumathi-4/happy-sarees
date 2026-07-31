@@ -76,7 +76,7 @@ class OrderService {
       db.query(`SELECT COUNT(*) FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE ${whereClause}`, params.slice(0,-2)),
       db.query(`SELECT ot.*, au.name as created_by_name FROM order_timeline ot LEFT JOIN admin_users au ON ot.created_by = au.id ORDER BY ot.created_at ASC`),
       db.query(`SELECT oi.*, p.name as product_name, p.sku, p.fabric,
-                       COALESCE(pi.image_data, pi.image_url, '/src/assets/hero_saree_model.png') as image
+                       COALESCE(pi.image_data, pi.image_url, 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg') as image
                 FROM order_items oi
                 LEFT JOIN products p ON oi.product_id = p.id
                 LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = true`)

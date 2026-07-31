@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './PromotionalBanner.module.css';
-import promoBannerImg from '../../assets/hero_banners/hero_banner_4.jpg';
+const promoBannerImg = 'https://res.cloudinary.com/emp49xie/image/upload/v1785476998/happy_sarees/site_assets/hero_banners/rtg73ngzkyutzme47lxm.jpg';
 
 function PromotionalBanner() {
   const navigate = useNavigate();

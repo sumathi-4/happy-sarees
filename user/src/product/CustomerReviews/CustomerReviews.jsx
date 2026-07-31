@@ -151,10 +151,10 @@ function CustomerReviews({ productId, rating = 0, reviewCount = 0, reviewsList =
       <div className={styles.dashboardGrid}>
         {/* Overall Score Box */}
         <div className={styles.scoreBox}>
-          <span className={styles.scoreNumber}>{avgScore || 0}</span>
+          <span className={styles.scoreNumber}>{totalCount > 0 ? Number(avgScore || 0).toFixed(1) : '0.0'}</span>
           <div className={styles.starsRow}>
             {[...Array(5)].map((_, i) => (
-              <FaStar key={i} className={i < Math.round(avgScore) ? styles.starFilled : styles.starEmpty} />
+              <FaStar key={i} className={totalCount > 0 && i < Math.round(avgScore) ? styles.starFilled : styles.starEmpty} />
             ))}
           </div>
           <span className={styles.scoreSubtext}>Based on {totalCount} reviews</span>

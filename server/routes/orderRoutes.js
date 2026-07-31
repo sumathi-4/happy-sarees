@@ -129,7 +129,7 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
                     'price', oi.price_at_purchase,
                     'productName', COALESCE(p.name, 'Silk Saree'),
                     'fabric', COALESCE(p.fabric, 'Silk'),
-                    'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), '/src/assets/hero_saree_model.png')
+                    'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg')
                   )
                 ) as items
          FROM orders o
