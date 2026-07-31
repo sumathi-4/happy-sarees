@@ -29,7 +29,7 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
   }, []);
   return (
     <div className={styles.dashboardWrapper}>
-      {/* Welcome & Reward Banner */}
+      {/* Welcome Banner */}
       <div className={styles.welcomeRow}>
         <div className={styles.welcomeLeft}>
           <h1 className={styles.welcomeTitle}>
@@ -37,19 +37,9 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
           </h1>
           <p className={styles.welcomeSub}>Here's what's happening with your account today.</p>
         </div>
-
-        <div className={styles.rewardCard} onClick={() => onSelectTab('dashboard')}>
-          <div className={styles.crownCircle}>👑</div>
-          <div className={styles.rewardMeta}>
-            <span className={styles.rewardLabel}>My Rewards</span>
-            <strong className={styles.rewardPts}>{(Number(userProfile.rewardPoints) || 0).toLocaleString()} Points</strong>
-            <span className={styles.rewardTier}>You are a {userProfile.memberTier || 'Registered Member'}</span>
-          </div>
-          <FiChevronRight className={styles.arrowIcon} />
-        </div>
       </div>
 
-      {/* 5 Stat Cards Grid */}
+      {/* 4 Stat Cards Grid */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard} onClick={() => onSelectTab('orders')}>
           <div className={styles.statIconBox}>
@@ -92,17 +82,6 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
             <span className={styles.statNum}>0{userProfile.addressCount}</span>
             <span className={styles.statLabel}>Saved Addresses</span>
             <span className={styles.statLink}>Manage Addresses &gt;</span>
-          </div>
-        </div>
-
-        <div className={styles.statCard} onClick={() => onSelectTab('dashboard')}>
-          <div className={styles.statIconBox}>
-            <FiAward className={styles.statIcon} />
-          </div>
-          <div className={styles.statContent}>
-            <span className={styles.statNum}>{(Number(userProfile.rewardPoints) || 0).toLocaleString()}</span>
-            <span className={styles.statLabel}>Reward Points</span>
-            <span className={styles.statLink}>View Rewards &gt;</span>
           </div>
         </div>
       </div>

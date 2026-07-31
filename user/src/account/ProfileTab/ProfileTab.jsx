@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FiUser, FiMail, FiPhone, FiCalendar, FiSave } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 import styles from './ProfileTab.module.css';
 
 function ProfileTab({ userProfile }) {
+  const { updateProfile } = useAuth();
   const [profileData, setProfileData] = useState({ ...userProfile });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (userProfile) {
@@ -15,9 +18,22 @@ function ProfileTab({ userProfile }) {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Personal information updated successfully!');
+    try {
+      setSaving(true);
+      const res = await updateProfile({
+        name: profileData.name,
+        phone: profileData.phone
+      });
+      setSaving(false);
+      if (res?.success !== false) {
+        alert('Personal information updated successfully!');
+      }
+    } catch (err) {
+      setSaving(false);
+      alert('Failed to update personal information.');
+    }
   };
 
   return (

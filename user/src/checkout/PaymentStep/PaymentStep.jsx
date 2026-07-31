@@ -100,11 +100,32 @@ function PaymentStep({
                       <FiShield style={{ fontSize: '1.2rem', color: '#d11b69', flexShrink: 0 }} />
                       <div>
                         <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>Online Payment via Razorpay</strong>
-                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>
-                          You will complete your payment securely via UPI (Google Pay, PhonePe, Paytm), Credit/Debit Card, Net Banking, or Wallet when you click Place Order.
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
+                          You will complete your payment securely via UPI (Google Pay, PhonePe, Paytm), Credit/Debit Card, Net Banking, or Wallet.
                         </p>
                       </div>
                     </div>
+                    <button
+                      onClick={onNextStep}
+                      style={{
+                        marginTop: '12px',
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#d11b69',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <FiLock /> Proceed to Review & Pay (₹{grandTotal.toLocaleString()}) →
+                    </button>
                   </div>
                 )}
 

@@ -94,10 +94,10 @@
   font-size: 1.2rem;
 }
 
-/* 5 Stat Cards Grid */
+/* 4 Stat Cards Grid */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.2rem;
 }
 

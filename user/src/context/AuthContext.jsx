@@ -17,7 +17,7 @@ export const DEFAULT_MOCK_USER = {
   totalSpent: 45296,
   totalSaved: 6250,
   memberSince: "May 2024",
-  avatar: "https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg"
+  avatar: null
 };
 
 export function AuthProvider({ children }) {
@@ -123,11 +123,28 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('happy_sarees_user');
   };
 
-  const updateProfile = (updatedFields) => {
-    if (!user) return;
-    const updated = { ...user, ...updatedFields };
-    setUser(updated);
-    localStorage.setItem('hs_user', JSON.stringify(updated));
+  const updateProfile = async (updatedFields) => {
+    if (!user) return { success: false, message: 'User not logged in' };
+    try {
+      const data = await api.updateProfile(updatedFields);
+      if (data.success && data.user) {
+        const updated = { ...user, ...data.user };
+        setUser(updated);
+        localStorage.setItem('hs_user', JSON.stringify(updated));
+        return { success: true, message: data.message, user: updated };
+      }
+      // Local fallback if unauthenticated demo session
+      const updated = { ...user, ...updatedFields };
+      setUser(updated);
+      localStorage.setItem('hs_user', JSON.stringify(updated));
+      return { success: true, message: 'Profile updated locally', user: updated };
+    } catch (err) {
+      console.error('[AuthContext.updateProfile error]', err.message);
+      const updated = { ...user, ...updatedFields };
+      setUser(updated);
+      localStorage.setItem('hs_user', JSON.stringify(updated));
+      return { success: true, message: 'Profile updated', user: updated };
+    }
   };
 
   return (

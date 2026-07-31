@@ -118,7 +118,7 @@ function Profile() {
     cartCount: Number(cartCount || 0),
     addressCount: Number(addresses.length || 0),
     totalOrders: Number(orders.length || 0),
-    avatar: user?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'
+    avatar: user?.avatar || null
   };
 
   const handleSelectTab = (tabId) => {

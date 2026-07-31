@@ -214,6 +214,8 @@ router.get('/product/:productId', async (req, res) => {
   }
 });
 
+const { uploadToCloudinary } = require('../services/cloudinaryService');
+
 // ── 3. Submit / Update Product Review (Customer) ─────────────────────────
 router.post('/product/:productId', authenticateToken, async (req, res) => {
   try {
@@ -225,12 +227,12 @@ router.post('/product/:productId', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Rating and comment text are required.' });
     }
 
-    // Verify delivery eligibility
+    // Verify delivery / purchase eligibility (User has ordered this product)
     const orderCheck = await db.query(
       `SELECT o.id 
        FROM orders o 
        JOIN order_items oi ON o.id = oi.order_id 
-       WHERE o.user_id = $1 AND (oi.product_id = $2 OR (CASE WHEN oi.product_id::text ~ '^[0-9]+$' THEN oi.product_id::integer ELSE 0 END = $2)) AND LOWER(o.order_status) = 'delivered' 
+       WHERE o.user_id = $1 AND (oi.product_id = $2 OR (CASE WHEN oi.product_id::text ~ '^[0-9]+$' THEN oi.product_id::integer ELSE 0 END = $2))
        LIMIT 1`,
       [userId, targetId]
     );
@@ -238,14 +240,23 @@ router.post('/product/:productId', authenticateToken, async (req, res) => {
     if (orderCheck.rows.length === 0) {
       return res.status(403).json({
         success: false,
-        message: 'Only customers who have purchased and received this product (Delivered) can submit a review.'
+        message: 'Only customers who have purchased this product can submit a review.'
       });
     }
 
-    // Sanitize image array (max 3 images)
+    // Process and upload review images to Cloudinary (max 3 images)
     let finalImages = [];
     if (Array.isArray(images)) {
-      finalImages = images.slice(0, 3);
+      for (const img of images.slice(0, 3)) {
+        if (typeof img === 'string') {
+          if (img.startsWith('data:')) {
+            const cloudUrl = await uploadToCloudinary(img, 'happy_sarees/reviews');
+            if (cloudUrl) finalImages.push(cloudUrl);
+          } else {
+            finalImages.push(img);
+          }
+        }
+      }
     }
     const featuredImg = finalImages.length > 0 ? finalImages[0] : null;
 
@@ -272,7 +283,7 @@ router.post('/product/:productId', authenticateToken, async (req, res) => {
         [
           rating,
           comment,
-          reviewerName || req.user.full_name || req.user.name || req.user.email.split('@')[0],
+          reviewerName || req.user.full_name || req.user.name || req.user.email?.split('@')[0] || 'Valued Customer',
           JSON.stringify(finalImages),
           featuredImg,
           reviewId
@@ -289,7 +300,7 @@ router.post('/product/:productId', authenticateToken, async (req, res) => {
           userId,
           rating,
           comment,
-          reviewerName || req.user.full_name || req.user.name || req.user.email.split('@')[0],
+          reviewerName || req.user.full_name || req.user.name || req.user.email?.split('@')[0] || 'Valued Customer',
           JSON.stringify(finalImages),
           featuredImg
         ]
@@ -371,7 +382,16 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     let finalImages = [];
     if (Array.isArray(images)) {
-      finalImages = images.slice(0, 3);
+      for (const img of images.slice(0, 3)) {
+        if (typeof img === 'string') {
+          if (img.startsWith('data:')) {
+            const cloudUrl = await uploadToCloudinary(img, 'happy_sarees/reviews');
+            if (cloudUrl) finalImages.push(cloudUrl);
+          } else {
+            finalImages.push(img);
+          }
+        }
+      }
     }
     const featuredImg = finalImages.length > 0 ? finalImages[0] : null;
 

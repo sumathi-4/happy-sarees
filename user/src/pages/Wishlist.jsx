@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaHeart } from 'react-icons/fa';
 import { FiGrid, FiList, FiCheckCircle, FiRefreshCw, FiShield, FiTruck } from 'react-icons/fi';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { SAMPLE_PRODUCT_DETAIL } from '../data/mockData';
 import WishlistCard from '../wishlist/WishlistCard/WishlistCard';
 import EmptyWishlist from '../wishlist/EmptyWishlist/EmptyWishlist';
@@ -11,6 +12,7 @@ import styles from './Wishlist.module.css';
 
 function Wishlist() {
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState('recent');
   const [viewMode, setViewMode] = useState('grid');
 
@@ -21,7 +23,9 @@ function Wishlist() {
   };
 
   const handleAddToCart = (product) => {
-    // Add to cart toast / action
+    if (product) {
+      addToCart(product);
+    }
   };
 
   // Sort logic

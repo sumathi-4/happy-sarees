@@ -179,11 +179,13 @@ router.post('/google', async (req, res) => {
   }
 });
 
+const { uploadToCloudinary } = require('../services/cloudinaryService');
+
 // 4. Get Current User Profile
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, full_name as name, email, phone, role, is_blocked, block_reason, created_at FROM users WHERE id = $1',
+      'SELECT id, full_name as name, email, phone, role, avatar, is_blocked, block_reason, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -199,6 +201,48 @@ router.get('/me', authenticateToken, async (req, res) => {
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error fetching profile.' });
+  }
+});
+
+// 5. Update Profile / Upload Avatar to Cloudinary / Remove Avatar
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, phone, avatar, removeAvatar } = req.body;
+    let finalAvatarUrl = null;
+
+    if (removeAvatar) {
+      finalAvatarUrl = null;
+    } else if (avatar) {
+      if (avatar.startsWith('data:')) {
+        // Upload Base64 image to Cloudinary and store ONLY the CDN URL in Neon DB
+        finalAvatarUrl = await uploadToCloudinary(avatar, 'happy_sarees/avatars');
+      } else {
+        finalAvatarUrl = avatar;
+      }
+    } else {
+      // Keep existing avatar if not explicitly removing or updating
+      const existingUser = await db.query('SELECT avatar FROM users WHERE id = $1', [req.user.id]);
+      finalAvatarUrl = existingUser.rows[0]?.avatar || null;
+    }
+
+    const result = await db.query(
+      `UPDATE users SET full_name = COALESCE($1, full_name), phone = COALESCE($2, phone), avatar = $3, updated_at = NOW() WHERE id = $4 RETURNING id, full_name as name, email, phone, role, avatar`,
+      [name || null, phone || null, finalAvatarUrl, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const updatedUser = result.rows[0];
+    res.json({
+      success: true,
+      message: removeAvatar ? 'Profile image removed successfully.' : 'Profile updated successfully!',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ success: false, message: 'Server error updating profile.' });
   }
 });
 

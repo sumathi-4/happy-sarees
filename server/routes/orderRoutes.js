@@ -3,10 +3,25 @@ const db = require('../db');
 const authenticateToken = require('../middleware/auth');
 const emailService = require('../services/emailService');
 
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
 
+// Optional Auth Middleware (Allows guest orders while attaching user profile if logged in)
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) {
+    try {
+      const verified = jwt.verify(token, process.env.JWT_SECRET || 'happysarees_secret_key_2026');
+      req.user = verified;
+    } catch (e) {}
+  }
+  next();
+}
+
 // 1. Create New Order
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   const client = await db.pool.connect();
   try {
     const { items, totalAmount, shippingAddress, paymentMethod, couponCode } = req.body;
@@ -19,7 +34,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const isOnline = paymentMethod && (paymentMethod.includes('Online') || paymentMethod.includes('Razorpay') || paymentMethod === 'pay_online');
     const initialPaymentStatus = isOnline ? 'Pending Payment' : 'Pending';
-    const initialOrderStatus = isOnline ? 'Pending' : 'Confirmed';
+    const initialOrderStatus = isOnline ? 'Pending Payment' : 'Confirmed';
 
     const orderNumber = `HS-ORD-${Date.now()}`;
     const orderRes = await client.query(
@@ -62,7 +77,7 @@ router.post('/', authenticateToken, async (req, res) => {
          RETURNING id`,
         [couponCode]
       );
-      if (couponRes.rows.length > 0) {
+      if (couponRes.rows.length > 0 && req.user?.id) {
         const couponId = couponRes.rows[0].id;
         await client.query(
           `INSERT INTO coupon_usage (coupon_id, user_id, order_id)
@@ -72,32 +87,35 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     }
 
-    // Clear purchaser's cart items from Neon PostgreSQL DB
-    if (req.user?.id) {
+    // Clear purchaser's cart items ONLY for Cash on Delivery orders.
+    // Pay Online orders clear cart in /verify-signature ONLY after payment succeeds!
+    if (!isOnline && req.user?.id) {
       await client.query('DELETE FROM cart_items WHERE user_id = $1', [req.user.id]);
     }
 
     await client.query('COMMIT');
 
-    // Trigger Centralized Email Notification Asynchronously
-    try {
-      emailService.sendNotification('ORDER_PLACED', {
-        id: order.id,
-        orderNumber: order.order_number,
-        totalAmount: Number(order.total_amount),
-        paymentMethod: order.payment_method,
-        paymentStatus: order.payment_status,
-        orderStatus: order.order_status,
-        shippingAddress,
-        items,
-        created_at: order.created_at,
-        customerEmail: req.user?.email
-      }).catch(err => console.error('[Order Email Async Error]:', err.message));
-    } catch (e) {}
+    // Trigger Centralized Email Notification Asynchronously for COD
+    if (!isOnline) {
+      try {
+        emailService.sendNotification('ORDER_PLACED', {
+          id: order.id,
+          orderNumber: order.order_number,
+          totalAmount: Number(order.total_amount),
+          paymentMethod: order.payment_method,
+          paymentStatus: order.payment_status,
+          orderStatus: order.order_status,
+          shippingAddress,
+          items,
+          created_at: order.created_at,
+          customerEmail: req.user?.email
+        }).catch(err => console.error('[Order Email Async Error]:', err.message));
+      } catch (e) {}
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Order placed successfully! 🎉',
+      message: isOnline ? 'Order session initiated.' : 'Order placed successfully! 🎉',
       order: {
         id: order.id,
         orderNumber: order.order_number,
@@ -135,7 +153,7 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
          FROM orders o
          LEFT JOIN order_items oi ON o.id = oi.order_id
          LEFT JOIN products p ON oi.product_id = p.id
-         WHERE o.user_id = $1
+         WHERE o.user_id = $1 AND (LOWER(o.payment_method) NOT LIKE '%online%' OR LOWER(o.payment_status) = 'paid')
          GROUP BY o.id
          ORDER BY o.created_at DESC`,
         [req.user.id]

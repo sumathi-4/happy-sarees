@@ -49,6 +49,7 @@ export const api = {
   login: (credentials) => axiosInstance.post('/auth/login', credentials),
   googleLogin: (googleData) => axiosInstance.post('/auth/google', googleData),
   getProfile: () => axiosInstance.get('/auth/me'),
+  updateProfile: (profileData) => axiosInstance.put('/auth/profile', profileData),
 
   // Products APIs
   getProducts: (params = {}) => axiosInstance.get('/products', { params }),

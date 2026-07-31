@@ -42,7 +42,7 @@ function ProductForm() {
     price: '',
     discountType: 'percentage',
     discountValue: '',
-    stock: '',
+    stock: '10',
     lowStockAlert: 3,
     trackInventory: true,
     allowBackOrders: false,
