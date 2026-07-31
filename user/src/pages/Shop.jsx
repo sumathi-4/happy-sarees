@@ -10,9 +10,10 @@ import QuickViewModal from '../shop/QuickViewModal/QuickViewModal';
 import { useWishlist } from '../context/WishlistContext';
 import styles from './Shop.module.css';
 
-function Shop({ isSalePage: isSaleProp }) {
+function Shop({ isSalePage: isSaleProp, isNewArrivalsPage: isNewArrivalsProp }) {
   const location = useLocation();
   const isSalePage = Boolean(isSaleProp || location.pathname === '/sale');
+  const isNewArrivalsPage = Boolean(isNewArrivalsProp || location.pathname === '/new-arrivals');
   const [searchParams, setSearchParams] = useSearchParams();
   const { wishlist, toggleWishlist } = useWishlist();
   const wishlistedIds = wishlist.map(item => Number(item.id || item.productId));
@@ -22,6 +23,7 @@ function Shop({ isSalePage: isSaleProp }) {
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
+  const [newArrivalsOnly, setNewArrivalsOnly] = useState(false);
   const [selectedCollections, setSelectedCollections] = useState([]);
   const [selectedFabrics, setSelectedFabrics] = useState([]);
   const [selectedOccasions, setSelectedOccasions] = useState([]);
@@ -99,6 +101,7 @@ function Shop({ isSalePage: isSaleProp }) {
   // Reset Filters handler
   const handleResetFilters = () => {
     setSearchQuery('');
+    setNewArrivalsOnly(false);
     setSelectedCollections([]);
     setSelectedFabrics([]);
     setSelectedOccasions([]);
@@ -122,7 +125,12 @@ function Shop({ isSalePage: isSaleProp }) {
   // --------------------------------------------------
   let filteredProducts = [...productsList];
 
-  // 0. Sale Page Filter (Display ONLY products with an active discount)
+  // 0a. New Arrivals Page / Filter (Display ONLY products marked as New Arrival)
+  if (isNewArrivalsPage || newArrivalsOnly) {
+    filteredProducts = filteredProducts.filter(p => Boolean(p.isNewArrival ?? p.is_new_arrival));
+  }
+
+  // 0b. Sale Page Filter (Display ONLY products with an active discount)
   if (isSalePage) {
     filteredProducts = filteredProducts.filter(p => {
       const discountPercentage = Number(p.discountPercentage ?? p.discount_percentage ?? 0);
@@ -227,8 +235,8 @@ function Shop({ isSalePage: isSaleProp }) {
   const slicedProducts = filteredProducts.slice(0, visibleCount);
 
   // Breadcrumb Category text resolver
-  let breadcrumbCategory = isSalePage ? 'Sale Sarees' : 'All Sarees';
-  if (!isSalePage) {
+  let breadcrumbCategory = isSalePage ? 'Sale Sarees' : (isNewArrivalsPage ? 'New Arrivals' : 'All Sarees');
+  if (!isSalePage && !isNewArrivalsPage) {
     if (selectedCollections.length === 1) {
       breadcrumbCategory = selectedCollections[0];
     } else if (selectedFabrics.length === 1) {
@@ -260,6 +268,8 @@ function Shop({ isSalePage: isSaleProp }) {
           {/* Left sticky sidebar */}
           <div className={styles.sidebarCol}>
             <FilterSidebar
+              newArrivalsOnly={newArrivalsOnly}
+              setNewArrivalsOnly={setNewArrivalsOnly}
               selectedCollections={selectedCollections}
               setSelectedCollections={setSelectedCollections}
               selectedFabrics={selectedFabrics}

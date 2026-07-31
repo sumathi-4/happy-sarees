@@ -33,8 +33,8 @@ function NewArrivals() {
       </div>
 
       <div className={styles.grid}>
-        {newProducts.map((product) => (
-          <ProductCard key={product.id} product={product} imageFrameStyle={{ width: '100%', aspectRatio: '3 / 4', minHeight: '560px' }} />
+        {newProducts.slice(0, 4).map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </section>

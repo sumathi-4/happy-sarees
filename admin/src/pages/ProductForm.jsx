@@ -108,9 +108,14 @@ function ProductForm() {
 
           const longDescVal = match.description || match.fullDescription || match.longDescription || match.full_description || '';
 
+          const isNewArrivalVal = match.newArrival !== undefined ? Boolean(match.newArrival) : (match.isNewArrival !== undefined ? Boolean(match.isNewArrival) : (match.is_new_arrival !== undefined ? Boolean(match.is_new_arrival) : true));
+
           setFormData(prev => ({
             ...prev,
             ...match,
+            newArrival: isNewArrivalVal,
+            isNewArrival: isNewArrivalVal,
+            is_new_arrival: isNewArrivalVal,
             shortDescription: match.shortDescription || match.short_description || '',
             fullDescription: longDescVal,
             description: longDescVal,
@@ -165,6 +170,12 @@ function ProductForm() {
 
     setFormData(prev => {
       const updated = { ...prev, [name]: finalVal };
+
+      if (name === 'newArrival' || name === 'isNewArrival' || name === 'is_new_arrival') {
+        updated.newArrival = Boolean(finalVal);
+        updated.isNewArrival = Boolean(finalVal);
+        updated.is_new_arrival = Boolean(finalVal);
+      }
 
       if (name === 'longDescription' || name === 'fullDescription' || name === 'description') {
         updated.description = value;
@@ -321,8 +332,13 @@ function ProductForm() {
 
     const descVal = formData.description || formData.fullDescription || formData.longDescription || '';
     const finalStatus = statusOverride || formData.status;
+    const isNewArrivalVal = formData.newArrival !== undefined ? Boolean(formData.newArrival) : (formData.isNewArrival !== undefined ? Boolean(formData.isNewArrival) : Boolean(formData.is_new_arrival));
+
     const finalData = { 
       ...formData, 
+      newArrival: isNewArrivalVal,
+      isNewArrival: isNewArrivalVal,
+      is_new_arrival: isNewArrivalVal,
       description: descVal,
       fullDescription: descVal,
       longDescription: descVal,

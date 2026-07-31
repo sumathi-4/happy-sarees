@@ -29,6 +29,8 @@ function FilterSidebar({
   setSelectedColors,
   selectedPatterns,
   setSelectedPatterns,
+  newArrivalsOnly = false,
+  setNewArrivalsOnly = () => {},
   dynamicFilters = {},
   setDynamicFilters = () => {},
   priceRange,
@@ -43,6 +45,7 @@ function FilterSidebar({
 }) {
   const [filterData, setFilterData] = useState(DEFAULT_FILTER_DATA);
   const [openFilters, setOpenFilters] = useState({
+    newArrivals: true,
     fabrics: true,
     occasions: true,
     colors: true,
@@ -362,6 +365,27 @@ function FilterSidebar({
                 <span className={styles.radioText}>{option.label}</span>
               </label>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* 9. Dedicated New Arrivals Filter */}
+      <div className={styles.accordionSection}>
+        <button className={styles.accordionHeader} onClick={() => toggleSection('newArrivals')}>
+          <span>New Arrivals</span>
+          {openFilters.newArrivals ? <FiChevronUp /> : <FiChevronDown />}
+        </button>
+        {openFilters.newArrivals && (
+          <div className={styles.accordionBody}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={newArrivalsOnly}
+                onChange={(e) => setNewArrivalsOnly(e.target.checked)}
+                className={styles.checkboxInput}
+              />
+              <span className={styles.checkboxText}>New Arrivals Only</span>
+            </label>
           </div>
         )}
       </div>
