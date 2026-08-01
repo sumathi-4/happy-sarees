@@ -19,13 +19,13 @@
 .thumbBtn {
   width: 90px;
   height: 110px;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   overflow: hidden;
   border: 2px solid transparent;
   padding: 0;
   background: var(--bg-soft-pink);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .thumbBtn:hover {
@@ -87,7 +87,7 @@
   bottom: 1rem;
   right: 1rem;
   background-color: var(--bg-white);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -98,7 +98,7 @@
   color: var(--text-color);
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   z-index: 5;
 }
 
@@ -137,7 +137,7 @@
   max-width: 100%;
   max-height: 85vh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -150,7 +150,7 @@
   color: var(--bg-white);
   font-size: 2rem;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .closeZoomBtn:hover {

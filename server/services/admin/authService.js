@@ -16,7 +16,9 @@ class AuthService {
   /** Find admin with role info */
   async _findAdminByEmail(email) {
     const res = await db.query(
-      `SELECT au.*, ar.name as role_name
+      `SELECT au.id, au.name, au.email, au.phone, au.password_hash, au.role_id,
+              au.status, au.last_login, au.created_at, au.updated_at,
+              au.avatar_url, ar.name as role_name
        FROM admin_users au
        LEFT JOIN admin_roles ar ON au.role_id = ar.id
        WHERE au.email = $1`,
@@ -27,7 +29,9 @@ class AuthService {
 
   async _findAdminById(id) {
     const res = await db.query(
-      `SELECT au.*, ar.name as role_name
+      `SELECT au.id, au.name, au.email, au.phone, au.role_id,
+              au.status, au.last_login, au.created_at, au.updated_at,
+              au.avatar_url, ar.name as role_name
        FROM admin_users au
        LEFT JOIN admin_roles ar ON au.role_id = ar.id
        WHERE au.id = $1`,
@@ -73,14 +77,15 @@ class AuthService {
       accessToken,
       refreshToken,
       admin: {
-        id:       admin.id,
-        name:     admin.name,
-        email:    admin.email,
-        phone:    admin.phone,
-        role:     admin.role_name,
-        roleId:   admin.role_id,
-        status:   admin.status,
+        id:        admin.id,
+        name:      admin.name,
+        email:     admin.email,
+        phone:     admin.phone,
+        role:      admin.role_name,
+        roleId:    admin.role_id,
+        status:    admin.status,
         lastLogin: admin.last_login,
+        avatar:    admin.avatar_url || null,
       },
     };
   }
@@ -150,6 +155,7 @@ class AuthService {
       roleId:      admin.role_id,
       status:      admin.status,
       lastLogin:   admin.last_login,
+      avatar:      admin.avatar_url || null,
       permissions,
     };
   }
@@ -229,8 +235,18 @@ class AuthService {
         email = COALESCE($2, email),
         phone = COALESCE($3, phone),
         updated_at = NOW()
-       WHERE id = $4 RETURNING id, name, email, phone, status`,
+       WHERE id = $4 RETURNING id, name, email, phone, status, avatar_url`,
       [data.name, data.email ? data.email.toLowerCase() : null, data.phone, adminId]
+    );
+    if (res.rows.length === 0) throw { status: 404, message: 'Admin user not found.' };
+    return res.rows[0];
+  }
+
+  async updateAvatar(adminId, avatarUrl) {
+    const res = await db.query(
+      `UPDATE admin_users SET avatar_url = $1, updated_at = NOW()
+       WHERE id = $2 RETURNING id, name, email, phone, status, avatar_url`,
+      [avatarUrl, adminId]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Admin user not found.' };
     return res.rows[0];

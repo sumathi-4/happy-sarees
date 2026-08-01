@@ -1,23 +1,24 @@
 .layoutWrapper {
   display: flex;
   min-height: 100vh;
-  background-color: #f8f9fa;
-  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-soft-pink);
+  font-family: var(--font-sans);
 }
 
 /* Sidebar Styling */
 .sidebar {
   width: 260px;
-  background: #ffffff;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--admin-sidebar-gradient);
+  border-right: none;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: var(--transition-smooth);
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 100;
+  box-shadow: 4px 0 20px rgba(39, 24, 157, 0.25);
 }
 
 .sidebarCollapsed {
@@ -25,37 +26,42 @@
 }
 
 .sidebarHeader {
-  height: 85px;
+  height: 90px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .logoArea {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  width: 100%;
   text-decoration: none;
 }
 
 .logoImg {
-  height: 65px;
+  height: 78px;
+  max-width: 210px;
   object-fit: contain;
+  filter: invert(1) hue-rotate(180deg) saturate(1.8) brightness(0.85);
+  mix-blend-mode: screen;
 }
 
 .logoText {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 20px;
-  color: #2b2b2b;
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-size: 18px;
+  color: #FFFFFF;
   white-space: nowrap;
+  letter-spacing: -0.3px;
 }
 
 .adminProfileBox {
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -66,7 +72,7 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #d11b69;
+  border: 2px solid var(--primary-color);
 }
 
 .adminInfoText {
@@ -75,15 +81,15 @@
 }
 
 .adminName {
-  font-size: 13px;
-  font-weight: 600;
-  color: #2b2b2b;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
 }
 
 .adminRole {
   font-size: 11px;
-  color: #d11b69;
-  font-weight: 500;
+  color: #C5A059;
+  font-weight: 600;
 }
 
 /* Sidebar Menu List */
@@ -95,20 +101,41 @@
   flex-direction: column;
   gap: 6px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #D11B69 rgba(255, 255, 255, 0.05);
+}
+
+.sidebarMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebarMenu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.sidebarMenu::-webkit-scrollbar-thumb {
+  background: #D11B69;
+  border-radius: 10px;
+}
+
+.sidebarMenu::-webkit-scrollbar-thumb:hover {
+  background: #E91E63;
 }
 
 .menuItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: 8px;
-  color: #666666;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #FFFFFF;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-smooth);
   cursor: pointer;
+  position: relative;
 }
 
 .menuItemLink {
@@ -120,45 +147,58 @@
 
 .menuIcon {
   font-size: 18px;
-  color: #666666;
-  transition: color 0.2s ease;
+  color: rgba(255, 255, 255, 0.85);
+  transition: var(--transition-smooth);
 }
 
 .menuItemText {
   white-space: nowrap;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .menuItem:hover {
-  background-color: rgba(209, 27, 105, 0.04);
-  color: #d11b69;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
 }
 
 .menuItem:hover .menuIcon {
-  color: #d11b69;
+  color: #FFFFFF;
+}
+
+.menuItem:hover .menuItemText {
+  color: #FFFFFF;
 }
 
 .menuActive {
-  background-color: #d11b69 !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.15);
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+  border-left: 4px solid #C5A059 !important;
+  border-radius: 12px !important;
 }
 
 .menuActive .menuIcon {
-  color: #ffffff !important;
+  color: #FFFFFF !important;
+}
+
+.menuActive .menuItemText {
+  color: #FFFFFF !important;
+  font-weight: 700;
 }
 
 .menuChevron {
   font-size: 12px;
-  color: #999999;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Sidebar Premium Plan */
 .planCard {
-  background: linear-gradient(135deg, rgba(209, 27, 105, 0.04), rgba(6, 31, 235, 0.04));
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(209, 27, 105, 0.04), rgba(156, 12, 74, 0.04));
+  border-radius: var(--radius-premium);
   padding: 16px;
   margin: 16px;
-  border: 1px solid rgba(209, 27, 105, 0.08);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,48 +208,47 @@
 
 .planIcon {
   font-size: 24px;
-  color: #d11b69;
+  color: var(--primary-color);
 }
 
 .planTitle {
   font-size: 12px;
   font-weight: 700;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .planDesc {
   font-size: 11px;
-  color: #666666;
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
 .planBtn {
   width: 100%;
   padding: 8px;
-  border: none;
-  background: #ffffff;
-  border: 1px solid rgba(209, 27, 105, 0.2);
-  color: #d11b69;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
   font-size: 11px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-smooth);
 }
 
 .planBtn:hover {
-  background: #d11b69;
-  color: #ffffff;
+  background: var(--primary-color);
+  color: var(--bg-white);
 }
 
 /* Bottom Sidebar User Info */
 .sidebarFooter {
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(255,255,255,0.1);
   padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #ffffff;
+  background-color: rgba(0,0,0,0.15);
 }
 
 .footerUser {
@@ -221,14 +260,15 @@
 .footerMenuBtn {
   background: none;
   border: none;
-  color: #666666;
+  color: rgba(255,255,255,0.6);
   cursor: pointer;
   padding: 6px;
   border-radius: 4px;
 }
 
 .footerMenuBtn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.9);
 }
 
 /* Main Content Area Styling */
@@ -237,7 +277,7 @@
   display: flex;
   flex-direction: column;
   margin-left: 260px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: var(--transition-smooth);
   min-width: 0;
 }
 
@@ -248,8 +288,8 @@
 /* Topbar Header styling */
 .topbar {
   height: 70px;
-  background: #ffffff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -257,6 +297,7 @@
   position: sticky;
   top: 0;
   z-index: 99;
+  box-shadow: var(--shadow-premium);
 }
 
 .topbarLeft {
@@ -269,16 +310,16 @@
   background: none;
   border: none;
   font-size: 20px;
-  color: #666666;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   display: flex;
   align-items: center;
 }
 
 .toggleBtn:hover {
-  color: #d11b69;
+  color: var(--primary-color);
   background-color: rgba(209, 27, 105, 0.04);
 }
 
@@ -286,11 +327,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-soft-pink);
+  border: 1px solid var(--border-color);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   width: 280px;
+  transition: var(--transition-fast);
+}
+
+.searchBar:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(209,27,105,0.08);
 }
 
 .searchInput {
@@ -299,11 +346,11 @@
   outline: none;
   font-size: 13px;
   width: 100%;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .searchIcon {
-  color: #999999;
+  color: var(--text-light);
   font-size: 15px;
 }
 
@@ -318,27 +365,27 @@
   background: none;
   border: none;
   font-size: 20px;
-  color: #666666;
+  color: var(--text-muted);
   cursor: pointer;
   position: relative;
   padding: 6px;
   border-radius: 50%;
   display: flex;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-smooth);
 }
 
 .actionIconBtn:hover {
   background-color: rgba(209, 27, 105, 0.04);
-  color: #d11b69;
+  color: var(--primary-color);
 }
 
 .badge {
   position: absolute;
   top: 2px;
   right: 2px;
-  background-color: #d11b69;
-  color: #ffffff;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
   font-size: 10px;
   font-weight: 700;
   width: 16px;
@@ -347,7 +394,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--bg-white);
 }
 
 .userDropdownTrigger {
@@ -356,8 +403,8 @@
   gap: 10px;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-small);
+  transition: var(--transition-smooth);
 }
 
 .userDropdownTrigger:hover {
@@ -373,17 +420,17 @@
 .headerAdminName {
   font-size: 13px;
   font-weight: 600;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .headerAdminRole {
   font-size: 11px;
-  color: #999999;
+  color: var(--text-light);
 }
 
 .dropdownArrow {
   font-size: 12px;
-  color: #666666;
+  color: var(--text-muted);
 }
 
 /* Dropdown Menu Box */
@@ -392,10 +439,10 @@
   top: 60px;
   right: 30px;
   width: 200px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  box-shadow: 0 10px 25px rgba(43, 18, 32, 0.06);
+  border: 1px solid rgba(43, 18, 32, 0.05);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -418,8 +465,8 @@
 .dropdownItem {
   padding: 10px 14px;
   font-size: 13px;
-  color: #666666;
-  border-radius: 6px;
+  color: var(--text-muted);
+  border-radius: var(--radius-small);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -433,16 +480,16 @@
 
 .dropdownItem:hover {
   background-color: rgba(209, 27, 105, 0.04);
-  color: #d11b69;
+  color: var(--primary-color);
 }
 
 .logoutItem {
-  color: #d32f2f;
+  color: var(--error-color);
 }
 
 .logoutItem:hover {
-  background-color: #fdf2f2;
-  color: #c81e1e;
+  background-color: var(--error-bg);
+  color: var(--error-color);
 }
 
 /* Notifications Panel */
@@ -451,10 +498,10 @@
   top: 60px;
   right: 80px;
   width: 320px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  box-shadow: 0 10px 25px rgba(43, 18, 32, 0.06);
+  border: 1px solid rgba(43, 18, 32, 0.05);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -463,7 +510,7 @@
 
 .panelHeader {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -472,13 +519,13 @@
 .panelTitle {
   font-size: 14px;
   font-weight: 700;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .clearAllBtn {
   background: none;
   border: none;
-  color: #d11b69;
+  color: var(--primary-color);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -511,7 +558,7 @@
 }
 
 .notifDotActive {
-  background-color: #d11b69;
+  background-color: var(--primary-color);
 }
 
 .notifRead {
@@ -526,22 +573,22 @@
 
 .notifMessage {
   font-size: 12px;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .notifTime {
   font-size: 10px;
-  color: #999999;
+  color: var(--text-light);
 }
 
 .panelFooter {
   padding: 12px;
   text-align: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .viewAllNotifLink {
-  color: #d11b69;
+  color: var(--primary-color);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;

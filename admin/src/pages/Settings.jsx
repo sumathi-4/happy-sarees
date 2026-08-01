@@ -143,7 +143,7 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {toast && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#2e7d32', color: '#fff', padding: '12px 24px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '14px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: 'var(--success-color)', color: 'var(--bg-white)', padding: '12px 24px', borderRadius: '10px', zIndex: 9999, fontWeight: 600, fontSize: '14px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
           ✅ {toast}
         </div>
       )}
@@ -156,7 +156,7 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
           <button
             type="button"
             onClick={onSaveGlobalRules}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#2e7d32', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--success-color)', color: 'var(--bg-white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
           >
             <FiSave /> Save Global Rules
           </button>
@@ -185,7 +185,7 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
         action={
           <button
             onClick={() => { resetForm(); setShowForm(!showForm); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#d11b69', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
           >
             <FiPlus /> {showForm && !editingId ? 'Cancel' : 'Add Delivery Method'}
           </button>
@@ -194,7 +194,7 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
         {/* Create / Edit Form */}
         {showForm && (
           <form onSubmit={handleSubmit} style={{ background: '#fef6fb', border: '1px solid rgba(209,27,105,0.12)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
-            <h4 style={{ margin: '0 0 16px', color: '#d11b69', fontSize: '15px', fontWeight: 700 }}>
+            <h4 style={{ margin: '0 0 16px', color: 'var(--primary-color)', fontSize: '15px', fontWeight: 700 }}>
               {editingId ? '✏️ Edit Delivery Method' : '➕ New Delivery Method'}
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
@@ -230,7 +230,7 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-              <button type="submit" style={{ background: '#d11b69', color: '#fff', border: 'none', padding: '9px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
+              <button type="submit" style={{ background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '9px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
                 {editingId ? 'Save Changes' : 'Create Method'}
               </button>
               <button type="button" onClick={resetForm} style={{ background: 'transparent', border: '1px solid #ddd', padding: '9px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>
@@ -245,19 +245,19 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Loading delivery methods...</div>
         ) : methods.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999', background: '#fafafa', borderRadius: '12px', border: '1px dashed #ddd' }}>
-            <FiTruck style={{ fontSize: '2rem', marginBottom: '10px', color: '#d11b69' }} />
+            <FiTruck style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--primary-color)' }} />
             <p>No delivery methods configured yet. Add your first one above.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {methods.map(m => (
-              <div key={m.id} style={{ border: `1.5px solid ${m.is_enabled ? 'rgba(209,27,105,0.15)' : '#e0e0e0'}`, borderRadius: '12px', padding: '16px 20px', background: m.is_enabled ? '#fff' : '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', opacity: m.is_enabled ? 1 : 0.6 }}>
+              <div key={m.id} style={{ border: `1.5px solid ${m.is_enabled ? 'rgba(209,27,105,0.15)' : '#e0e0e0'}`, borderRadius: '12px', padding: '16px 20px', background: m.is_enabled ? 'var(--bg-white)' : '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', opacity: m.is_enabled ? 1 : 0.6 }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                    <FiTruck style={{ color: '#d11b69' }} />
+                    <FiTruck style={{ color: 'var(--primary-color)' }} />
                     <strong style={{ fontSize: '15px', color: '#1a1a1a' }}>{m.name}</strong>
                     {!m.is_enabled && <span style={{ background: '#f5f5f5', color: '#999', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>DISABLED</span>}
-                    {m.free_shipping_eligible && <span style={{ background: '#e8f5e9', color: '#2e7d32', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>FREE-ELIGIBLE</span>}
+                    {m.free_shipping_eligible && <span style={{ background: 'var(--success-bg)', color: 'var(--success-color)', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>FREE-ELIGIBLE</span>}
                   </div>
                   <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#666' }}>{m.description}</p>
                   <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#888' }}>
@@ -267,13 +267,13 @@ function ShippingMethodsPanel({ settings, handleChange, onSaveGlobalRules }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  <button onClick={() => handleToggle(m)} title={m.is_enabled ? 'Disable on Checkout' : 'Enable on Checkout'} style={{ background: m.is_enabled ? '#e8f5e9' : '#f5f5f5', color: m.is_enabled ? '#2e7d32' : '#999', border: 'none', padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>
+                  <button onClick={() => handleToggle(m)} title={m.is_enabled ? 'Disable on Checkout' : 'Enable on Checkout'} style={{ background: m.is_enabled ? 'var(--success-bg)' : '#f5f5f5', color: m.is_enabled ? 'var(--success-color)' : '#999', border: 'none', padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>
                     {m.is_enabled ? '✓ Enabled' : '○ Disabled'}
                   </button>
-                  <button onClick={() => handleEdit(m)} style={{ background: '#e3f2fd', color: '#1565c0', border: 'none', padding: '7px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '13px' }}>
+                  <button onClick={() => handleEdit(m)} style={{ background: 'var(--info-bg)', color: 'var(--info-color)', border: 'none', padding: '7px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '13px' }}>
                     <FiEdit2 size={13} /> Edit
                   </button>
-                  <button onClick={() => handleDelete(m.id, m.name)} style={{ background: '#ffebee', color: '#c62828', border: 'none', padding: '7px 10px', borderRadius: '6px', cursor: 'pointer' }}>
+                  <button onClick={() => handleDelete(m.id, m.name)} style={{ background: 'var(--error-bg)', color: 'var(--error-color)', border: 'none', padding: '7px 10px', borderRadius: '6px', cursor: 'pointer' }}>
                     <FiTrash2 size={13} />
                   </button>
                 </div>
@@ -597,7 +597,6 @@ function Settings() {
       {/* Top Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.pageTitle}>Store Settings</h2>
           <p className={styles.pageDesc}>Manage business-wide parameters, tax rules, shipping policies, and integrations</p>
         </div>
         <button className={styles.saveBtn} onClick={handleSave} disabled={loading}>
@@ -866,7 +865,7 @@ function Settings() {
               <button
                 type="button"
                 onClick={handleSaveIntegrations}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#2e7d32', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--success-color)', color: 'var(--bg-white)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
               >
                 <FiSave /> Save Payment Settings
               </button>

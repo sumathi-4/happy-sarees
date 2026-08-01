@@ -109,9 +109,7 @@ function OrderSummary({ items = [], appliedCoupon = null, onApplyCoupon }) {
       <div className={styles.paymentFooter}>
         <span className={styles.paymentLabel}>Guaranteed Safe Checkout</span>
         <div className={styles.paymentBadges}>
-          <span className={styles.payBadge}>UPI</span>
-          <span className={styles.payBadge}>VISA</span>
-          <span className={styles.payBadge}>MasterCard</span>
+          <span className={styles.payBadge}>RAZORPAY</span>
           <span className={styles.payBadge}>COD</span>
         </div>
       </div>

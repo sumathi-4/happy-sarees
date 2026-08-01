@@ -15,8 +15,8 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(209, 27, 105, 0.3);
-  transition: var(--transition-smooth);
-  animation: fadeIn 0.3s ease;
+  transition: all var(--motion-premium);
+  animation: fadeIn 250ms ease;
 }
 
 @keyframes fadeIn {
@@ -34,4 +34,15 @@
   background-color: var(--secondary-color);
   transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(10, 126, 140, 0.35);
+}
+
+@media (max-width: 768px) {
+  .backToTopBtn {
+    bottom: 1.2rem;
+    right: 1.2rem;
+    left: auto;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
 }

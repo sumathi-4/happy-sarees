@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FiUser, FiShield, FiSliders, FiCheck, FiSave, 
-  FiEye, FiEyeOff, FiUpload, FiTrash2, FiSmartphone, FiGlobe, FiLock, FiMonitor
+  FiEye, FiEyeOff, FiUpload, FiTrash2, FiSmartphone, FiGlobe, FiLock, FiMonitor, FiLoader
 } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import styles from '../styles/ProfileSettings.module.css';
 
+const FALLBACK_AVATAR = null; // no hardcoded image — uses initials fallback
+const API_BASE = 'http://localhost:5001/api/admin';
+
 function ProfileSettings() {
   const navigate = useNavigate();
-  const { adminUser, adminFetch } = useAdminAuth();
+  const { adminUser, setAdminUser } = useAdminAuth();
+  const fileInputRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [toastMessage, setToastMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(adminUser?.avatar || null);
 
   // Form State
   const [profileData, setProfileData] = useState({
@@ -22,7 +28,6 @@ function ProfileSettings() {
     phone: adminUser?.phone || '+91 98765 43210',
     role: adminUser?.role || 'Super Admin',
     joinedDate: '15 Jan 2024',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
   });
 
   // Password Security State
@@ -53,12 +58,13 @@ function ProfileSettings() {
         phone: adminUser.phone || prev.phone,
         role: adminUser.role || prev.role
       }));
+      setAvatarPreview(adminUser.avatar || null);
     }
   }, [adminUser]);
 
   const fireToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleInputChange = (e) => {
@@ -79,21 +85,73 @@ function ProfileSettings() {
     }));
   };
 
-  const handleAvatarUpload = (e) => {
+  // Upload avatar: read as base64, send to server → Cloudinary → save URL to DB
+  const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Show local preview immediately
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfileData(prev => ({ ...prev, avatar: reader.result }));
+    reader.onloadend = async () => {
+      const base64Data = reader.result;
+      setAvatarPreview(base64Data); // instant local preview
+
+      try {
+        setAvatarUploading(true);
+        const token = localStorage.getItem('hs_admin_token');
+        const res = await fetch(`${API_BASE}/auth/avatar`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ imageData: base64Data }),
+        });
+        const data = await res.json();
+        if (data.success && data.avatarUrl) {
+          // Update preview to Cloudinary URL
+          setAvatarPreview(data.avatarUrl);
+          // Sync to global auth state and localStorage
+          const updatedUser = { ...adminUser, avatar: data.avatarUrl };
+          setAdminUser(updatedUser);
+          localStorage.setItem('hs_admin_user', JSON.stringify(updatedUser));
+          fireToast('Profile photo uploaded successfully!');
+        } else {
+          fireToast('Photo uploaded locally. Backend sync may have failed.');
+        }
+      } catch (err) {
+        console.error('Avatar upload error:', err);
+        fireToast('Photo preview updated. Check backend connection.');
+      } finally {
+        setAvatarUploading(false);
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleRemoveAvatar = () => {
-    setProfileData(prev => ({
-      ...prev,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
-    }));
+  // Remove avatar: clear from DB and localStorage
+  const handleRemoveAvatar = async () => {
+    try {
+      setAvatarUploading(true);
+      const token = localStorage.getItem('hs_admin_token');
+      await fetch(`${API_BASE}/auth/avatar`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ imageData: null }),
+      });
+    } catch (err) {
+      console.error('Avatar remove error:', err);
+    } finally {
+      setAvatarPreview(null);
+      const updatedUser = { ...adminUser, avatar: null };
+      setAdminUser(updatedUser);
+      localStorage.setItem('hs_admin_user', JSON.stringify(updatedUser));
+      setAvatarUploading(false);
+      fireToast('Profile photo removed.');
+    }
   };
 
   const handleSave = async () => {
@@ -102,7 +160,7 @@ function ProfileSettings() {
 
       if (activeTab === 'profile') {
         const token = localStorage.getItem('hs_admin_token');
-        await fetch('http://localhost:5001/api/admin/auth/profile', {
+        await fetch(`${API_BASE}/auth/profile`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -119,19 +177,21 @@ function ProfileSettings() {
           ...adminUser,
           name: profileData.name,
           email: profileData.email,
-          phone: profileData.phone
+          phone: profileData.phone,
+          avatar: avatarPreview,
         };
+        setAdminUser(updatedUser);
         localStorage.setItem('hs_admin_user', JSON.stringify(updatedUser));
-        fireToast("Profile information updated successfully!");
+        fireToast('Profile information updated successfully!');
       } else if (activeTab === 'security') {
         if (securityData.newPassword && securityData.newPassword !== securityData.confirmPassword) {
-          alert("New password and confirm password do not match.");
+          alert('New password and confirm password do not match.');
           setLoading(false);
           return;
         }
         if (securityData.newPassword && securityData.currentPassword) {
           const token = localStorage.getItem('hs_admin_token');
-          await fetch('http://localhost:5001/api/admin/auth/change-password', {
+          await fetch(`${API_BASE}/auth/change-password`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -143,15 +203,15 @@ function ProfileSettings() {
             })
           });
         }
-        fireToast("Password updated successfully!");
+        fireToast('Password updated successfully!');
         setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else if (activeTab === 'preferences') {
         localStorage.setItem('hs_admin_preferences', JSON.stringify(preferencesData));
-        fireToast("Personal preferences saved!");
+        fireToast('Personal preferences saved!');
       }
     } catch (err) {
-      console.error("Save profile error:", err);
-      fireToast("Profile settings saved.");
+      console.error('Save profile error:', err);
+      fireToast('Profile settings saved.');
     } finally {
       setLoading(false);
     }
@@ -168,7 +228,6 @@ function ProfileSettings() {
       {/* Top Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.pageTitle}>Profile Settings</h2>
           <p className={styles.pageDesc}>Manage your personal admin account, security, and preferences</p>
         </div>
         <div className={styles.headerActions}>
@@ -207,35 +266,67 @@ function ProfileSettings() {
       {activeTab === 'profile' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
-            <FiUser style={{ color: '#d11b69' }} /> Personal Profile
+            <FiUser style={{ color: 'var(--primary-color)' }} /> Personal Profile
           </h3>
 
           {/* Avatar Upload Frame */}
           <div className={styles.avatarBox}>
-            <img src={profileData.avatar} alt="Admin Avatar" className={styles.avatarPreview} />
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Admin Avatar" className={styles.avatarPreview} />
+              ) : (
+                <div className={styles.avatarPreview} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #d11b69, #9c1350)',
+                  color: '#fff', fontSize: '2rem', fontWeight: 700,
+                  userSelect: 'none', flexShrink: 0
+                }}>
+                  {(profileData.name || 'A').charAt(0).toUpperCase()}
+                </div>
+              )}
+              {avatarUploading && (
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.45)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <span style={{ color: '#fff', fontSize: '0.75rem', fontWeight: 600 }}>Uploading…</span>
+                </div>
+              )}
+            </div>
             <div>
               <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#0f172a' }}>Profile Photo</h4>
               <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#64748b' }}>
-                Upload a JPG, PNG, or WEBP photo for your admin account avatar.
+                Upload a JPG, PNG, or WEBP photo. It will be stored on Cloudinary.
               </p>
               <div className={styles.avatarActions}>
                 <button 
                   type="button" 
                   className={styles.changePhotoBtn}
-                  onClick={() => document.getElementById('profile-avatar-input').click()}
+                  disabled={avatarUploading}
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  Upload / Change
+                  <FiUpload style={{ marginRight: 6 }} />
+                  {avatarUploading ? 'Uploading...' : 'Upload / Change'}
                 </button>
                 <input 
+                  ref={fileInputRef}
                   id="profile-avatar-input"
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   style={{ display: 'none' }}
                   onChange={handleAvatarUpload}
                 />
-                <button type="button" className={styles.removePhotoBtn} onClick={handleRemoveAvatar}>
-                  Remove
-                </button>
+                {avatarPreview && (
+                  <button
+                    type="button"
+                    className={styles.removePhotoBtn}
+                    disabled={avatarUploading}
+                    onClick={handleRemoveAvatar}
+                  >
+                    <FiTrash2 style={{ marginRight: 4 }} /> Remove
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -303,7 +394,7 @@ function ProfileSettings() {
           {/* Change Password Card */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <FiLock style={{ color: '#d11b69' }} /> Change Password
+              <FiLock style={{ color: 'var(--primary-color)' }} /> Change Password
             </h3>
             <div className={styles.formGrid} style={{ maxWidth: '540px' }}>
               <div className={styles.formGroupFull}>
@@ -365,7 +456,7 @@ function ProfileSettings() {
           {/* 2FA Placeholder Card */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <FiSmartphone style={{ color: '#d11b69' }} /> Two-Factor Authentication (2FA)
+              <FiSmartphone style={{ color: 'var(--primary-color)' }} /> Two-Factor Authentication (2FA)
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', background: '#f8fafc', padding: '16px 20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
               <div>
@@ -383,17 +474,17 @@ function ProfileSettings() {
           {/* Active Sessions Placeholder Card */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <FiMonitor style={{ color: '#d11b69' }} /> Active Login Sessions
+              <FiMonitor style={{ color: 'var(--primary-color)' }} /> Active Login Sessions
             </h3>
             <div style={{ background: '#f8fafc', padding: '16px 20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <strong style={{ fontSize: '14px', color: '#0f172a' }}>Windows PC — Chrome Browser</strong>
                   <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                    Chennai, India • IP: 103.21.125.4 • <span style={{ color: '#16a34a', fontWeight: 600 }}>Active Now</span>
+                    Chennai, India • IP: 103.21.125.4 • <span style={{ color: 'var(--success-color)', fontWeight: 600 }}>Active Now</span>
                   </p>
                 </div>
-                <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600, background: '#dcfce7', padding: '4px 10px', borderRadius: '6px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--success-color)', fontWeight: 600, background: '#dcfce7', padding: '4px 10px', borderRadius: '6px' }}>
                   Current Session
                 </span>
               </div>
@@ -406,7 +497,7 @@ function ProfileSettings() {
       {activeTab === 'preferences' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
-            <FiSliders style={{ color: '#d11b69' }} /> Personal Preferences
+            <FiSliders style={{ color: 'var(--primary-color)' }} /> Personal Preferences
           </h3>
           <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>
             These settings apply exclusively to your logged-in admin account and will not affect the customer website.

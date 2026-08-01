@@ -4,7 +4,7 @@
 
 .section {
   padding: 45px 0 50px 0;
-  background-color: #faf5ef;
+  background-color: var(--bg-soft-pink);
   width: 100%;
   display: flex;
   justify-content: center;
@@ -19,7 +19,7 @@
 .bannerWrapper {
   position: relative;
   width: 100%;
-  border-radius: 16px;
+  border-radius: var(--radius-premium);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(62, 23, 8, 0.12);
   cursor: pointer;
@@ -37,7 +37,7 @@
   height: auto;
   display: block;
   object-fit: cover;
-  border-radius: 16px;
+  border-radius: var(--radius-premium);
 }
 
 @media (max-width: 768px) {
@@ -50,10 +50,10 @@
   }
 
   .bannerWrapper {
-    border-radius: 12px;
+    border-radius: var(--radius-premium);
   }
 
   .bannerImage {
-    border-radius: 12px;
+    border-radius: var(--radius-premium);
   }
 }

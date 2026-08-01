@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  FiMenu, FiSearch, FiBell, FiChevronDown, FiChevronUp, FiLayout, 
+  FiMenu, FiSearch, FiBell, FiChevronDown, FiChevronUp, FiChevronRight, FiLayout, 
   FiPackage, FiHome, FiShoppingBag, FiUsers, FiPercent, FiBarChart2, 
   FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX 
 } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/AdminLayout.module.css';
-import logoImg from '../../../userhttps://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+
+const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function AdminLayout() {
   const { adminUser, adminLogout } = useAdminAuth();
@@ -23,7 +24,6 @@ function AdminLayout() {
   const { notifications, setNotifications } = useAdminData();
 
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
-  const [isReportsExpanded, setIsReportsExpanded] = useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   const handleLogout = () => {
@@ -35,10 +35,10 @@ function AdminLayout() {
     { label: 'Dashboard', path: '/dashboard', icon: <FiLayout /> },
     { label: 'Products', path: '/products', icon: <FiPackage />, hasDropdown: true },
     { label: 'Homepage CMS', path: '/homepage', icon: <FiHome /> },
-    { label: 'Orders', path: '/orders', icon: <FiShoppingBag />, hasDropdown: true },
+    { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
-    { label: 'Reports', path: '/reports', icon: <FiBarChart2 />, hasDropdown: true },
+    { label: 'Reports', path: '/reports', icon: <FiBarChart2 /> },
     { label: 'Settings', path: '/settings', icon: <FiSettings />, hasDropdown: true }
   ];
 
@@ -61,12 +61,14 @@ function AdminLayout() {
     if (path.includes('dashboard')) return 'Dashboard';
     if (path.includes('products')) return 'Products Management';
     if (path.includes('master-data')) return 'Master Data Management';
+    if (path.includes('ratings-reviews')) return 'Ratings & Reviews';
     if (path.includes('homepage')) return 'Homepage Curation';
     if (path.includes('orders')) return 'Orders Overview';
     if (path.includes('customers')) return 'Customers Directory';
     if (path.includes('coupons')) return 'Coupons & Offers';
     if (path.includes('reports')) return 'Sales Reports';
-    if (path.includes('settings')) return 'Admin Settings';
+    if (path.includes('settings/profile')) return 'Profile Settings';
+    if (path.includes('settings')) return 'Store Settings';
     return 'Admin Panel';
   };
 
@@ -87,8 +89,7 @@ function AdminLayout() {
       <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.sidebarCollapsed : ''} ${isMobileOpen ? styles.sidebarMobileOpen : ''}`}>
         <div className={styles.sidebarHeader}>
           <Link to="/dashboard" className={styles.logoArea}>
-            <img src={logoImg} alt="Happy Sarees" className={styles.logoImg} />
-            {!isSidebarCollapsed && <span className={styles.logoText}>Happy Sarees</span>}
+            <img src={LOGO_URL} alt="Happy Sarees" className={styles.logoImg} />
           </Link>
           {isMobileOpen && (
             <button className={styles.toggleBtn} onClick={() => setIsMobileOpen(false)}>
@@ -99,7 +100,22 @@ function AdminLayout() {
 
         {!isSidebarCollapsed && (
           <div className={styles.adminProfileBox}>
-            <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt={adminUser?.name} className={styles.adminAvatar} />
+            {adminUser?.avatar ? (
+              <img
+                src={adminUser.avatar}
+                alt={adminUser?.name || 'Admin'}
+                className={styles.adminAvatar}
+              />
+            ) : (
+              <div className={styles.adminAvatar} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(135deg, #d11b69, #9c1350)',
+                color: '#fff', fontWeight: 700, fontSize: '1.1rem',
+                userSelect: 'none', flexShrink: 0
+              }}>
+                {(adminUser?.name || 'A').charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className={styles.adminInfoText}>
               <span className={styles.adminName}>{adminUser?.name || 'Admin'}</span>
               <span className={styles.adminRole}>{adminUser?.role || 'Super Admin'}</span>
@@ -137,7 +153,7 @@ function AdminLayout() {
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Products
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Products
                         </Link>
                       </li>
                       <li>
@@ -147,7 +163,7 @@ function AdminLayout() {
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Master Data
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Master Data
                         </Link>
                       </li>
                       <li>
@@ -157,84 +173,7 @@ function AdminLayout() {
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Ratings & Reviews
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              );
-            }
-
-            if (item.label === 'Reports') {
-              const isActive = location.pathname.startsWith('/reports');
-              return (
-                <li key={i}>
-                  <div 
-                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
-                    onClick={() => setIsReportsExpanded(!isReportsExpanded)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.menuItemLink}>
-                      <span className={styles.menuIcon}>{item.icon}</span>
-                      {(!isSidebarCollapsed || isMobileOpen) && (
-                        <span className={styles.menuItemText}>{item.label}</span>
-                      )}
-                    </div>
-                    {(!isSidebarCollapsed || isMobileOpen) && (
-                      isReportsExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />
-                    )}
-                  </div>
-                  {isReportsExpanded && (!isSidebarCollapsed || isMobileOpen) && (
-                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <li>
-                        <Link 
-                          to="/reports" 
-                          className={`${styles.menuItem} ${location.pathname === '/reports' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Overview
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/reports/sales" 
-                          className={`${styles.menuItem} ${location.pathname === '/reports/sales' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Sales Report
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/reports/products" 
-                          className={`${styles.menuItem} ${location.pathname === '/reports/products' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Products Report
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/reports/customers" 
-                          className={`${styles.menuItem} ${location.pathname === '/reports/customers' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Customers Report
-                        </Link>
-                      </li>
-                      <li>
-                        <Link 
-                          to="/reports/orders" 
-                          className={`${styles.menuItem} ${location.pathname === '/reports/orders' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          <span style={{ marginRight: '8px' }}>•</span> Orders Report
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Ratings & Reviews
                         </Link>
                       </li>
                     </ul>
@@ -271,7 +210,7 @@ function AdminLayout() {
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Store Settings
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Store Settings
                         </Link>
                       </li>
                       <li>
@@ -281,7 +220,7 @@ function AdminLayout() {
                           style={{ padding: '8px 12px', fontSize: '13px' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <span style={{ marginRight: '8px' }}>•</span> Profile Settings
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Profile Settings
                         </Link>
                       </li>
                     </ul>
@@ -316,14 +255,38 @@ function AdminLayout() {
         <div className={styles.sidebarFooter}>
           {(!isSidebarCollapsed || isMobileOpen) ? (
             <div className={styles.footerUser}>
-              <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              {adminUser?.avatar ? (
+                <img src={adminUser.avatar} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #d11b69, #9c1350)',
+                  color: '#fff', fontWeight: 700, fontSize: '0.85rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  userSelect: 'none', flexShrink: 0
+                }}>
+                  {(adminUser?.name || 'A').charAt(0).toUpperCase()}
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#2b2b2b' }}>{adminUser?.name}</span>
-                <span style={{ fontSize: '9px', color: '#999999' }}>{adminUser?.role}</span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#FFFFFF' }}>{adminUser?.name}</span>
+                <span style={{ fontSize: '10px', color: '#C5A059' }}>{adminUser?.role}</span>
               </div>
             </div>
           ) : (
-            <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+            adminUser?.avatar ? (
+              <img src={adminUser.avatar} alt="Admin" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #d11b69, #9c1350)',
+                color: '#fff', fontWeight: 700, fontSize: '0.85rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                userSelect: 'none', flexShrink: 0
+              }}>
+                {(adminUser?.name || 'A').charAt(0).toUpperCase()}
+              </div>
+            )
           )}
           <button onClick={handleLogout} className={styles.footerMenuBtn} title="Logout">
             <FiLogOut />
@@ -344,7 +307,7 @@ function AdminLayout() {
               <FiMenu />
             </button>
             <div className={styles.mobileLogoArea}>
-              <img src={logoImg} alt="Happy Sarees" className={styles.logoImg} style={{ marginRight: '8px' }} />
+              <img src={LOGO_URL} alt="Happy Sarees" className={styles.logoImg} style={{ marginRight: '8px' }} />
               <span className={styles.logoText} style={{ fontSize: '15px' }}>Happy Sarees</span>
             </div>
             <div className={styles.searchBar}>
@@ -377,7 +340,18 @@ function AdminLayout() {
                 setIsNotifOpen(false);
               }}
             >
-              <img src={adminUser?.avatar || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} alt="Admin" className={styles.adminAvatar} style={{ border: '2px solid rgba(209,27,105,0.1)' }} />
+              {adminUser?.avatar ? (
+                <img src={adminUser.avatar} alt="Admin" className={styles.adminAvatar} style={{ border: '2px solid rgba(209,27,105,0.1)' }} />
+              ) : (
+                <div className={styles.adminAvatar} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #d11b69, #9c1350)',
+                  color: '#fff', fontWeight: 700, fontSize: '1rem',
+                  border: '2px solid rgba(209,27,105,0.1)', userSelect: 'none', flexShrink: 0
+                }}>
+                  {(adminUser?.name || 'A').charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className={styles.headerAdminText}>
                 <span className={styles.headerAdminName}>{adminUser?.name || 'Admin'}</span>
                 <span className={styles.headerAdminRole}>{adminUser?.role || 'Super Admin'}</span>
@@ -410,7 +384,7 @@ function AdminLayout() {
                   </li>
                 ))
               ) : (
-                <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#999999' }}>
+                <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-light)' }}>
                   No new notifications
                 </div>
               )}
@@ -440,22 +414,16 @@ function AdminLayout() {
           </div>
         )}
 
-        <div style={{ padding: '24px 30px 0 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2b2b2b', marginBottom: '6px' }}>{getPageTitle()}</h1>
-            <nav style={{ display: 'flex', gap: '8px', fontSize: '12px', color: '#999999' }}>
-              {breadcrumbs.map((bc, i) => (
-                <span key={i}>
-                  {bc}
-                  {i < breadcrumbs.length - 1 && <span style={{ margin: '0 8px' }}>&gt;</span>}
-                </span>
-              ))}
-            </nav>
-          </div>
 
+
+        <div style={{ padding: '24px 30px 0 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#27189D', fontFamily: 'var(--font-serif), "Playfair Display", serif', margin: 0, letterSpacing: '-0.3px' }}>
+            {getPageTitle()}
+          </h1>
           <div style={{
-            background: '#ffffff', padding: '10px 18px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)',
-            fontSize: '13px', fontWeight: 600, color: '#666666', display: 'flex', alignItems: 'center', gap: '8px'
+            background: 'var(--bg-white)', padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(43, 18, 32, 0.05)',
+            fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
           }}>
             📅 <span>21 July 2026</span>
           </div>

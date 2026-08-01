@@ -126,7 +126,7 @@ function ProductPreview() {
 
             {/* Short Description */}
             {(product.shortDescription || product.short_description) && (
-              <p style={{ fontSize: '13px', color: '#555555', marginTop: '6px', marginBottom: '10px', fontStyle: 'italic', lineHeight: '1.4' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px', marginBottom: '10px', fontStyle: 'italic', lineHeight: '1.4' }}>
                 {product.shortDescription || product.short_description}
               </p>
             )}
@@ -186,12 +186,12 @@ function ProductPreview() {
             {/* Stock status indicator */}
             <div className={styles.inventoryStatusBox}>
               {product.stock > 0 ? (
-                <div style={{ color: '#2e7d32', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
+                <div style={{ color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
                   <span className={styles.inStockDot} />
                   In Stock ({product.stock} Available)
                 </div>
               ) : (
-                <div style={{ color: '#d32f2f', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
+                <div style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
                   <span className={styles.outOfStockDot} />
                   Out of Stock
                 </div>
@@ -247,10 +247,10 @@ function ProductPreview() {
               <div className={styles.tabContent}>
                 {activeTab === 'description' && (
                   <div className={styles.tabPane}>
-                    <p style={{ lineHeight: '1.6', color: '#333333' }}>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-color)' }}>
                       {product.fullDescription || product.description || product.shortDescription || product.short_description || 'No description provided.'}
                     </p>
-                    <p style={{ marginTop: '12px', fontStyle: 'italic', color: '#666666', fontSize: '13px' }}>
+                    <p style={{ marginTop: '12px', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '13px' }}>
                       * Note: Wash care: {product.washCare || product.wash_care || 'Dry Clean Only'}.
                     </p>
                   </div>

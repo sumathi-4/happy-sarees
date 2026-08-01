@@ -19,9 +19,9 @@ function NotificationsTab({ notifications = [], onMarkRead }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: '#fff',
-              border: '1px solid #d11b69',
-              color: '#d11b69',
+              backgroundColor: 'var(--bg-white)',
+              border: '1px solid var(--primary-color)',
+              color: 'var(--primary-color)',
               padding: '6px 14px',
               borderRadius: '20px',
               fontSize: '12px',
@@ -52,7 +52,7 @@ function NotificationsTab({ notifications = [], onMarkRead }) {
             </div>
           ))
         ) : (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#666', background: '#fff', borderRadius: '12px' }}>
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#666', background: 'var(--bg-white)', borderRadius: '12px' }}>
             <FiBell style={{ fontSize: '2.5rem', color: '#ccc', marginBottom: '0.8rem' }} />
             <h4 style={{ margin: '0 0 0.4rem', color: '#333' }}>No Notifications Yet</h4>
             <p style={{ margin: 0, fontSize: '0.9rem' }}>You'll receive updates here about your orders, returns, and reviews!</p>

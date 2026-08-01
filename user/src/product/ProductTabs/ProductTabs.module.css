@@ -22,7 +22,7 @@
 
 .tabHeaders {
   display: flex;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.06);
   background-color: var(--bg-soft-pink);
 }
 
@@ -37,7 +37,7 @@
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   text-align: center;
 }
 
@@ -57,7 +57,7 @@
 }
 
 .panelContent {
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 250ms ease;
 }
 
 @keyframes fadeIn {
@@ -138,12 +138,12 @@
 .cardTitle {
   font-family: var(--font-display);
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0 0 1.2rem 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   padding-bottom: 0.6rem;
 }
 
@@ -188,7 +188,7 @@
   align-items: center;
   gap: 0.3rem;
   margin: 0 auto;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .toggleSpecsBtn:hover {

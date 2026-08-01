@@ -21,7 +21,7 @@
 .crumbLink {
   color: var(--text-light);
   text-decoration: none;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .crumbLink:hover {
@@ -113,7 +113,7 @@
 .formCard {
   background-color: var(--bg-white);
   border-radius: var(--radius-card);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   padding: 2.5rem 2.2rem;
   text-align: left;
   box-shadow: var(--shadow-premium);
@@ -122,7 +122,7 @@
 .cardTitle {
   font-family: var(--font-display);
   font-size: 1.6rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0 0 0.4rem 0;
 }
@@ -179,7 +179,7 @@
 }
 
 .socialBlock {
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(43, 18, 32, 0.06);
   padding-top: 1.5rem;
 }
 
@@ -206,8 +206,8 @@
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: var(--transition-smooth);
+  box-shadow: 0 2px 8px rgba(43, 18, 32, 0.06);
+  transition: all var(--motion-premium);
 
   &:hover {
     background-color: var(--primary-color);
@@ -253,7 +253,7 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
   outline: none;
   background-color: var(--bg-white);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .inputField:focus,
@@ -281,7 +281,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   box-shadow: 0 4px 15px rgba(209, 27, 105, 0.2);
   margin-top: 0.4rem;
 }
@@ -301,13 +301,13 @@
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-premium);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
 }
 
 .mapFrame {
   width: 100%;
   height: 380px;
-  background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+  background: linear-gradient(135deg, var(--text-color) 0%, var(--text-color) 100%);
   position: relative;
   display: flex;
   align-items: center;
@@ -350,7 +350,7 @@
   padding: 0.6rem 1.4rem;
   border-radius: var(--radius-button);
   text-decoration: none;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .mapDirectionsBtn:hover {
@@ -416,7 +416,7 @@
 .faqCard {
   background-color: var(--bg-white);
   border-radius: var(--radius-card);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }

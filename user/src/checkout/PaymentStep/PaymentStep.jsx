@@ -110,7 +110,7 @@ function PaymentStep({
                 {isSelected && !isCodExceeded && isOnline && (
                   <div className={styles.detailsPanel}>
                     <div className={styles.infoNoticeBox}>
-                      <FiShield style={{ fontSize: '1.2rem', color: '#d11b69', flexShrink: 0 }} />
+                      <FiShield style={{ fontSize: '1.2rem', color: 'var(--primary-color)', flexShrink: 0 }} />
                       <div>
                         <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>Online Payment via Razorpay</strong>
                         <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#666' }}>
@@ -124,8 +124,8 @@ function PaymentStep({
                         marginTop: '12px',
                         width: '100%',
                         padding: '12px',
-                        backgroundColor: '#d11b69',
-                        color: '#fff',
+                        backgroundColor: 'var(--primary-color)',
+                        color: 'var(--bg-white)',
                         border: 'none',
                         borderRadius: '8px',
                         fontWeight: '600',
@@ -145,8 +145,8 @@ function PaymentStep({
                 {/* COD Exceeded Warning Notice */}
                 {isCodExceeded && (
                   <div className={styles.warningNoticeBox}>
-                    <FiAlertTriangle style={{ color: '#d32f2f', fontSize: '1.2rem', flexShrink: 0 }} />
-                    <span style={{ fontSize: '12px', color: '#c62828', fontWeight: 600 }}>
+                    <FiAlertTriangle style={{ color: 'var(--error-color)', fontSize: '1.2rem', flexShrink: 0 }} />
+                    <span style={{ fontSize: '12px', color: 'var(--error-color)', fontWeight: 600 }}>
                       Cash on Delivery is unavailable for orders above ₹{maxAllowedCod.toLocaleString()}. Please select <strong>Pay Online</strong>.
                     </span>
                   </div>

@@ -46,7 +46,7 @@ function EmailLogsManagement() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FiMail style={{ color: '#d11b69' }} /> Transactional Email Logs
+            <FiMail style={{ color: 'var(--primary-color)' }} /> Transactional Email Logs
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
             Real-time backend email delivery monitoring and error logs from Neon PostgreSQL DB
@@ -59,7 +59,7 @@ function EmailLogsManagement() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#ffffff',
+            background: 'var(--bg-white)',
             border: '1.5px solid #e2e8f0',
             padding: '10px 18px',
             borderRadius: '10px',
@@ -75,7 +75,7 @@ function EmailLogsManagement() {
       </div>
 
       {/* Filter Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', background: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', background: 'var(--bg-white)', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <div style={{ flex: 1, minWidth: '260px', position: 'relative' }}>
           <FiSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
           <input
@@ -92,7 +92,7 @@ function EmailLogsManagement() {
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            style={{ padding: '9px 14px', border: '1.5px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', outline: 'none', background: '#fff', fontWeight: 600 }}
+            style={{ padding: '9px 14px', border: '1.5px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', outline: 'none', background: 'var(--bg-white)', fontWeight: 600 }}
           >
             <option value="All">All Statuses</option>
             <option value="Sent">Sent (Success)</option>
@@ -106,10 +106,10 @@ function EmailLogsManagement() {
       </div>
 
       {/* Logs Table Card */}
-      <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
         {loading && logs.length === 0 ? (
           <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-            <FiRefreshCw style={{ fontSize: '2rem', animation: 'spin 1s linear infinite', marginBottom: '12px', color: '#d11b69' }} />
+            <FiRefreshCw style={{ fontSize: '2rem', animation: 'spin 1s linear infinite', marginBottom: '12px', color: 'var(--primary-color)' }} />
             <p>Fetching email logs from Neon PostgreSQL...</p>
           </div>
         ) : filteredLogs.length === 0 ? (
@@ -178,7 +178,7 @@ function EmailLogsManagement() {
       {/* Error Details Modal */}
       {selectedLog && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '520px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+          <div style={{ background: 'var(--bg-white)', borderRadius: '14px', width: '90%', maxWidth: '520px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
             <h3 style={{ margin: '0 0 12px 0', color: '#b91c1c', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FiXCircle /> Email Failure Diagnostic Log
             </h3>
@@ -191,7 +191,7 @@ function EmailLogsManagement() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
               <button
                 onClick={() => setSelectedLog(null)}
-                style={{ background: '#334155', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}
+                style={{ background: '#334155', color: 'var(--bg-white)', border: 'none', padding: '8px 20px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}
               >
                 Close
               </button>

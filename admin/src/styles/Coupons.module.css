@@ -2,8 +2,8 @@
   padding: 28px;
   position: relative;
   min-height: calc(100vh - 80px);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #fcf8fa;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-soft-pink);
 }
 
 /* Toast Message */
@@ -11,17 +11,17 @@
   position: fixed;
   top: 24px;
   right: 24px;
-  background-color: #1e1e1e;
-  color: #ffffff;
+  background-color: var(--text-color);
+  color: var(--bg-white);
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: var(--radius-input);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   z-index: 2000;
   display: flex;
   align-items: center;
   font-size: 13.5px;
   font-weight: 600;
-  animation: slideIn 0.3s ease;
+  animation: slideIn 250ms ease;
 }
 
 @keyframes slideIn {
@@ -47,14 +47,14 @@
 .pageTitle {
   font-family: 'Outfit', sans-serif;
   font-size: 26px;
-  font-weight: 700;
-  color: #2b2b2b;
+  font-weight: 800;
+  color: var(--text-color);
   margin: 0 0 4px 0;
 }
 
 .pageSubtitle {
   font-size: 13.5px;
-  color: #777777;
+  color: var(--text-light);
   margin: 0;
 }
 
@@ -62,17 +62,17 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #d11b69 0%, #a00045 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: var(--bg-white);
   padding: 10px 22px;
   border: none;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  border-radius: var(--radius-small);
+  font-family: var(--font-sans);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(209, 27, 105, 0.25);
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .primaryCreateBtn:hover {
@@ -88,20 +88,51 @@
 }
 
 .statCard {
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid rgba(209, 27, 105, 0.08);
+  background: #FFFFFF;
+  border-radius: 18px;
   padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: var(--transition-smooth);
+}
+
+/* Golden Card (Odd) */
+.statCard:nth-child(odd) {
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  border-left: 4.5px solid #C5A059;
+  box-shadow: 0 4px 18px rgba(197, 160, 89, 0.14);
+}
+
+.statCard:nth-child(odd) .statVal {
+  color: #D11B69;
+}
+
+.statCard:nth-child(odd) .statIconBox {
+  background-color: rgba(209, 27, 105, 0.08) !important;
+  color: #D11B69 !important;
+}
+
+/* Blue Card (Even) */
+.statCard:nth-child(even) {
+  border: 1px solid rgba(39, 24, 157, 0.35);
+  border-left: 4.5px solid #27189D;
+  box-shadow: 0 4px 18px rgba(39, 24, 157, 0.14);
+}
+
+.statCard:nth-child(even) .statVal {
+  color: #27189D;
+}
+
+.statCard:nth-child(even) .statIconBox {
+  background-color: rgba(39, 24, 157, 0.08) !important;
+  color: #27189D !important;
 }
 
 .statIconBox {
   width: 46px;
   height: 46px;
-  border-radius: 10px;
+  border-radius: var(--radius-input);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,13 +144,13 @@
   font-family: 'Outfit', sans-serif;
   font-size: 22px;
   font-weight: 700;
-  color: #2b2b2b;
+  color: var(--text-color);
   line-height: 1.1;
 }
 
 .statLbl {
   font-size: 12.5px;
-  color: #777777;
+  color: var(--text-light);
   font-weight: 500;
 }
 
@@ -142,24 +173,24 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #999999;
+  color: var(--text-light);
   font-size: 16px;
 }
 
 .searchInput {
   width: 100%;
   padding: 10px 14px 10px 40px;
-  background: #ffffff;
-  border: 1px solid #e2d6dd;
-  border-radius: 8px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
   font-size: 13.5px;
-  color: #2b2b2b;
+  color: var(--text-color);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 150ms ease;
 }
 
 .searchInput:focus {
-  border-color: #d11b69;
+  border-color: var(--primary-color);
 }
 
 .filterPills {
@@ -168,31 +199,31 @@
 }
 
 .pillBtn {
-  background: #ffffff;
-  border: 1px solid #e2d6dd;
-  color: #666666;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .pillBtn:hover {
-  border-color: #d11b69;
-  color: #d11b69;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .pillActive {
-  background: #d11b69;
-  border-color: #d11b69;
-  color: #ffffff;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--bg-white);
 }
 
 /* Table Card */
 .tableCard {
-  background: #ffffff;
+  background: var(--bg-white);
   border-radius: 14px;
   border: 1px solid rgba(209, 27, 105, 0.08);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
@@ -211,21 +242,21 @@
 }
 
 .table th {
-  background: #faf4f7;
+  background: var(--bg-soft-pink);
   padding: 14px 20px;
   font-size: 12px;
   font-weight: 700;
-  color: #555555;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #f0e2e8;
+  border-bottom: 1px solid var(--bg-soft-pink-darker);
 }
 
 .table td {
   padding: 16px 20px;
   font-size: 13.5px;
-  color: #333333;
-  border-bottom: 1px solid #f7eef2;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--bg-soft-pink);
   vertical-align: middle;
 }
 
@@ -234,62 +265,62 @@
 }
 
 .table tbody tr:hover {
-  background-color: #fff9fb;
+  background-color: var(--bg-soft-pink);
 }
 
 .codeBadge {
   font-family: 'Outfit', monospace;
   font-size: 14px;
   font-weight: 700;
-  color: #d11b69;
-  background: #fce4ec;
+  color: var(--primary-color);
+  background: var(--error-bg);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   letter-spacing: 0.5px;
 }
 
 .typeTag {
   font-size: 12.5px;
   font-weight: 600;
-  color: #555555;
-  background: #f0f0f0;
+  color: var(--text-muted);
+  background: var(--bg-soft-pink-darker);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .discountText {
-  color: #2e7d32;
+  color: var(--success-color);
   font-weight: 700;
 }
 
 .usageTag {
   font-size: 12.5px;
-  color: #666666;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .statusPill {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .statusActive {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success-color);
 }
 
 .statusInactive {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--error-bg);
+  color: var(--error-color);
 }
 
 .statusExpired {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--warning-bg);
+  color: var(--warning-color);
 }
 
 .statusToggleBtn {
@@ -297,40 +328,40 @@
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .statusBtnActive {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border-color: #c8e6c9;
+  background: var(--success-bg);
+  color: var(--success-color);
+  border-color: var(--success-bg);
 }
 
 .statusBtnActive:hover {
-  background: #c8e6c9;
-  color: #1b5e20;
+  background: var(--success-bg);
+  color: var(--success-color);
 }
 
 .statusBtnInactive {
-  background: #ffebee;
-  color: #c62828;
-  border-color: #ffcdd2;
+  background: var(--error-bg);
+  color: var(--error-color);
+  border-color: var(--error-bg);
 }
 
 .statusBtnInactive:hover {
-  background: #ffcdd2;
-  color: #b71c1c;
+  background: var(--error-bg);
+  color: var(--error-color);
 }
 
 .statusBtnExpired {
-  background: #fff3e0;
-  color: #e65100;
-  border-color: #ffe0b2;
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border-color: var(--warning-bg);
   cursor: not-allowed;
   opacity: 0.85;
 }
@@ -338,57 +369,66 @@
 .iconActionBtn {
   background: transparent;
   border: none;
-  color: #888888;
+  color: var(--text-light);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   display: inline-flex;
   align-items: center;
-  transition: color 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .iconActionBtn:hover {
-  color: #d11b69;
+  color: var(--primary-color);
 }
 
 .actionBtnEdit {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #fce4ec;
-  color: #d11b69;
+  background: rgba(197, 160, 89, 0.15) !important;
+  color: #B38628 !important;
   border: none;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .actionBtnEdit:hover {
-  background: #f8bbd0;
+  background: rgba(197, 160, 89, 0.28) !important;
+  transform: translateY(-1px);
 }
 
 .actionBtnDelete {
-  background: #ffebee;
-  color: #d32f2f;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(229, 57, 53, 0.1) !important;
+  color: #e53935 !important;
   border: none;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .actionBtnDelete:hover {
-  background: #ffcdd2;
+  background: rgba(229, 57, 53, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+.actionBtnDelete:hover {
+  background: var(--error-bg);
 }
 
 .emptyTd {
   text-align: center;
   padding: 40px !important;
-  color: #888888;
+  color: var(--text-light);
   font-size: 14px;
 }
 
@@ -411,33 +451,33 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  border: 1px solid #e2d6dd;
-  color: #2b2b2b;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .backBtn:hover {
-  background: #fce4ec;
-  border-color: #d11b69;
-  color: #d11b69;
+  background: var(--error-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .formCardTitle {
   font-family: 'Outfit', sans-serif;
   font-size: 22px;
   font-weight: 700;
-  color: #2b2b2b;
+  color: var(--text-color);
   margin: 0;
 }
 
 .formCard {
-  background: #ffffff;
+  background: var(--bg-white);
   border-radius: 14px;
   border: 1px solid rgba(209, 27, 105, 0.08);
   padding: 32px;
@@ -460,31 +500,31 @@
 .formLabel {
   font-size: 13px;
   font-weight: 700;
-  color: #333333;
+  color: var(--text-color);
 }
 
 .inputField, .selectField {
   width: 100%;
   padding: 12px 14px;
-  background: #fafafa;
-  border: 1.5px solid #e2d6dd;
-  border-radius: 8px;
+  background: var(--bg-soft-pink);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-small);
   font-size: 14px;
-  color: #2b2b2b;
+  color: var(--text-color);
   outline: none;
   font-family: inherit;
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .inputField:focus, .selectField:focus {
-  background: #ffffff;
-  border-color: #d11b69;
+  background: var(--bg-white);
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.1);
 }
 
 .hintText {
   font-size: 11.5px;
-  color: #888888;
+  color: var(--text-light);
 }
 
 .toggleRow {
@@ -492,10 +532,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff8fa;
+  background: var(--bg-soft-pink);
   padding: 16px 20px;
-  border-radius: 10px;
-  border: 1px solid #fce4ec;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--error-bg);
 }
 
 .switchLabel {
@@ -515,9 +555,9 @@
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
+  background-color: var(--border-color);
   transition: .3s;
-  border-radius: 24px;
+  border-radius: var(--radius-hero-image);
 }
 
 .switchSlider:before {
@@ -533,7 +573,7 @@
 }
 
 .switchLabel input:checked + .switchSlider {
-  background-color: #d11b69;
+  background-color: var(--primary-color);
 }
 
 .switchLabel input:checked + .switchSlider:before {
@@ -544,38 +584,38 @@
   display: flex;
   justify-content: flex-end;
   gap: 14px;
-  border-top: 1px solid #f0e2e8;
+  border-top: 1px solid var(--bg-soft-pink-darker);
   padding-top: 24px;
 }
 
 .cancelBtn {
-  background: #ffffff;
-  border: 1px solid #cccccc;
-  color: #555555;
+  background: var(--bg-white);
+  border: 1px solid var(--text-light);
+  color: var(--text-muted);
   padding: 11px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .cancelBtn:hover {
-  background: #f5f5f5;
-  border-color: #aaaaaa;
+  background: var(--bg-soft-pink);
+  border-color: var(--text-light);
 }
 
 .saveBtn {
-  background: linear-gradient(135deg, #d11b69 0%, #a00045 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: var(--bg-white);
   border: none;
   padding: 11px 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(209, 27, 105, 0.25);
-  transition: all 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .saveBtn:hover {

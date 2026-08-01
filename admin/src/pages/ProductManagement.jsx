@@ -251,7 +251,6 @@ function ProductManagement() {
       {/* Header Info Banner */}
       <div className={styles.managementHeader}>
         <div className={styles.headerTitles}>
-          <h2 className={styles.pageTitle}>Product Management</h2>
           <p className={styles.pageDesc}>Manage and organize your store products</p>
         </div>
         <div className={styles.headerActions}>
@@ -359,12 +358,7 @@ function ProductManagement() {
                 <option value="StockLowHigh">Stock: Low to High</option>
               </select>
             </div>
-          </div>
-        </div>
 
-        {/* Extended Filter Toggles Row */}
-        <div className={styles.extendedFilterRow}>
-          <div className={styles.filterSelects}>
             <div className={styles.selectGroup}>
               <label>Stock Status</label>
               <select value={selectedStock} onChange={(e) => { setSelectedStock(e.target.value); setCurrentPage(1); }}>
@@ -374,20 +368,11 @@ function ProductManagement() {
                 <option value="Out of Stock">Out of Stock (0)</option>
               </select>
             </div>
-
-            <div className={styles.selectGroup}>
-              <label>Homepage Tags</label>
-              <select value={selectedTag} onChange={(e) => { setSelectedTag(e.target.value); setCurrentPage(1); }}>
-                <option value="All">All Tags</option>
-                <option value="New Arrival">New Arrival</option>
-                <option value="Best Seller">Bestseller</option>
-                <option value="Trending Product">Trending</option>
-                <option value="Featured Collection">Featured</option>
-                <option value="Sale Product">Sale</option>
-              </select>
-            </div>
           </div>
+        </div>
 
+        {/* Filter Reset Actions */}
+        <div className={styles.extendedFilterRow} style={{ justifyContent: 'flex-end', paddingTop: 0 }}>
           <button className={styles.resetBtn} onClick={handleResetFilters}>
             Reset Filters
           </button>
@@ -403,7 +388,7 @@ function ProductManagement() {
             onChange={handleSelectAll}
             className={styles.checkbox}
           />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#666666' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
             {selectedProductIds.length} selected
           </span>
           <div style={{ position: 'relative' }}>
@@ -425,7 +410,7 @@ function ProductManagement() {
                 <button onClick={() => handleBulkAction('draft')}>Move to Draft</button>
                 <button onClick={() => handleBulkAction('duplicate')}><FiCopy /> Duplicate Product</button>
                 <button onClick={() => handleBulkAction('export')}><FiDownload /> Export Selected</button>
-                <button onClick={() => handleBulkAction('delete')} style={{ color: '#d32f2f' }}><FiTrash2 /> Delete Selected</button>
+                <button onClick={() => handleBulkAction('delete')} style={{ color: 'var(--error-color)' }}><FiTrash2 /> Delete Selected</button>
               </div>
             )}
           </div>
@@ -459,24 +444,24 @@ function ProductManagement() {
                   <td>
                     <img src={p.image || 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80'} alt={p.name || 'Product'} className={styles.productThumb} />
                   </td>
-                  <td style={{ fontWeight: 600, color: '#2b2b2b', maxWidth: '220px' }}>
+                  <td style={{ fontWeight: 600, color: 'var(--text-color)', maxWidth: '220px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span className={styles.productNameLink} onClick={() => navigate(`/products/edit/${p.id}`)}>
                         {p.name}
                       </span>
                       {(p.shortDescription || p.short_description) && (
-                        <span style={{ fontSize: '11px', color: '#555555', fontStyle: 'italic', marginTop: '2px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
                           {(p.shortDescription || p.short_description).slice(0, 50)}
                           {(p.shortDescription || p.short_description).length > 50 ? '...' : ''}
                         </span>
                       )}
-                      <span style={{ fontSize: '10px', color: '#999999', marginTop: '2px' }}>Created: {p.createdAt ? String(p.createdAt).slice(0, 10) : '-'}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '2px' }}>Created: {p.createdAt ? String(p.createdAt).slice(0, 10) : '-'}</span>
                     </div>
                   </td>
                   <td><code style={{ fontSize: '12px', fontWeight: 'bold' }}>{p.sku}</code></td>
                   <td>{p.fabric}</td>
                   <td>{p.occasion}</td>
-                  <td style={{ fontWeight: 600, color: '#d11b69' }}>₹{p.price}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--primary-color)' }}>₹{p.price}</td>
                   <td>
                     {p.stock === 0 ? (
                       <span className={styles.outOfStockBadge}>Out of Stock</span>
@@ -497,21 +482,21 @@ function ProductManagement() {
                       {p.featuredCollection && <span className={`${styles.tagPill} ${styles.tagFeatured}`}>Featured</span>}
                       {p.saleProduct && <span className={`${styles.tagPill} ${styles.tagSale}`}>Sale</span>}
                       {!p.newArrival && !p.bestSeller && !p.trendingProduct && !p.isTrending && !p.featuredCollection && !p.saleProduct && (
-                        <span style={{ color: '#999999' }}>-</span>
+                        <span style={{ color: 'var(--text-light)' }}>-</span>
                       )}
                     </div>
                   </td>
                   <td>
                     <div className={styles.actionCell}>
                       <button 
-                        className={styles.actionBtn} 
+                        className={`${styles.actionBtn} ${styles.viewActionBtn}`} 
                         onClick={() => navigate(`/products/preview/${p.id}`)}
                         title="Preview Saree storefront details"
                       >
                         <FiEye />
                       </button>
                       <button 
-                        className={styles.actionBtn} 
+                        className={`${styles.actionBtn} ${styles.editActionBtn}`} 
                         onClick={() => navigate(`/products/edit/${p.id}`)}
                         title="Edit Saree details"
                       >
@@ -533,7 +518,7 @@ function ProductManagement() {
 
           {/* Pagination Row */}
           <div className={styles.paginationRow}>
-            <span style={{ fontSize: '13px', color: '#666666' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Showing {Math.min(sortedProducts.length, (currentPage - 1) * itemsPerPage + 1)}-
               {Math.min(sortedProducts.length, currentPage * itemsPerPage)} of {sortedProducts.length} Products
             </span>

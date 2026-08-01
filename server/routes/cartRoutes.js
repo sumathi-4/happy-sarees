@@ -9,7 +9,7 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT c.id as cart_id, c.quantity, p.*,
-              (SELECT COALESCE(pi.image_url, pi.image_data)
+              (SELECT pi.image_url
                FROM product_images pi
                WHERE pi.product_id = p.id
                ORDER BY pi.is_primary DESC, pi.display_order ASC

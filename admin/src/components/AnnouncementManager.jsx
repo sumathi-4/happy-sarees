@@ -16,8 +16,8 @@ const DEFAULT_ANNOUNCEMENTS = [
     duration: 5,
     startDate: '',
     endDate: '',
-    bgColor: '#2b2b2b',
-    textColor: '#ffffff',
+    bgColor: 'var(--text-color)',
+    textColor: 'var(--bg-white)',
     iconColor: '#ffeb3b',
     status: 'active',
     sortOrder: 1,
@@ -32,9 +32,9 @@ const DEFAULT_ANNOUNCEMENTS = [
     duration: 5,
     startDate: '',
     endDate: '',
-    bgColor: '#d11b69',
-    textColor: '#ffffff',
-    iconColor: '#ffffff',
+    bgColor: 'var(--primary-color)',
+    textColor: 'var(--bg-white)',
+    iconColor: 'var(--bg-white)',
     status: 'active',
     sortOrder: 2,
     createdAt: new Date().toISOString()
@@ -48,9 +48,9 @@ const DEFAULT_ANNOUNCEMENTS = [
     duration: 6,
     startDate: '',
     endDate: '',
-    bgColor: '#2b2b2b',
-    textColor: '#ffffff',
-    iconColor: '#c5a059',
+    bgColor: 'var(--text-color)',
+    textColor: 'var(--bg-white)',
+    iconColor: 'var(--gold-color)',
     status: 'active',
     sortOrder: 3,
     createdAt: new Date().toISOString()
@@ -65,7 +65,7 @@ const DEFAULT_ANNOUNCEMENTS = [
     startDate: '',
     endDate: '',
     bgColor: '#b71c1c',
-    textColor: '#ffffff',
+    textColor: 'var(--bg-white)',
     iconColor: '#ffeb3b',
     status: 'active',
     sortOrder: 4,
@@ -81,7 +81,7 @@ const DEFAULT_ANNOUNCEMENTS = [
     startDate: '',
     endDate: '',
     bgColor: '#4a148c',
-    textColor: '#ffffff',
+    textColor: 'var(--bg-white)',
     iconColor: '#ffeb3b',
     status: 'draft',
     sortOrder: 5,
@@ -90,8 +90,8 @@ const DEFAULT_ANNOUNCEMENTS = [
 ];
 
 const AVAILABLE_ICONS = ['🚚', '🎁', '💎', '🔥', '⭐', '🛡️', 'ℹ️', '✨', '📢', '👑', '🌸', '💫'];
-const PRESET_BG_COLORS = ['#2b2b2b', '#d11b69', '#b71c1c', '#4a148c', '#1b5e20', '#0d47a1', '#e65100'];
-const PRESET_TEXT_COLORS = ['#ffffff', '#2b2b2b', '#ffeb3b', '#f44336', '#4caf50', '#00e676', '#00e5ff', '#ffd700', '#ff80ab'];
+const PRESET_BG_COLORS = ['var(--text-color)', 'var(--primary-color)', '#b71c1c', '#4a148c', '#1b5e20', '#0d47a1', 'var(--warning-color)'];
+const PRESET_TEXT_COLORS = ['var(--bg-white)', 'var(--text-color)', '#ffeb3b', '#f44336', 'var(--success-color)', '#00e676', '#00e5ff', '#ffd700', '#ff80ab'];
 
 const STATIC_ROUTES = [
   { label: 'Home Page (/)', value: '/' },
@@ -168,8 +168,8 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
     duration: 5,
     startDate: '',
     endDate: '',
-    bgColor: '#2b2b2b',
-    textColor: '#ffffff',
+    bgColor: 'var(--text-color)',
+    textColor: 'var(--bg-white)',
     iconColor: '#ffeb3b',
     status: 'active',
     sortOrder: 1
@@ -248,8 +248,8 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
       duration: 5,
       startDate: '',
       endDate: '',
-      bgColor: '#2b2b2b',
-      textColor: '#ffffff',
+      bgColor: 'var(--text-color)',
+      textColor: 'var(--bg-white)',
       iconColor: '#ffeb3b',
       status: 'active',
       sortOrder: items.length + 1
@@ -451,10 +451,10 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
                       {/* Actions */}
                       <td style={{ textAlign: 'right' }}>
                         <div className={styles.actionBtns}>
-                          <button className={styles.iconBtn} onClick={() => handleOpenView(item)} title="Quick View">
+                          <button className={`${styles.iconBtn} ${styles.viewBtn}`} onClick={() => handleOpenView(item)} title="Quick View">
                             <FiEye />
                           </button>
-                          <button className={styles.iconBtn} onClick={() => handleOpenEdit(item)} title="Edit Announcement">
+                          <button className={`${styles.iconBtn} ${styles.editBtn}`} onClick={() => handleOpenEdit(item)} title="Edit Announcement">
                             <FiEdit2 />
                           </button>
                           <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDelete(item.id)} title="Delete">
@@ -468,7 +468,7 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
               ) : (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-                    <FiAlertCircle style={{ fontSize: '24px', color: '#d11b69', marginBottom: '8px' }} />
+                    <FiAlertCircle style={{ fontSize: '24px', color: 'var(--primary-color)', marginBottom: '8px' }} />
                     <p>No announcements found matching the active filters.</p>
                   </td>
                 </tr>
@@ -646,7 +646,7 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
                       ))}
                       <input 
                         type="color" 
-                        value={formData.bgColor || '#2b2b2b'}
+                        value={formData.bgColor || 'var(--text-color)'}
                         disabled={modalMode === 'view'}
                         onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
                         style={{ border: 'none', background: 'transparent', width: '32px', height: '32px', cursor: 'pointer' }}
@@ -661,13 +661,13 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
                         <span
                           key={col}
                           className={`${styles.colorPill} ${formData.textColor === col ? styles.colorPillSelected : ''}`}
-                          style={{ backgroundColor: col, border: col === '#ffffff' ? '1px solid #ccc' : '2px solid transparent' }}
+                          style={{ backgroundColor: col, border: col === 'var(--bg-white)' ? '1px solid #ccc' : '2px solid transparent' }}
                           onClick={() => modalMode !== 'view' && setFormData({ ...formData, textColor: col })}
                         />
                       ))}
                       <input 
                         type="color" 
-                        value={formData.textColor || '#ffffff'}
+                        value={formData.textColor || 'var(--bg-white)'}
                         disabled={modalMode === 'view'}
                         onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
                         style={{ border: 'none', background: 'transparent', width: '32px', height: '32px', cursor: 'pointer' }}
@@ -682,12 +682,12 @@ function AnnouncementManager({ sectionData, onUpdate, onSave }) {
                   <div 
                     className={styles.previewBanner}
                     style={{
-                      backgroundColor: formData.bgColor || '#2b2b2b',
-                      color: formData.textColor || '#ffffff'
+                      backgroundColor: formData.bgColor || 'var(--text-color)',
+                      color: formData.textColor || 'var(--bg-white)'
                     }}
                   >
                     <span>{formData.icon || '🚚'}</span>
-                    <span style={{ color: formData.textColor || '#ffffff' }}>
+                    <span style={{ color: formData.textColor || 'var(--bg-white)' }}>
                       {formData.text || 'Sample Announcement Text'}
                     </span>
                   </div>

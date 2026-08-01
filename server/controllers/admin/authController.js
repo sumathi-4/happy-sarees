@@ -70,3 +70,39 @@ exports.updateProfile = async (req, res, next) => {
     return success(res, { admin: updated }, 'Profile updated successfully.');
   } catch (err) { return err.status ? error(res, err.message, err.status) : next(err); }
 };
+
+exports.updateAvatar = async (req, res, next) => {
+  try {
+    const { imageData } = req.body;
+
+    // null / undefined imageData = remove avatar
+    if (!imageData) {
+      const updated = await authService.updateAvatar(req.adminUser.adminId, null);
+      return success(res, { admin: updated, avatarUrl: null }, 'Profile photo removed successfully.');
+    }
+
+    if (!imageData.startsWith('data:image/')) {
+      return error(res, 'Valid base64 image data is required.', 400);
+    }
+
+    const cloudinary = require('cloudinary').v2;
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    // Upload to Cloudinary under happy_sarees/admin_avatars folder
+    const uploadResult = await cloudinary.uploader.upload(imageData, {
+      folder: 'happy_sarees/admin_avatars',
+      transformation: [{ width: 200, height: 200, crop: 'fill', gravity: 'face' }],
+      resource_type: 'image',
+    });
+
+    const avatarUrl = uploadResult.secure_url;
+
+    // Save Cloudinary URL to DB
+    const updated = await authService.updateAvatar(req.adminUser.adminId, avatarUrl);
+    return success(res, { admin: updated, avatarUrl }, 'Profile photo updated successfully.');
+  } catch (err) { return err.status ? error(res, err.message, err.status) : next(err); }
+};

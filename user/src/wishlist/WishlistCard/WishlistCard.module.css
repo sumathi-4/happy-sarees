@@ -4,11 +4,13 @@
   overflow: hidden;
   box-shadow: var(--shadow-premium);
   border: 1px solid rgba(209, 27, 105, 0.04);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   display: flex;
   flex-direction: column;
   height: 100%;
   text-align: left;
+  width: 100%;
+  min-width: 0;
 }
 
 .card:hover {
@@ -56,20 +58,20 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: var(--transition-smooth);
+  box-shadow: 0 4px 10px rgba(43, 18, 32, 0.06);
+  transition: all var(--motion-premium);
   z-index: 5;
 }
 
 .heartIcon {
   color: var(--primary-color);
   font-size: 1.1rem;
-  transition: transform 0.2s ease;
+  transition: transform 150ms ease;
 }
 
 .removeBtn:hover {
   transform: scale(1.15);
-  background-color: #fff0f5;
+  background-color: var(--bg-soft-pink-darker);
 }
 
 /* Badges */
@@ -86,7 +88,7 @@
   font-weight: 700;
   text-transform: uppercase;
   padding: 0.3rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   letter-spacing: 0.5px;
   color: var(--bg-white);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -97,7 +99,7 @@
 }
 
 .badgeNew {
-  background-color: #4a148c; /* deep royal purple */
+  background-color: var(--secondary-color); /* deep royal purple */
 }
 
 .badgeBest {
@@ -128,7 +130,7 @@
 .nameLink {
   color: inherit;
   text-decoration: none;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .nameLink:hover {
@@ -156,13 +158,13 @@
 }
 
 .starIcon {
-  color: #dddddd;
+  color: var(--border-color);
   font-size: 0.75rem;
 }
 
 .starFilled {
-  color: #ffb400;
-  fill: #ffb400;
+  color: var(--gold-color);
+  fill: var(--gold-color);
 }
 
 .ratingVal {
@@ -214,11 +216,11 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #2e7d32;
+  background-color: var(--success-color);
 }
 
 .stockText {
-  color: #2e7d32;
+  color: var(--success-color);
   font-weight: 700;
 }
 
@@ -247,52 +249,66 @@
 
 /* Action Buttons Grid */
 .actionGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .viewDetailsBtn {
-  background-color: var(--bg-white);
-  border: 1px solid var(--primary-color);
+  width: 100%;
+  background-color: transparent;
+  border: 1.5px solid var(--primary-color);
   color: var(--primary-color);
-  padding: 0.55rem;
-  border-radius: var(--radius-button);
+  padding: 0.45rem 0.6rem;
+  border-radius: 20px;
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   text-align: center;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .viewDetailsBtn:hover {
-  background-color: var(--bg-soft-pink-darker);
+  background-color: var(--bg-soft-pink);
+  transform: translateY(-1px);
 }
 
 .addToCartBtn {
-  background-color: var(--primary-color);
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   border: none;
   color: var(--bg-white);
-  padding: 0.55rem;
-  border-radius: var(--radius-button);
+  padding: 0.45rem 0.6rem;
+  border-radius: 20px;
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  transition: var(--transition-smooth);
+  gap: 0.35rem;
+  transition: all var(--motion-premium);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(209, 27, 105, 0.2);
 }
 
 .addToCartBtn:hover:not(:disabled) {
-  background-color: var(--secondary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(209, 27, 105, 0.3);
 }
 
 .addToCartBtn:disabled {
-  background-color: #e0e0e0;
-  color: #9e9e9e;
+  background: var(--border-color);
+  color: var(--text-light);
   cursor: not-allowed;
+  box-shadow: none;
 }

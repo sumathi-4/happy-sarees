@@ -4,21 +4,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #eaeaea;
-  background-color: #ffffff;
+  padding: 1.2rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-white);
+  box-shadow: var(--shadow-premium);
 }
 
 .header-logo {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
   text-decoration: none;
-  color: #333333;
+  color: var(--text-color);
 }
 
 .header-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -26,14 +28,15 @@
 
 .header-nav-link {
   text-decoration: none;
-  color: #555555;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 1rem;
-  transition: color 0.2s ease;
+  font-size: 0.95rem;
+  transition: all var(--motion-premium);
 }
 
 .header-nav-link:hover {
-  color: #000000;
+  color: var(--primary-color);
 }
 
 .header-actions {
@@ -45,14 +48,20 @@
 .search-box {
   display: flex;
   align-items: center;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  padding: 0.35rem 0.6rem;
-  background-color: #f9f9f9;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  padding: 0.4rem 0.8rem;
+  background-color: var(--bg-soft-pink);
+  transition: all var(--motion-premium);
+}
+
+.search-box:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.08);
 }
 
 .search-icon {
-  color: #777777;
+  color: var(--text-light);
   display: flex;
   align-items: center;
 }
@@ -63,7 +72,8 @@
   outline: none;
   padding-left: 0.4rem;
   font-size: 0.85rem;
-  color: #333333;
+  color: var(--text-color);
+  font-family: var(--font-sans);
 }
 
 .action-icons {
@@ -73,14 +83,14 @@
 }
 
 .action-icon-link {
-  color: #333333;
+  color: var(--text-color);
   font-size: 1.3rem;
   display: flex;
   align-items: center;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all var(--motion-premium);
 }
 
 .action-icon-link:hover {
-  color: #000000;
+  color: var(--primary-color);
 }

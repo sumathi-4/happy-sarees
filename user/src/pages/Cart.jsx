@@ -12,7 +12,7 @@ import RelatedProducts from '../product/RelatedProducts/RelatedProducts';
 import RecentlyViewed from '../product/RecentlyViewed/RecentlyViewed';
 import styles from './Cart.module.css';
 
-function Cart() {
+function Cart({ isProfileView = false }) {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const [availableOffers, setAvailableOffers] = useState([]);
@@ -43,60 +43,43 @@ function Cart() {
     removeFromCart(id);
   };
 
-  const handleMoveToWishlist = (product) => {
-    api.addToWishlist(product.productId || product.id).catch(() => {});
-    removeFromCart(product.id);
-    alert(`"${product.name}" moved to your Wishlist!`);
+  const handleMoveToWishlist = (item) => {
+    removeFromCart(item.id);
   };
 
-  const handleApplyCoupon = (code) => {
-    if (!code) return;
-    api.validateCoupon(code, sellingTotal)
-      .then((data) => {
-        if (data.success && data.coupon) {
-          setAppliedCoupon({
-            code: data.code,
-            discountAmount: data.discountAmount,
-            discountPercent: data.coupon.discountType === 'Percentage' ? data.coupon.discountValue : null
-          });
-          alert(`Coupon "${data.code}" applied successfully! Saved ₹${data.discountAmount}`);
-        } else {
-          alert(data.message || `Invalid coupon code "${code}".`);
-        }
-      })
-      .catch((err) => {
-        alert(err.message || `Could not apply coupon "${code}".`);
-      });
+  const handleApplyCoupon = (coupon) => {
+    if (!coupon) {
+      setAppliedCoupon(null);
+      return;
+    }
+    const minOrder = Number(coupon.min_order_amount || 0);
+    if (minOrder > 0 && sellingTotal < minOrder) {
+      alert(`This coupon requires a minimum order of ₹${minOrder.toLocaleString()}`);
+      return;
+    }
+    setAppliedCoupon(coupon);
   };
 
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.container}>
-        {/* Breadcrumb Navigation */}
+        {/* Breadcrumb */}
         <nav className={styles.breadcrumbBar} aria-label="Breadcrumb">
           <Link to="/" className={styles.crumbLink}>Home</Link>
           <span className={styles.separator}>&gt;</span>
-          <span className={styles.activeCrumb}>Cart</span>
+          <span className={styles.activeCrumb}>Shopping Cart</span>
         </nav>
 
         {/* Page Header */}
         <div className={styles.pageHeader}>
           <div className={styles.topPill}>
-            <FiShoppingCart /> My Shopping Cart
+            <span className={styles.bagIcon}>🛍️</span> MY SHOPPING BAG
           </div>
-
-          <div className={styles.titleRow}>
-            <h1 className={styles.pageTitle}>
-              My Cart <span className={styles.itemCount}>({cartItems.length} Items)</span>
-            </h1>
-
-            <button onClick={() => navigate('/shop')} className={styles.continueBtn}>
-              <FiArrowLeft /> Continue Shopping
-            </button>
-          </div>
-
-          <p className={styles.subtitle}>
-            Review your favourite sarees and proceed to checkout.
+          <h1 className={styles.pageTitle}>
+            Shopping Cart <span className={styles.itemCount}>({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
+          </h1>
+          <p className={styles.headerSubtitle}>
+            Review your handpicked saree selections and proceeding to checkout.
           </p>
         </div>
 
@@ -137,11 +120,16 @@ function Cart() {
           <EmptyCart />
         )}
 
-        {/* You May Also Like Slider */}
-        <RelatedProducts />
+        {/* Standalone Full-Width Sliders */}
+        {!isProfileView && (
+          <>
+            {/* You May Also Like Slider */}
+            <RelatedProducts />
 
-        {/* Recently Viewed Products Slider */}
-        <RecentlyViewed />
+            {/* Recently Viewed Products Slider */}
+            <RecentlyViewed />
+          </>
+        )}
       </div>
     </div>
   );

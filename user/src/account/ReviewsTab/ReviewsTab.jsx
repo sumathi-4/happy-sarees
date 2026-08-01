@@ -173,8 +173,8 @@ function ReviewsTab() {
             padding: '10px 20px',
             borderRadius: '24px',
             border: activeSubTab === 'submitted' ? 'none' : '1.5px solid #cbd5e1',
-            background: activeSubTab === 'submitted' ? '#d11b69' : '#ffffff',
-            color: activeSubTab === 'submitted' ? '#ffffff' : '#475569',
+            background: activeSubTab === 'submitted' ? 'var(--primary-color)' : 'var(--bg-white)',
+            color: activeSubTab === 'submitted' ? 'var(--bg-white)' : '#475569',
             fontWeight: 700,
             fontSize: '13.5px',
             cursor: 'pointer',
@@ -193,8 +193,8 @@ function ReviewsTab() {
             padding: '10px 20px',
             borderRadius: '24px',
             border: activeSubTab === 'pending' ? 'none' : '1.5px solid #cbd5e1',
-            background: activeSubTab === 'pending' ? '#d11b69' : '#ffffff',
-            color: activeSubTab === 'pending' ? '#ffffff' : '#475569',
+            background: activeSubTab === 'pending' ? 'var(--primary-color)' : 'var(--bg-white)',
+            color: activeSubTab === 'pending' ? 'var(--bg-white)' : '#475569',
             fontWeight: 700,
             fontSize: '13.5px',
             cursor: 'pointer',
@@ -216,8 +216,8 @@ function ReviewsTab() {
               <p>Loading delivered products...</p>
             </div>
           ) : pendingProducts.length === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', background: '#ffffff', borderRadius: '12px', border: '1px solid #f0e6eb' }}>
-              <FiCheckCircle style={{ fontSize: '2.5rem', color: '#16a34a', marginBottom: '10px' }} />
+            <div style={{ padding: '40px 20px', textAlign: 'center', background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #f0e6eb' }}>
+              <FiCheckCircle style={{ fontSize: '2.5rem', color: 'var(--success-color)', marginBottom: '10px' }} />
               <h4 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>All Delivered Products Reviewed!</h4>
               <p style={{ margin: 0, fontSize: '13.5px', color: '#64748b' }}>
                 You have reviewed all your delivered orders. Thank you for your feedback!
@@ -226,19 +226,19 @@ function ReviewsTab() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
               {pendingProducts.map((prod) => (
-                <div key={prod.productId} style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #f0e6eb', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div key={prod.productId} style={{ background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #f0e6eb', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
                     <img src={prod.image} alt={prod.productName} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#0f172a' }}>{prod.productName}</h4>
                       <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Order #{prod.orderNumber}</span>
-                      <strong style={{ fontSize: '13px', color: '#d11b69', display: 'block', marginTop: '2px' }}>₹{prod.price.toLocaleString('en-IN')}</strong>
+                      <strong style={{ fontSize: '13px', color: 'var(--primary-color)', display: 'block', marginTop: '2px' }}>₹{prod.price.toLocaleString('en-IN')}</strong>
                     </div>
                   </div>
 
                   <button
                     onClick={() => openWriteModal(prod)}
-                    style={{ width: '100%', background: '#d11b69', color: '#ffffff', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{ width: '100%', background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
                     <FiPenTool /> Write Review
                   </button>
@@ -264,7 +264,7 @@ function ReviewsTab() {
               const imageList = Array.isArray(rev.images) ? rev.images : [];
 
               return (
-                <div key={rev.id} style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #f0e6eb', padding: '18px', marginBottom: '16px' }}>
+                <div key={rev.id} style={{ background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #f0e6eb', padding: '18px', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center', borderBottom: '1px solid #f8fafc', paddingBottom: '12px', marginBottom: '12px' }}>
                     <img src={rev.image} alt={rev.productName} style={{ width: '54px', height: '54px', objectFit: 'cover', borderRadius: '8px' }} />
                     <div style={{ flex: 1 }}>
@@ -342,7 +342,7 @@ function ReviewsTab() {
               );
             })
           ) : (
-            <div style={{ padding: '3rem 1rem', textAlign: 'center', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #f0e6eb' }}>
+            <div style={{ padding: '3rem 1rem', textAlign: 'center', backgroundColor: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #f0e6eb' }}>
               <p style={{ margin: 0, fontSize: '1rem', color: '#666' }}>You haven't submitted any product reviews yet.</p>
               <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#999' }}>Check the Pending Reviews tab to share feedback on delivered orders!</p>
             </div>
@@ -353,7 +353,7 @@ function ReviewsTab() {
       {/* Review Modal (Write New or Edit Existing) */}
       {(writeModalProduct || editingReview) && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '480px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', position: 'relative' }}>
+          <div style={{ background: 'var(--bg-white)', borderRadius: '14px', width: '90%', maxWidth: '480px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', position: 'relative' }}>
             <button 
               onClick={closeModal}
               style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}
@@ -405,7 +405,7 @@ function ReviewsTab() {
                       <button
                         type="button"
                         onClick={() => removeImage(idx)}
-                        style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '9px' }}
+                        style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: 'var(--bg-white)', border: 'none', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '9px' }}
                       >
                         <FiX />
                       </button>
@@ -433,7 +433,7 @@ function ReviewsTab() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{ background: '#d11b69', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+                  style={{ background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Review'}
                 </button>

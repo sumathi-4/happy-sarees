@@ -61,8 +61,8 @@ const INITIAL_CMS_DATA = {
     enabled: true,
     text: 'FREE SHIPPING ON PREMIUM SILK COLLECTION',
     link: '/shop',
-    backgroundColor: '#2b2b2b',
-    textColor: '#ffffff',
+    backgroundColor: 'var(--text-color)',
+    textColor: 'var(--bg-white)',
     displayOrder: 1
   },
   heroBanner: {

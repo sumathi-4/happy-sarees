@@ -43,7 +43,7 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   box-shadow: var(--shadow-premium);
 }
 

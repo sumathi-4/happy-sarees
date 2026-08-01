@@ -200,11 +200,11 @@ function Profile() {
             )}
 
             {activeTab === 'wishlist' && (
-              <Wishlist />
+              <Wishlist isProfileView={true} />
             )}
 
             {activeTab === 'cart' && (
-              <Cart />
+              <Cart isProfileView={true} />
             )}
 
             {activeTab === 'addresses' && (

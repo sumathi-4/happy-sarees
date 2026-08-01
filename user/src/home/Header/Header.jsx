@@ -167,29 +167,6 @@ function Header() {
                               </Link>
                             ))}
                           </div>
-
-                          {/* Promotional Banner Card */}
-                          <div className={styles.simpleGridPromo}>
-                            <div className={styles.simpleGridCard}>
-                              <img 
-                                src={
-                                  menu.dropdownType === 'fabrics' 
-                                    ? "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80" 
-                                    : "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=600&q=80"
-                                } 
-                                alt={menu.dropdownType === 'fabrics' ? "Freshly Loomed Curations" : "Draped In Grandeur"} 
-                                className={styles.simpleGridPromoImg} 
-                              />
-                              <div className={styles.simpleGridPromoOverlay}>
-                                <h4 className={styles.simpleGridPromoTitle}>
-                                  {menu.dropdownType === 'fabrics' ? "Freshly Loomed Curations" : "Draped In Grandeur"}
-                                </h4>
-                                <Link to={PATHS.SHOP} className={styles.simpleGridPromoCta}>
-                                  Shop Now
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     )}
@@ -235,11 +212,94 @@ function Header() {
                   <FiUser />
                 </Link>
               )}
+
+              {/* Hamburger Button for Mobile */}
+              <button
+                className={`${styles.hamburger} ${isMobileMenuOpen ? styles.hamburgerOpen : ''}`}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle Menu"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
             </div>
           </div>
 
         </div>
       </header>
+
+      {/* Mobile Nav Drawer */}
+      {isMobileMenuOpen && (
+        <>
+          <div className={styles.mobileOverlay} onClick={() => setIsMobileMenuOpen(false)} />
+          <div className={styles.mobileDrawer}>
+            <div className={styles.mobileDrawerHeader}>
+              <span className={styles.userNameText}>Menu</span>
+              <button
+                className={styles.mobileDrawerClose}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <FiX />
+              </button>
+            </div>
+            
+            <ul className={styles.mobileNavList}>
+              {navMenuItems.map((menu, index) => (
+                <li key={index} className={styles.mobileNavItem}>
+                  <Link
+                    to={menu.path}
+                    className={styles.mobileNavLink}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {menu.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className={styles.mobileDrawerFooter}>
+              {!isAuthenticated ? (
+                <div className={styles.mobileAuthBtns}>
+                  <Link
+                    to={PATHS.LOGIN}
+                    className={styles.mobileBtnPrimary}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to={PATHS.REGISTER}
+                    className={styles.mobileBtnSecondary}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
+                </div>
+              ) : (
+                <div className={styles.mobileAuthBtns}>
+                  <Link
+                    to={PATHS.PROFILE}
+                    className={styles.mobileBtnPrimary}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <button
+                    className={styles.mobileBtnSecondary}
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Full-screen Overlay Search Modal */}
       {isSearchOpen && (
@@ -248,9 +308,11 @@ function Header() {
             <button
               className={styles.closeSearchBtn}
               onClick={() => setIsSearchOpen(false)}
+              aria-label="Close Search"
             >
               <FiX />
             </button>
+            
             <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
               <FiSearch className={styles.searchModalIcon} />
               <input
@@ -261,15 +323,17 @@ function Header() {
                 autoFocus
                 className={styles.searchInputLarge}
               />
+              <button type="submit" className={styles.searchSubmitBtn}>Search</button>
             </form>
 
-            {/* Trending Suggestions */}
+            {/* Popular Searches */}
             <div className={styles.trendingSection}>
               <span className={styles.trendingTitle}>Popular Searches:</span>
               <div className={styles.tagsGroup}>
                 {TRENDING_SEARCHES.map((term, index) => (
                   <button
                     key={index}
+                    type="button"
                     className={styles.tagBtn}
                     onClick={() => handleTrendingClick(term)}
                   >
@@ -279,27 +343,35 @@ function Header() {
               </div>
             </div>
 
-            {/* Instant Search Results */}
+            {/* Instant Search Results / Quick Matches */}
             {searchResults.length > 0 && (
               <div className={styles.searchResultsContainer}>
                 <h4 className={styles.resultsHeading}>Quick Matches</h4>
-                <div className={styles.resultsGrid}>
-                  {searchResults.map((saree) => (
-                    <div
-                      key={saree.id}
-                      className={styles.searchResultCard}
-                      onClick={() => {
-                        setIsSearchOpen(false);
-                        navigate(`/product/${saree.id}`);
-                      }}
-                    >
-                      <img src={saree.image} alt={saree.name} className={styles.resultImg} />
-                      <div className={styles.resultInfo}>
-                        <span className={styles.resultTitle}>{saree.name}</span>
-                        <span className={styles.resultPrice}>₹{saree.price?.toLocaleString()}</span>
+                <div className={styles.resultsList}>
+                  {searchResults.map((saree) => {
+                    const imgUrl = saree.image || saree.image_url || (Array.isArray(saree.images) && saree.images[0]?.image_url) || 'https://via.placeholder.com/60x80';
+                    const formattedPrice = saree.price ? Number(saree.price).toLocaleString('en-IN') : '0';
+                    return (
+                      <div
+                        key={saree.id}
+                        className={styles.searchResultRow}
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                          navigate(`/product/${saree.id}`);
+                        }}
+                      >
+                        <img src={imgUrl} alt={saree.name} className={styles.resultThumb} />
+                        <div className={styles.resultMeta}>
+                          <span className={styles.resultTitle}>{saree.name}</span>
+                          <span className={styles.resultSub}>
+                            {saree.category_name || saree.fabric || 'Saree'} • <strong style={{ color: 'var(--primary-color)' }}>₹{formattedPrice}</strong>
+                          </span>
+                        </div>
+                        <span className={styles.arrowIcon}>&rarr;</span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

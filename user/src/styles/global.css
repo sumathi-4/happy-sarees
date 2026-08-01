@@ -1,72 +1,275 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Satisfy&display=swap');
 
+/* ============================================================
+   HAPPY SAREES — BRAND SOURCE OF TRUTH DESIGN TOKENS
+   ============================================================ */
 :root {
-  /* Brand Color Combo: Magenta/Pink and Teal, with soft pink background and gold accents */
-  --primary-color: #d11b69; /* Magenta pink from logo */
-  --secondary-color: #061feb; /* Royal Blue from logo */
-  --gold-color: #c5a059; /* Dull luxury gold */
-  --gold-hover: #a88444;
-  
-  --bg-soft-pink: #fef8f9; /* Luxurious soft pink background */
-  --bg-soft-pink-darker: #fbebed;
-  --bg-white: #ffffff;
-  
-  --text-color: #2b2b2b;
-  --text-muted: #666666;
-  --text-light: #999999;
-  
-  /* Typography Matching the Logo and Luxury Theme */
-  --font-serif: 'Playfair Display', serif; /* Elegant headings */
-  --font-script: 'Alex Brush', cursive; /* Handwritten signature font from logo */
-  --font-display: 'Cinzel', serif; /* Roman display typography */
-  --font-sans: 'Montserrat', sans-serif; /* Modern, clean sans-serif */
-  
-  /* Design Tokens */
-  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --shadow-premium: 0 12px 30px rgba(209, 27, 105, 0.05);
-  --shadow-hover: 0 20px 45px rgba(209, 27, 105, 0.12);
-  --radius-premium: 16px;
-  --radius-button: 30px;
+  /* ── BRAND COLORS ─────────────────────────────────────── */
+  --primary-color:        #D11B69; /* Brand Magenta — dominant CTA */
+  --primary-dark:         #9E1450; /* Hover / active state */
+  --secondary-color:      #27189D; /* Royal Indigo — supporting */
+  --accent-blush:         #D38DB1; /* Soft highlights, tags */
+  --accent-lavender:      #AE93D9; /* Charts, badges, accents */
+  --deep-rose:            #811C4E; /* Premium borders, contrast headings */
+  --gold-color:           #C5A059; /* Luxury gold — prices, ratings */
+  --gold-hover:           #A88444; /* Gold hover */
+
+  /* ── BACKGROUNDS ──────────────────────────────────────── */
+  --bg-soft-pink:         #FEF8F9; /* Page background */
+  --bg-soft-pink-darker:  #FBEBED; /* Section alternation */
+  --bg-white:             #FFFFFF; /* Cards, surfaces */
+
+  /* ── TEXT ─────────────────────────────────────────────── */
+  --text-color:           #2B1220; /* Rich plum near-black body text */
+  --text-muted:           #666666; /* Secondary text */
+  --text-light:           #999999; /* Placeholder / meta */
+  --border-color:         #F0D9E0; /* Light rose border */
+
+  /* ── SEMANTIC STATUS COLORS (standardized — do NOT deviate) */
+  --success-color:        #2E7D32;
+  --success-bg:           #E8F5E9;
+  --warning-color:        #E65100;
+  --warning-bg:           #FFF3E0;
+  --error-color:          #C62828;
+  --error-bg:             #FFEBEE;
+  --info-color:           #1565C0;
+  --info-bg:              #E3F2FD;
+
+  /* ── GLOW TOKENS ──────────────────────────────────────── */
+  --primary-glow:         rgba(209, 27, 105, 0.40);
+  --secondary-glow:       rgba(39, 24, 157, 0.30);
+  --gold-glow:            rgba(197, 160, 89, 0.45);
+
+  /* ── GRADIENTS ────────────────────────────────────────── */
+  --heading-gradient:     linear-gradient(135deg, #ce145a 0%, #9c1664 50%, #6b1464 100%);
+  --primary-gradient:     linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  --hero-gradient:        linear-gradient(160deg, var(--accent-blush) 0%, var(--primary-color) 50%, var(--secondary-color) 100%);
+  --admin-sidebar-gradient: linear-gradient(180deg, var(--secondary-color) 0%, #1a0f6e 100%);
+
+  /* ── TYPOGRAPHY ───────────────────────────────────────── */
+  --font-serif:           'Playfair Display', serif;   /* Headings h1–h4 */
+  --font-display:         'Cinzel', serif;             /* Display/eyebrow moments */
+  --font-script:          'Dancing Script', 'Great Vibes', 'Satisfy', cursive; /* Modern Brush Calligraphy */
+  --font-sans:            'Montserrat', sans-serif;    /* Body, buttons, nav, admin */
+
+  /* Type Scale */
+  --text-hero:            clamp(36px, 6vw, 60px);  /* h1 hero */
+  --text-h2:              clamp(26px, 3.5vw, 36px); /* section titles */
+  --text-h3:              clamp(18px, 2vw, 20px);   /* card titles */
+  --text-h4:              clamp(15px, 1.5vw, 17px); /* sub-card titles */
+  --text-body:            15px;                      /* paragraphs */
+  --text-small:           13px;                      /* meta, captions */
+  --text-eyebrow:         12px;                      /* CINZEL EYEBROWS */
+
+  /* ── SHADOWS ──────────────────────────────────────────── */
+  --shadow-premium:       0 4px 20px rgba(43, 18, 32, 0.06);
+  --shadow-hover:         0 12px 36px rgba(209, 27, 105, 0.18);
+  --shadow-card-hover:    0 20px 48px rgba(209, 27, 105, 0.20);
+  --shadow-elevation:     0 20px 50px rgba(43, 18, 32, 0.12);
+  --shadow-gold:          0 0 18px var(--gold-glow);
+
+  /* ── TRANSITIONS ──────────────────────────────────────── */
+  --transition-smooth:    all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-fast:      all 0.18s ease;
+
+  /* ── RADII ────────────────────────────────────────────── */
+  --radius-premium:       16px;  /* Cards, panels */
+  --radius-button:        30px;  /* Pill buttons */
+  --radius-input:         10px;  /* Form fields */
+  --radius-small:         6px;   /* Tags, badges */
+  --radius-large:         24px;  /* Large panels */
+  --radius-circle:        50%;   /* Avatars */
+
+  /* ── SPACING ──────────────────────────────────────────── */
+  --space-xs:             8px;
+  --space-sm:             12px;
+  --space-md:             20px;
+  --space-lg:             32px;
+  --space-xl:             48px;
+  --space-2xl:            72px;
+
+  /* ── COMPATIBILITY ALIASES ────────────────────────────── */
+  --radius-card:          var(--radius-premium);
+  --radius-hero-image:    var(--radius-large);
+  --motion-premium:       0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --primary-hover:        var(--primary-dark);
 }
 
-* {
+/* ── GLOBAL RESET ─────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--text-body);
   background-color: var(--bg-soft-pink);
   color: var(--text-color);
-  line-height: 1.6;
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+/* ── HEADING DEFAULTS ─────────────────────────────────────── */
+h1, h2, h3, h4 {
   font-family: var(--font-serif);
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
+h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* ── GRADIENT TEXT UTILITY ────────────────────────────────── */
+.gradient-text,
+.heading-gradient {
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* ── LINK DEFAULTS ────────────────────────────────────────── */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* ── BUTTON SYSTEM ────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 32px;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-button);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 30px var(--primary-glow);
+  transition: var(--transition-smooth);
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-soft-pink);
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 14px 40px var(--primary-glow);
+  transform: translateY(-2px);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 30px;
+  background: transparent;
+  color: var(--secondary-color);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  border: 2px solid var(--secondary-color);
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-color);
+  color: #fff;
+  box-shadow: 0 10px 28px var(--secondary-glow);
+  transform: translateY(-2px);
+}
+
+/* ── EYEBROW / DISPLAY LABEL ──────────────────────────────── */
+.eyebrow-label {
+  font-family: var(--font-display);
+  font-size: var(--text-eyebrow);
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--gold-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow-label::before,
+.eyebrow-label::after {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--gold-color);
+  opacity: 0.7;
+}
+
+/* ── CARD DEFAULTS ────────────────────────────────────────── */
+.card-surface {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  box-shadow: var(--shadow-premium);
+  transition: var(--transition-smooth);
+}
+
+.card-surface:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-6px);
+}
+
+/* ── STATUS / BADGE PILLS ─────────────────────────────────── */
+.badge-success { color: var(--success-color); background: var(--success-bg); }
+.badge-warning { color: var(--warning-color); background: var(--warning-bg); }
+.badge-error   { color: var(--error-color);   background: var(--error-bg);   }
+.badge-info    { color: var(--info-color);     background: var(--info-bg);    }
+
+/* ── FOCUS STATES (WCAG AA) ───────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
+
+/* ── FORM INPUTS ──────────────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--text-body);
+  color: var(--text-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-input);
+  padding: 10px 14px;
+  background: var(--bg-white);
+  transition: var(--transition-fast);
 }
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.12);
+}
+
+/* ── CUSTOM SCROLLBAR ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-soft-pink); }
+::-webkit-scrollbar-thumb {
+  background: var(--accent-blush);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }

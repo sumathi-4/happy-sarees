@@ -123,7 +123,7 @@ router.get('/pending-products', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const result = await db.query(
       `SELECT DISTINCT p.id as product_id, p.name as product_name, p.price, o.order_number,
-              (SELECT COALESCE(pi.image_url, pi.image_data)
+              (SELECT pi.image_url
                FROM product_images pi
                WHERE pi.product_id = p.id
                ORDER BY pi.is_primary DESC, pi.display_order ASC
@@ -329,7 +329,7 @@ router.get('/my-reviews', authenticateToken, async (req, res) => {
     const result = await db.query(
       `SELECT r.*,
               p.name as product_name,
-              (SELECT COALESCE(pi.image_url, pi.image_data)
+              (SELECT pi.image_url
                FROM product_images pi
                WHERE pi.product_id = p.id
                ORDER BY pi.is_primary DESC, pi.display_order ASC

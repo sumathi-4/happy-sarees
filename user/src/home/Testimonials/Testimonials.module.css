@@ -1,30 +1,72 @@
 /* ============================================================
-   CUSTOMER REVIEWS — LIBAS STACKED POLAROID STYLE
+   CUSTOMER REVIEWS — EXACT LIGHT NEUTRAL BG (NO OUTER FRAME)
    ============================================================ */
 
 .section {
-  padding: 60px 0 75px 0;
-  background-color: #ebebeb;
+  padding: 70px 0 80px 0;
+  background: #eaeaea;
   position: relative;
   overflow: hidden;
 }
 
 .sectionHeader {
   text-align: center;
-  margin-bottom: 45px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 2;
 }
 
 .title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.8rem;
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.5vw, 38px);
   font-weight: 800;
-  color: #000000;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  background: linear-gradient(135deg, #ce145a 0%, #9c1664 50%, #6b1464 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+  margin: 0;
+  text-align: center;
+}
+
+.divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.divider::before {
+  content: '';
+  width: 75px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-color) 100%);
+  border-radius: 2px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--gold-color);
+  transform: rotate(45deg);
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 0;
   margin: 0;
 }
 
-/* CAROUSEL WRAPPER & NAVIGATION */
+.divider::after {
+  content: '';
+  width: 75px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-color) 0%, transparent 100%);
+  border-radius: 2px;
+}
+
+/* CAROUSEL WRAPPER & TRACK */
 .carouselWrapper {
   position: relative;
   max-width: 1360px;
@@ -37,29 +79,28 @@
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 36px;
-  padding: 10px 20px 30px 20px;
+  gap: 48px;
+  padding: 10px 20px 20px 20px;
 }
 
 .navBtn {
   position: absolute;
-  top: 55%;
+  top: 50%;
   transform: translateY(-50%);
   z-index: 20;
   background: transparent;
   border: none;
-  color: #333333;
+  color: #111111;
   font-size: 2.2rem;
   cursor: pointer;
   padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition: transform 250ms ease;
 }
 
 .navBtn:hover {
-  color: #000000;
   transform: translateY(-50%) scale(1.15);
 }
 
@@ -71,37 +112,38 @@
   right: 0px;
 }
 
-/* REVIEW CARD CONTAINER */
+/* REVIEW ITEM (NO OUTER FRAME/BACKGROUND) */
 .reviewCard {
-  flex: 0 0 270px;
-  width: 270px;
+  flex: 0 0 260px;
+  width: 260px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  scroll-snap-align: center;
+  align-items: center;
   user-select: none;
   cursor: pointer;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  position: relative;
+  z-index: 2;
 }
 
-/* 1. QUOTE TEXT ABOVE PHOTO */
+/* 1. QUOTE TEXT (CENTERED ABOVE PHOTO) */
 .quoteBox {
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-bottom: 24px;
   text-align: center;
-  margin-bottom: 20px;
-  padding: 0 4px;
+  width: 100%;
 }
 
 .quoteText {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 0.95rem;
   font-weight: 700;
   color: #111111;
-  line-height: 1.45;
   text-align: center;
   margin: 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -111,8 +153,8 @@
 /* 2. STACKED PHOTO FRAME CONTAINER */
 .photoStack {
   position: relative;
-  width: 215px;
-  height: 255px;
+  width: 220px;
+  height: 260px;
   margin: 0 auto;
 }
 
@@ -123,8 +165,8 @@
   background-color: #ffffff;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
-  transform: rotate(-7deg) scale(0.98);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: rotate(-6deg) scale(0.98);
   z-index: 1;
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
@@ -136,7 +178,7 @@
   background-color: #ffffff;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   transform: rotate(6deg) scale(0.99);
   z-index: 2;
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -149,9 +191,9 @@
   background-color: #ffffff;
   padding: 8px 8px 12px 8px;
   border-radius: 2px;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.11);
-  transform: rotate(-1.5deg);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  transform: rotate(-1deg);
   z-index: 3;
   overflow: hidden;
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -169,51 +211,52 @@
 /* HOVER ANIMATIONS */
 .reviewCard:hover .photoFrameFront {
   transform: rotate(0deg) scale(1.04);
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.2);
 }
 
 .reviewCard:hover .stackBackLayer1 {
-  transform: rotate(-10deg) scale(0.96);
+  transform: rotate(-9deg) scale(0.96);
 }
 
 .reviewCard:hover .stackBackLayer2 {
-  transform: rotate(9deg) scale(0.98);
+  transform: rotate(8deg) scale(0.98);
 }
 
 .reviewCard:hover .customerPhoto {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
-/* 3. META FOOTER BELOW PHOTO STACK */
+/* 3. META FOOTER BELOW PHOTO STACK (STARS + NAME ON SAME LINE) */
 .metaFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 22px;
-  padding: 0 6px;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
 }
 
 .starsGroup {
   display: flex;
   gap: 2px;
+  align-items: center;
 }
 
 .starFilled {
-  color: #000000;
-  font-size: 1.05rem;
+  color: var(--gold-color);
+  font-size: 0.95rem;
 }
 
 .starEmpty {
-  color: #cccccc;
-  font-size: 1.05rem;
+  color: #d1d5db;
+  font-size: 0.95rem;
 }
 
 .customerName {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: #111111;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 /* EMPTY & SKELETON STATES */
@@ -234,9 +277,9 @@
 }
 
 .skeletonCard {
-  width: 270px;
-  height: 360px;
-  background: linear-gradient(90deg, #dcdcdc 25%, #e6e6e6 50%, #dcdcdc 75%);
+  width: 240px;
+  height: 320px;
+  background: linear-gradient(90deg, #dddddd 25%, #cccccc 50%, #dddddd 75%);
   background-size: 200% 100%;
   animation: loadingShimmer 1.5s infinite;
   border-radius: 4px;
@@ -250,8 +293,8 @@
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
   .reviewCard {
-    flex: 0 0 240px;
-    width: 240px;
+    flex: 0 0 230px;
+    width: 230px;
   }
 
   .photoStack {
@@ -260,11 +303,11 @@
   }
 
   .quoteText {
-    font-size: 0.82rem;
+    font-size: 0.88rem;
   }
 
   .customerName {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
 }
 
@@ -273,18 +316,14 @@
     padding: 45px 0 55px 0;
   }
 
-  .navBtn {
-    font-size: 1.8rem;
-  }
-
   .carousel {
     padding: 10px 15px 25px 15px;
-    gap: 24px;
+    gap: 28px;
   }
 
   .reviewCard {
-    flex: 0 0 220px;
-    width: 220px;
+    flex: 0 0 210px;
+    width: 210px;
   }
 
   .photoStack {

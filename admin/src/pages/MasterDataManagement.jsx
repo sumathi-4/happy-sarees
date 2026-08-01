@@ -417,7 +417,7 @@ function MasterDataManagement() {
                     type="checkbox" 
                     checked={newTypeShowInFilters} 
                     onChange={(e) => setNewTypeShowInFilters(e.target.checked)} 
-                    style={{ width: '16px', height: '16px', accentColor: '#d11b69' }}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
                   />
                   <span>Display in Website Filters (Shop Sidebar)</span>
                 </label>
@@ -426,13 +426,13 @@ function MasterDataManagement() {
                     type="checkbox" 
                     checked={newTypeShowInSpecs} 
                     onChange={(e) => setNewTypeShowInSpecs(e.target.checked)} 
-                    style={{ width: '16px', height: '16px', accentColor: '#d11b69' }}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
                   />
                   <span>Display in Saree Details (Product Specifications)</span>
                 </label>
               </div>
 
-              <p style={{ fontSize: '11px', color: '#999999', marginBottom: '14px', lineHeight: '1.4' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-light)', marginBottom: '14px', lineHeight: '1.4' }}>
                 This creates a global schema type. Once defined, you can immediately add dropdown values for selection inside product forms.
               </p>
               <div className={styles.formActions}>
@@ -487,7 +487,7 @@ function MasterDataManagement() {
                     type="checkbox" 
                     checked={editTypeShowInFilters} 
                     onChange={(e) => setEditTypeShowInFilters(e.target.checked)} 
-                    style={{ width: '16px', height: '16px', accentColor: '#d11b69' }}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
                   />
                   <span>Display in Website Filters (Shop Sidebar)</span>
                 </label>
@@ -496,7 +496,7 @@ function MasterDataManagement() {
                     type="checkbox" 
                     checked={editTypeShowInSpecs} 
                     onChange={(e) => setEditTypeShowInSpecs(e.target.checked)} 
-                    style={{ width: '16px', height: '16px', accentColor: '#d11b69' }}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
                   />
                   <span>Display in Saree Details (Product Specifications)</span>
                 </label>
@@ -517,8 +517,7 @@ function MasterDataManagement() {
           {/* Header Row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#2b2b2b', marginBottom: '4px' }}>Master Data Management</h2>
-              <p style={{ fontSize: '13px', color: '#666666' }}>Manage fabrics, colors, occasions, and metadata classification schemes globally</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage fabrics, colors, occasions, and metadata classification schemes globally</p>
             </div>
             <button className={styles.addBtn} onClick={() => setShowTypeModal(true)}>
               <FiPlus /> Add New Master Type
@@ -623,8 +622,8 @@ function MasterDataManagement() {
           {/* Panel Header */}
           <div className={styles.panelHeader}>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#2b2b2b' }}>{formatTypeLabel(currentTypeId)}</h3>
-              <p style={{ fontSize: '13px', color: '#666666', marginTop: '2px' }}>Manage options and values for your sarees</p>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-color)' }}>{formatTypeLabel(currentTypeId)}</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>Manage options and values for your sarees</p>
             </div>
             <button className={styles.addBtn} onClick={() => { setEditingItem(null); setItemName(''); setItemStatus('Active'); setItemSortOrder(''); setShowItemModal(true); }}>
               + Add {formatTypeLabel(currentTypeId).replace(/s$/, '') || 'Option'}
@@ -657,7 +656,7 @@ function MasterDataManagement() {
                           <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🖼️</div>
                         )}
                       </td>
-                      <td style={{ fontWeight: 600, color: '#2b2b2b' }}>{item.name}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--text-color)' }}>{item.name}</td>
                     <td>
                       <button 
                         onClick={() => handleToggleStatus(item)}
@@ -687,7 +686,7 @@ function MasterDataManagement() {
 
               {/* Pagination controls */}
               <div className={styles.paginationRow}>
-                <span style={{ fontSize: '12.5px', color: '#666666' }}>
+                <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
                   Showing {Math.min(sortedItems.length, (currentPage - 1) * itemsPerPage + 1)}-
                   {Math.min(sortedItems.length, currentPage * itemsPerPage)} of {sortedItems.length} records
                 </span>

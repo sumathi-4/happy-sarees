@@ -10,7 +10,7 @@ import EmptyWishlist from '../wishlist/EmptyWishlist/EmptyWishlist';
 import RecentlyViewed from '../product/RecentlyViewed/RecentlyViewed';
 import styles from './Wishlist.module.css';
 
-function Wishlist() {
+function Wishlist({ isProfileView = false }) {
   const { wishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState('recent');
@@ -113,8 +113,8 @@ function Wishlist() {
           <EmptyWishlist />
         )}
 
-        {/* Recently Viewed Products Carousel */}
-        <RecentlyViewed />
+        {/* Recently Viewed Products Carousel — Full width on standalone Wishlist page */}
+        {!isProfileView && <RecentlyViewed />}
 
         {/* Trust Badges */}
         <div className={styles.trustBadgesSection}>

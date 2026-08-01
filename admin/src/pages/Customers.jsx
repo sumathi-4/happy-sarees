@@ -283,7 +283,13 @@ function Customers() {
                       >
                         <td>
                           <div className={styles.profileCell}>
-                            <img src={cust.avatar} alt={cust.name} className={styles.tableAvatar} />
+                            {cust.avatar && !cust.avatar.includes('unsplash.com') ? (
+                              <img src={cust.avatar} alt={cust.name} className={styles.tableAvatar} />
+                            ) : (
+                              <div className={styles.initialAvatar}>
+                                {(cust.name || 'C').charAt(0).toUpperCase()}
+                              </div>
+                            )}
                             <strong>{cust.name}</strong>
                           </div>
                         </td>
@@ -298,11 +304,11 @@ function Customers() {
                         </td>
                         <td>{cust.joinedDate}</td>
                         <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                          <button className={styles.rowBtn} onClick={() => setSelectedCustomerId(cust.id)} title="View Details">
+                          <button className={`${styles.rowBtn} ${styles.viewBtn}`} onClick={() => setSelectedCustomerId(cust.id)} title="View Details">
                             <FiEye />
                           </button>
-                          <button className={styles.rowBtn} onClick={() => handleDeleteCustomer(cust)} title="Delete Customer Account">
-                            <FiTrash2 style={{ color: '#d32f2f' }} />
+                          <button className={`${styles.rowBtn} ${styles.deleteBtn}`} onClick={() => handleDeleteCustomer(cust)} title="Delete Customer Account">
+                            <FiTrash2 />
                           </button>
                         </td>
                       </tr>
@@ -310,8 +316,8 @@ function Customers() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#999999' }}>
-                      <FiAlertCircle style={{ fontSize: '24px', marginBottom: '8px', color: '#d11b69' }} />
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+                      <FiAlertCircle style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--primary-color)' }} />
                       <p>No customers match the active filters.</p>
                     </td>
                   </tr>
@@ -439,7 +445,7 @@ function Customers() {
 
               {/* Modal Footer Actions */}
               <div className={styles.modalFooter} style={{ justifyContent: 'space-between' }}>
-                <button className={styles.editBtnAction} onClick={() => handleDeleteCustomer(activeCustomer)} style={{ color: '#d32f2f', borderColor: '#ffcdd2', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                <button className={styles.editBtnAction} onClick={() => handleDeleteCustomer(activeCustomer)} style={{ color: 'var(--error-color)', borderColor: '#ffcdd2', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
                   <FiTrash2 /> Delete Account
                 </button>
                 <button className={styles.modalCancelBtn} onClick={() => setSelectedCustomerId(null)}>Close</button>

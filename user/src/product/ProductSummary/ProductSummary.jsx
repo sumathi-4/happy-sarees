@@ -110,7 +110,7 @@ function ProductSummary({ product, onAddToCart, onBuyNow }) {
               const el = document.getElementById('customer-reviews');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            style={{ marginLeft: '12px', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+            style={{ marginLeft: '12px', background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
           >
             {existingReview ? 'Edit Review' : 'Write Review'}
           </button>

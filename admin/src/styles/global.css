@@ -1,32 +1,101 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;500;600;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap');
 
+/* ============================================================
+   HAPPY SAREES ADMIN — DESIGN TOKENS (mirrors user/global.css)
+   ============================================================ */
 :root {
-  --primary-color: #d11b69; /* Magenta pink from logo */
-  --secondary-color: #061feb; /* Royal Blue from logo */
-  --gold-color: #c5a059; /* Dull luxury gold */
-  --gold-hover: #a88444;
-  
-  --bg-soft-pink: #fef8f9; /* Luxurious soft pink background */
-  --bg-soft-pink-darker: #fbebed;
-  --bg-white: #ffffff;
-  
-  --text-color: #2b2b2b;
-  --text-muted: #666666;
-  --text-light: #999999;
-  
-  --font-serif: 'Playfair Display', serif; /* Elegant headings */
-  --font-script: 'Alex Brush', cursive; /* Handwritten signature font from logo */
-  --font-display: 'Cinzel', serif; /* Roman display typography */
-  --font-sans: 'Montserrat', sans-serif; /* Modern, clean sans-serif */
-  
-  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --shadow-premium: 0 12px 30px rgba(209, 27, 105, 0.05);
-  --shadow-hover: 0 20px 45px rgba(209, 27, 105, 0.12);
-  --radius-premium: 16px;
-  --radius-button: 30px;
+  /* ── BRAND COLORS ─────────────────────────────────────── */
+  --primary-color:        #D11B69;
+  --primary-dark:         #9E1450;
+  --secondary-color:      #27189D;
+  --accent-blush:         #D38DB1;
+  --accent-lavender:      #AE93D9;
+  --deep-rose:            #811C4E;
+  --gold-color:           #C5A059;
+  --gold-hover:           #A88444;
+
+  /* ── BACKGROUNDS ──────────────────────────────────────── */
+  --bg-soft-pink:         #FEF8F9;
+  --bg-soft-pink-darker:  #FBEBED;
+  --bg-white:             #FFFFFF;
+
+  /* ── TEXT ─────────────────────────────────────────────── */
+  --text-color:           #2B1220;
+  --text-muted:           #666666;
+  --text-light:           #999999;
+  --border-color:         #F0D9E0;
+
+  /* ── SEMANTIC STATUS COLORS ───────────────────────────── */
+  --success-color:        #2E7D32;
+  --success-bg:           #E8F5E9;
+  --warning-color:        #E65100;
+  --warning-bg:           #FFF3E0;
+  --error-color:          #C62828;
+  --error-bg:             #FFEBEE;
+  --info-color:           #1565C0;
+  --info-bg:              #E3F2FD;
+
+  /* ── GLOW TOKENS ──────────────────────────────────────── */
+  --primary-glow:         rgba(209, 27, 105, 0.40);
+  --secondary-glow:       rgba(39, 24, 157, 0.30);
+  --gold-glow:            rgba(197, 160, 89, 0.45);
+
+  /* ── GRADIENTS ────────────────────────────────────────── */
+  --heading-gradient:        linear-gradient(100deg, var(--primary-color) 0%, var(--primary-dark) 35%, var(--secondary-color) 100%);
+  --primary-gradient:        linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  --admin-sidebar-gradient:  linear-gradient(180deg, #27189D 0%, #1a0f6e 100%);
+
+  /* ── TYPOGRAPHY ───────────────────────────────────────── */
+  --font-serif:           'Playfair Display', serif;
+  --font-display:         'Cinzel', serif;
+  --font-script:          'Alex Brush', cursive;
+  --font-sans:            'Montserrat', sans-serif;
+
+  /* Type Scale */
+  --text-hero:            clamp(36px, 6vw, 60px);
+  --text-h2:              clamp(26px, 3.5vw, 36px);
+  --text-h3:              clamp(18px, 2vw, 20px);
+  --text-h4:              clamp(15px, 1.5vw, 17px);
+  --text-body:            15px;
+  --text-small:           13px;
+  --text-eyebrow:         12px;
+
+  /* ── SHADOWS ──────────────────────────────────────────── */
+  --shadow-premium:       0 4px 20px rgba(43, 18, 32, 0.06);
+  --shadow-hover:         0 12px 36px rgba(209, 27, 105, 0.18);
+  --shadow-card-hover:    0 20px 48px rgba(209, 27, 105, 0.20);
+  --shadow-elevation:     0 20px 50px rgba(43, 18, 32, 0.12);
+  --shadow-gold:          0 0 18px var(--gold-glow);
+
+  /* ── TRANSITIONS ──────────────────────────────────────── */
+  --transition-smooth:    all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-fast:      all 0.18s ease;
+
+  /* ── RADII ────────────────────────────────────────────── */
+  --radius-premium:       16px;
+  --radius-button:        30px;
+  --radius-input:         10px;
+  --radius-small:         6px;
+  --radius-large:         24px;
+  --radius-circle:        50%;
+
+  /* ── SPACING ──────────────────────────────────────────── */
+  --space-xs:             8px;
+  --space-sm:             12px;
+  --space-md:             20px;
+  --space-lg:             32px;
+  --space-xl:             48px;
+  --space-2xl:            72px;
+
+  /* ── COMPATIBILITY ALIASES ────────────────────────────── */
+  --radius-card:          var(--radius-premium);
+  --radius-hero-image:    var(--radius-large);
+  --motion-premium:       0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --primary-hover:        var(--primary-dark);
 }
 
-* {
+/* ── GLOBAL RESET ─────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -34,18 +103,26 @@
 
 body {
   font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--text-body);
   background-color: var(--bg-soft-pink);
   color: var(--text-color);
-  line-height: 1.6;
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4 {
   font-family: var(--font-serif);
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
 }
 
 a {
@@ -53,17 +130,42 @@ a {
   text-decoration: none;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-soft-pink);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
+/* ── FOCUS STATES ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
+
+/* ── FORM INPUTS ──────────────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--text-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-input);
+  padding: 10px 14px;
+  background: var(--bg-white);
+  transition: var(--transition-fast);
 }
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(209, 27, 105, 0.12);
+}
+
+/* ── STATUS PILL UTILITIES ────────────────────────────────── */
+.badge-success { color: var(--success-color); background: var(--success-bg); }
+.badge-warning { color: var(--warning-color); background: var(--warning-bg); }
+.badge-error   { color: var(--error-color);   background: var(--error-bg);   }
+.badge-info    { color: var(--info-color);     background: var(--info-bg);    }
+
+/* ── CUSTOM SCROLLBAR ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-soft-pink); }
+::-webkit-scrollbar-thumb {
+  background: var(--accent-blush);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }

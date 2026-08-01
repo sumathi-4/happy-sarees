@@ -11,17 +11,17 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 150ms ease-out;
 }
 
 .modalCard {
-  background: #ffffff;
-  border-radius: 16px;
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
   width: 100%;
   max-width: 440px;
   padding: 1.8rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
 }
 
 .header {
@@ -50,7 +50,7 @@
   background: transparent;
   border: none;
   font-size: 1.3rem;
-  color: #5f6368;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -65,7 +65,7 @@
 .subtext {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.9rem;
-  color: #5f6368;
+  color: var(--text-muted);
   margin: 0 0 1.2rem 0;
 }
 
@@ -81,28 +81,28 @@
   align-items: center;
   gap: 0.8rem;
   padding: 0.75rem 1rem;
-  border: 1px solid #dadce0;
-  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-input);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .accountItem:hover {
-  background: #f8f9fa;
-  border-color: #1a73e8;
+  background: var(--bg-soft-pink);
+  border-color: var(--info-color);
 }
 
 .activeAccount {
-  border-color: #1a73e8;
-  background: #e8f0fe;
+  border-color: var(--info-color);
+  background: var(--info-bg);
 }
 
 .avatarCircle {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1a73e8;
-  color: #ffffff;
+  background: var(--info-color);
+  color: var(--bg-white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,11 +124,11 @@
 
 .accountEmail {
   font-size: 0.8rem;
-  color: #5f6368;
+  color: var(--text-muted);
 }
 
 .checkIcon {
-  color: #1a73e8;
+  color: var(--info-color);
   font-size: 1.2rem;
 }
 
@@ -137,7 +137,7 @@
   align-items: center;
   text-align: center;
   margin: 1rem 0;
-  color: #70757a;
+  color: var(--text-light);
   font-size: 0.78rem;
 }
 
@@ -145,7 +145,7 @@
 .divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #dadce0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .divider span {
@@ -161,38 +161,38 @@
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #dadce0;
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
   font-size: 0.9rem;
   outline: none;
 }
 
 .input:focus {
-  border-color: #1a73e8;
+  border-color: var(--info-color);
   box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
 .continueBtn {
   width: 100%;
-  background: #1a73e8;
-  color: #ffffff;
+  background: var(--info-color);
+  color: var(--bg-white);
   border: none;
   padding: 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 150ms ease;
   margin-top: 0.4rem;
 }
 
 .continueBtn:hover {
-  background: #1557b0;
+  background: var(--info-color);
 }
 
 .disclaimer {
   font-size: 0.75rem;
-  color: #70757a;
+  color: var(--text-light);
   margin-top: 1rem;
   text-align: center;
   line-height: 1.35;

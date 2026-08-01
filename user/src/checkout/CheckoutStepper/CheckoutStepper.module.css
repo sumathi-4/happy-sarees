@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .activeNode .circle {
@@ -63,7 +63,7 @@
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-muted);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .activeNode .stepLabel {
@@ -79,11 +79,11 @@
 .line {
   flex-grow: 1;
   height: 3px;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(43, 18, 32, 0.06);
   margin: 0 1rem;
   position: relative;
   top: -14px;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .lineCompleted {

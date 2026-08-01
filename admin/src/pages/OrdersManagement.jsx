@@ -167,7 +167,7 @@ function OrdersManagement() {
 
     const total = orders.length;
     const colorMap = {
-      'Razorpay (Online Card/NetBanking)': '#d11b69',
+      'Razorpay (Online Card/NetBanking)': 'var(--primary-color)',
       'Cash on Delivery (COD)': '#ffb300',
     };
 
@@ -555,8 +555,8 @@ function OrdersManagement() {
         <head>
           <title>Tax Invoice - #${activeOrder?.id || ''}</title>
           <style>
-            body { font-family: 'Inter', -apple-system, sans-serif; padding: 30px; color: #2b2b2b; }
-            h2 { color: #d11b69; font-family: 'Playfair Display', serif; margin: 0; }
+            body { font-family: var(--font-sans), -apple-system, sans-serif; padding: 30px; color: var(--text-color); }
+            h2 { color: var(--primary-color); font-family: var(--font-serif); margin: 0; }
             h3 { margin: 0; }
             table { width: 100%; border-collapse: collapse; margin: 20px 0; }
             th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 13px; }
@@ -596,11 +596,11 @@ function OrdersManagement() {
               <button onClick={() => setShowStatusModal(false)} className={styles.modalCloseBtn}><FiX /></button>
             </div>
             <div className={styles.modalBody}>
-              <p style={{ fontSize: '12.5px', color: '#666666', marginBottom: '14px' }}>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', marginBottom: '14px' }}>
                 Select the new order status for order <strong>#{activeOrder.id}</strong>.
               </p>
               
-              <label style={{ fontSize: '12px', fontWeight: 600, color: '#2b2b2b' }}>Choose Status</label>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-color)' }}>Choose Status</label>
               <select 
                 value={tempStatusVal} 
                 onChange={(e) => setTempStatusVal(e.target.value)}
@@ -624,13 +624,7 @@ function OrdersManagement() {
         </div>
       )}
 
-      {/* Page Title Row */}
-      <div className={styles.pageHeader}>
-        <div>
-          <h2 className={styles.title}>Orders Management</h2>
-          <p className={styles.desc}>Dashboard &gt; Orders</p>
-        </div>
-      </div>
+
 
       {/* Analytics Statistics Row */}
       <div className={styles.statsRow}>
@@ -656,7 +650,7 @@ function OrdersManagement() {
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Delivered Orders</span>
-          <h3 className={styles.statValue} style={{ color: '#2e7d32' }}>{deliveredOrdersCount}</h3>
+          <h3 className={styles.statValue} style={{ color: 'var(--success-color)' }}>{deliveredOrdersCount}</h3>
           <span className={styles.statTrendUp}>+ 22.1% from last month</span>
         </div>
       </div>
@@ -666,7 +660,7 @@ function OrdersManagement() {
       <div className={styles.analyticsSection}>
         <div className={styles.chartBlockCard}>
           <h4>Orders Overview</h4>
-          <p style={{ fontSize: '11px', color: '#999999', marginBottom: '14px' }}>Real-time sales order count progression</p>
+          <p style={{ fontSize: '11px', color: 'var(--text-light)', marginBottom: '14px' }}>Real-time sales order count progression</p>
           <div className={styles.mockBarChart}>
             {ordersOverviewChartData.length > 0 ? (
               ordersOverviewChartData.map((item, idx) => (
@@ -675,7 +669,7 @@ function OrdersManagement() {
                 </div>
               ))
             ) : (
-              <div style={{ fontSize: '12px', color: '#999999', padding: '20px' }}>No order metrics recorded yet.</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-light)', padding: '20px' }}>No order metrics recorded yet.</div>
             )}
           </div>
           <div className={styles.chartXLabels}>
@@ -687,7 +681,7 @@ function OrdersManagement() {
 
         <div className={styles.chartBlockCard}>
           <h4>Top Payment Methods</h4>
-          <p style={{ fontSize: '11px', color: '#999999', marginBottom: '20px' }}>Split ratio from database order transactions</p>
+          <p style={{ fontSize: '11px', color: 'var(--text-light)', marginBottom: '20px' }}>Split ratio from database order transactions</p>
           {paymentMethodsBreakdown.length > 0 ? (
             paymentMethodsBreakdown.map((pm, idx) => (
               <div key={idx} className={styles.progressRow}>
@@ -701,7 +695,7 @@ function OrdersManagement() {
               </div>
             ))
           ) : (
-            <div style={{ fontSize: '12px', color: '#999999', padding: '20px' }}>No payment transaction data recorded yet.</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-light)', padding: '20px' }}>No payment transaction data recorded yet.</div>
           )}
         </div>
       </div>
@@ -714,7 +708,7 @@ function OrdersManagement() {
           <div className={styles.tableHeaderBar}>
             <div>
               <h3>Orders Directory</h3>
-              <p style={{ fontSize: '12px', color: '#666666' }}>Curation checklist of all order invoices</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Curation checklist of all order invoices</p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
@@ -895,7 +889,7 @@ function OrdersManagement() {
                           </span>
                         </td>
                         <td>
-                          <strong style={{ color: '#2b2b2b' }}>₹{totalAmt.toLocaleString('en-IN')}</strong>
+                          <strong style={{ color: 'var(--text-color)' }}>₹{totalAmt.toLocaleString('en-IN')}</strong>
                         </td>
                         <td>
                           <div className={styles.paymentStatusWrapper}>
@@ -916,13 +910,13 @@ function OrdersManagement() {
                           </span>
                         </td>
                         <td>
-                          <span style={{ fontSize: '11px', color: '#666666' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                             {order.orderDate ? String(order.orderDate).split(',')[0] : (order.date ? String(order.date).split(',')[0] : '-')}
                           </span>
                         </td>
                         <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                           <button 
-                            className={styles.rowBtn} 
+                            className={`${styles.rowBtn} ${styles.viewBtn}`} 
                             onClick={() => {
                               setSelectedOrderId(order.id);
                               setIsEditMode(false);
@@ -934,7 +928,7 @@ function OrdersManagement() {
                             <FiEye />
                           </button>
                           <button 
-                            className={styles.rowBtn} 
+                            className={`${styles.rowBtn} ${styles.editBtn}`} 
                             onClick={() => {
                               setSelectedOrderId(order.id);
                               setIsEditMode(true);
@@ -946,7 +940,7 @@ function OrdersManagement() {
                             <FiEdit2 />
                           </button>
                           <button 
-                            className={styles.rowBtn} 
+                            className={`${styles.rowBtn} ${styles.printBtn}`} 
                             onClick={() => {
                               setSelectedOrderId(order.id);
                               setIsEditMode(false);
@@ -958,10 +952,9 @@ function OrdersManagement() {
                             <FiPrinter />
                           </button>
                           <button 
-                            className={styles.rowBtn} 
+                            className={`${styles.rowBtn} ${styles.deleteBtn}`} 
                             onClick={() => handleDeleteOrder(order.id)} 
                             title="Delete Order"
-                            style={{ color: '#d32f2f', marginLeft: '4px' }}
                           >
                             <FiTrash2 />
                           </button>
@@ -971,8 +964,8 @@ function OrdersManagement() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#999999' }}>
-                      <FiAlertCircle style={{ fontSize: '24px', marginBottom: '8px', color: '#d11b69' }} />
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+                      <FiAlertCircle style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--primary-color)' }} />
                       <p>No orders match search filter parameters.</p>
                     </td>
                   </tr>
@@ -1020,8 +1013,8 @@ function OrdersManagement() {
                         <>
                           {/* Return Management Action (Prominently displayed when return_status is Return Requested) */}
                           {activeRetStatus === 'Return Requested' && (
-                            <div className={styles.actionsPanel} style={{ border: '2px solid #d11b69', backgroundColor: '#fff5f8', marginBottom: '16px' }}>
-                              <h5 className={styles.sectionHeading} style={{ color: '#d11b69' }}>⚠️ Return Requested by Customer — Action Required</h5>
+                            <div className={styles.actionsPanel} style={{ border: '2px solid var(--primary-color)', backgroundColor: '#fff5f8', marginBottom: '16px' }}>
+                              <h5 className={styles.sectionHeading} style={{ color: 'var(--primary-color)' }}>⚠️ Return Requested by Customer — Action Required</h5>
                               {(activeOrder.returnReason || activeOrder.return_reason) && (
                                 <p style={{ fontSize: '12.5px', color: '#444', margin: '4px 0 10px 0' }}>
                                   <strong>Return Reason:</strong> "{activeOrder.returnReason || activeOrder.return_reason}"
@@ -1030,14 +1023,14 @@ function OrdersManagement() {
                               <div className={styles.adminConsoleGrid}>
                                 <button 
                                   className={styles.actionBtn} 
-                                  style={{ backgroundColor: '#2e7d32', color: '#fff', padding: '10px 16px', fontWeight: '700' }}
+                                  style={{ backgroundColor: 'var(--success-color)', color: 'var(--bg-white)', padding: '10px 16px', fontWeight: '700' }}
                                   onClick={handleApproveReturn}
                                 >
                                   Approve Return
                                 </button>
                                 <button 
                                   className={styles.actionBtnCancel} 
-                                  style={{ backgroundColor: '#d32f2f', color: '#fff', padding: '10px 16px', fontWeight: '700' }}
+                                  style={{ backgroundColor: 'var(--error-color)', color: 'var(--bg-white)', padding: '10px 16px', fontWeight: '700' }}
                                   onClick={handleRejectReturn}
                                 >
                                   Reject Return
@@ -1049,9 +1042,9 @@ function OrdersManagement() {
                           {/* Return Status Card if return is in progress or completed */}
                           {activeRetStatus !== 'No Request' && activeRetStatus !== 'Return Requested' && (
                             <div className={styles.infoSection} style={{ marginBottom: '16px' }}>
-                              <h5 className={styles.sectionHeading} style={{ color: '#d11b69' }}>🔄 Return & Refund Status</h5>
+                              <h5 className={styles.sectionHeading} style={{ color: 'var(--primary-color)' }}>🔄 Return & Refund Status</h5>
                               <div className={styles.infoCard} style={{ backgroundColor: '#fff5f8', border: '1px solid #f8bbd0' }}>
-                                <div className={styles.metaLabelVal}><span>Return Status:</span><strong style={{ color: activeRetStatus === 'Refunded' ? '#2e7d32' : (activeRetStatus === 'Return Rejected' ? '#d32f2f' : '#d11b69') }}>{activeRetStatus}</strong></div>
+                                <div className={styles.metaLabelVal}><span>Return Status:</span><strong style={{ color: activeRetStatus === 'Refunded' ? 'var(--success-color)' : (activeRetStatus === 'Return Rejected' ? 'var(--error-color)' : 'var(--primary-color)') }}>{activeRetStatus}</strong></div>
                                 {(activeOrder.returnReason || activeOrder.return_reason) && (
                                   <div className={styles.metaLabelVal}><span>Reason:</span><span>"{activeOrder.returnReason || activeOrder.return_reason}"</span></div>
                                 )}
@@ -1193,19 +1186,19 @@ function OrdersManagement() {
                       {/* Invoice header store info */}
                       <div className={styles.invoiceTopRow}>
                         <div>
-                          <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#d11b69', margin: 0, fontSize: '20px' }}>HAPPY SAREES</h2>
-                          <span style={{ fontSize: '11px', color: '#999999' }}>Luxury Heritage Handlooms</span>
+                          <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--primary-color)', margin: 0, fontSize: '20px' }}>HAPPY SAREES</h2>
+                          <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>Luxury Heritage Handlooms</span>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <h3 style={{ margin: 0, fontSize: '14px' }}>INVOICE</h3>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#2b2b2b' }}>#{activeOrder.id}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-color)' }}>#{activeOrder.id}</span>
                         </div>
                       </div>
 
                       <div className={styles.invoiceAddressGrid}>
                         <div>
                           <strong>Sender:</strong>
-                          <p style={{ fontSize: '11px', color: '#666666', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0 0', lineHeight: 1.4 }}>
                             Happy Sarees Handloom Co.<br />
                             Heritage Loom Tower, Section 4<br />
                             Kanchipuram, Tamil Nadu - 631501
@@ -1213,7 +1206,7 @@ function OrdersManagement() {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <strong>Bill To:</strong>
-                          <p style={{ fontSize: '11px', color: '#666666', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0 0', lineHeight: 1.4 }}>
                             {activeOrder.customerName || activeOrder.customer || 'Guest'}<br />
                             {typeof activeOrder.shippingAddress === 'string' ? activeOrder.shippingAddress.substring(0, 40) : 'Address on file'}...<br />
                             Phone: {activeOrder.customerPhone || activeOrder.phone || 'N/A'}
@@ -1253,7 +1246,7 @@ function OrdersManagement() {
                           <div><span>Subtotal</span><span>₹{activeOrder.subtotal || activeTotalAmount}</span></div>
                           <div><span>GST (5%)</span><span>₹{activeOrder.gst || 0}</span></div>
                           <div><span>Shipping</span><span>₹{activeOrder.shipping || 0}</span></div>
-                          <div style={{ borderTop: '1px solid #ddd', paddingTop: '8px', fontSize: '13px', fontWeight: 'bold', color: '#2b2b2b' }}>
+                          <div style={{ borderTop: '1px solid #ddd', paddingTop: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-color)' }}>
                             <span>Grand Total</span><span>₹{activeTotalAmount}</span>
                           </div>
                         </div>
@@ -1281,8 +1274,8 @@ function OrdersManagement() {
                           <div key={idx} className={styles.logItem}>
                             <div className={`${styles.logCircle} ${step.completed !== false ? styles.logCircleDone : ''}`} />
                             <div>
-                              <strong style={{ fontSize: '13px', color: '#2b2b2b' }}>{step.status}</strong>
-                              {step.note && <p style={{ fontSize: '11.5px', color: '#555555', margin: '2px 0 0 0' }}>{step.note}</p>}
+                              <strong style={{ fontSize: '13px', color: 'var(--text-color)' }}>{step.status}</strong>
+                              {step.note && <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>{step.note}</p>}
                               <p style={{ fontSize: '11px', color: '#888888', margin: '3px 0 0 0' }}>
                                 {(() => {
                                   const rawDate = step.time || step.date;
@@ -1305,7 +1298,7 @@ function OrdersManagement() {
                           </div>
                         ))
                       ) : (
-                        <div style={{ fontSize: '12px', color: '#999999', padding: '20px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-light)', padding: '20px', textAlign: 'center' }}>
                           No audit timeline events recorded in database yet.
                         </div>
                       )}
@@ -1316,7 +1309,7 @@ function OrdersManagement() {
                 {/* Subtab Content: STAFF NOTES */}
                 {activeSubTab === 'notes' && (
                   <div className={styles.tabContentPanel}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: '#2b2b2b' }}>Internal Staff Notes (Persisted in Neon DB)</label>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-color)' }}>Internal Staff Notes (Persisted in Neon DB)</label>
                     <textarea 
                       value={adminNoteText} 
                       onChange={(e) => setAdminNoteText(e.target.value)} 

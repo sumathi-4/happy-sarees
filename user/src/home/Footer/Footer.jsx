@@ -4,25 +4,44 @@ import { FiFacebook, FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi';
 import { PATHS } from '../../routes/paths';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import styles from './Footer.module.css';
+
 const logoImg = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function Footer() {
   const { storeSettings } = useStoreSettings();
 
+  // Dynamic link list for CUSTOMER section — only display existing routes in PATHS
+  const customerLinks = [
+    { label: 'My Account', path: PATHS.PROFILE },
+    { label: 'My Orders', path: PATHS.PROFILE ? `${PATHS.PROFILE}?tab=orders` : null },
+    { label: 'Wishlist', path: PATHS.WISHLIST },
+    { label: 'Cart', path: PATHS.CART }
+  ].filter(link => Boolean(link.path));
+
+  // Dynamic link list for QUICK LINKS section — only display existing routes in PATHS
+  const quickLinks = [
+    { label: 'Home', path: PATHS.HOME },
+    { label: 'Sarees', path: PATHS.SHOP },
+    { label: 'Occasions', path: PATHS.SHOP ? `${PATHS.SHOP}?tab=occasions` : null },
+    { label: 'Fabrics', path: PATHS.SHOP ? `${PATHS.SHOP}?tab=fabrics` : null },
+    { label: 'New Arrivals', path: PATHS.NEW_ARRIVALS },
+    { label: 'Sale', path: PATHS.SALE }
+  ].filter(link => Boolean(link.path));
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        {/* Brand/About block */}
+        {/* Brand / About block */}
         <div className={styles.brandBlock}>
           <div className={styles.logoContainer}>
             {storeSettings.logoData ? (
-              <img src={storeSettings.logoData} alt={storeSettings.storeName} className={styles.logoImg} />
+              <img src={storeSettings.logoData} alt={storeSettings.storeName || 'Happy Sarees'} className={styles.logoImg} />
             ) : (
-              <img src={logoImg} alt={storeSettings.storeName} className={styles.logoImg} />
+              <img src={logoImg} alt={storeSettings.storeName || 'Happy Sarees'} className={styles.logoImg} />
             )}
           </div>
           <p className={styles.brandDesc}>
-            {storeSettings.tagline || 'Your premium destination for handloomed elegance, bridal magnificence, and contemporary saree silhouettes.'}
+            {storeSettings.tagline || 'Celebrate Every Tradition with our handloomed luxury saree collections.'}
           </p>
           <div className={styles.socials}>
             {storeSettings.instagram && (
@@ -48,62 +67,44 @@ function Footer() {
           </div>
         </div>
 
-        {/* Column 1 - Company */}
-        <div className={styles.linkColumn}>
-          <h4 className={styles.columnTitle}>Company</h4>
-          <ul className={styles.linkList}>
-            <li><Link to={PATHS.ABOUT}>About Us</Link></li>
-            <li><Link to={PATHS.CONTACT}>Careers</Link></li>
-            <li><Link to={PATHS.CONTACT}>Our Boutiques</Link></li>
-            <li><Link to={PATHS.CONTACT}>Press & Media</Link></li>
-          </ul>
-        </div>
+        {/* CUSTOMER Section */}
+        {customerLinks.length > 0 && (
+          <div className={styles.linkColumn}>
+            <h4 className={styles.columnTitle}>CUSTOMER</h4>
+            <ul className={styles.linkList}>
+              {customerLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link to={link.path}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        {/* Column 2 - Collections */}
-        <div className={styles.linkColumn}>
-          <h4 className={styles.columnTitle}>Collections</h4>
-          <ul className={styles.linkList}>
-            <li><Link to={PATHS.SHOP}>Silk Sarees</Link></li>
-            <li><Link to={PATHS.COLLECTIONS}>Wedding Royal</Link></li>
-            <li><Link to={PATHS.NEW_ARRIVALS}>New Arrivals</Link></li>
-            <li><Link to={PATHS.SHOP}>Organza Drapes</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 3 - Policies */}
-        <div className={styles.linkColumn}>
-          <h4 className={styles.columnTitle}>Policies</h4>
-          <ul className={styles.linkList}>
-            <li><Link to={PATHS.HOME}>Privacy Policy</Link></li>
-            <li><Link to={PATHS.HOME}>Terms & Conditions</Link></li>
-            <li><Link to={PATHS.HOME}>Shipping & Delivery</Link></li>
-            <li><Link to={PATHS.HOME}>Returns & Refunds</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 4 - Support */}
-        <div className={styles.linkColumn}>
-          <h4 className={styles.columnTitle}>Support</h4>
-          <ul className={styles.linkList}>
-            <li><Link to={PATHS.CONTACT}>Customer Support</Link></li>
-            <li><Link to={PATHS.CONTACT}>Track Your Order</Link></li>
-            <li><Link to={PATHS.CONTACT}>Draping Masterclass</Link></li>
-            <li><Link to={PATHS.CONTACT}>FAQs</Link></li>
-          </ul>
-        </div>
+        {/* QUICK LINKS Section */}
+        {quickLinks.length > 0 && (
+          <div className={styles.linkColumn}>
+            <h4 className={styles.columnTitle}>QUICK LINKS</h4>
+            <ul className={styles.linkList}>
+              {quickLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link to={link.path}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {/* Footer Copyright and Payments */}
+      {/* Footer Bottom — Copyright and Payments (RAZORPAY & COD) */}
       <div className={styles.footerBottom}>
         <div className={styles.bottomContainer}>
           <p className={styles.copyright}>
             © {new Date().getFullYear()} {storeSettings.businessName || 'Happy Sarees Private Limited'}. All Rights Reserved.
           </p>
           <div className={styles.payments}>
-            <span className={styles.paymentBadge}>VISA</span>
-            <span className={styles.paymentBadge}>MASTERCARD</span>
-            <span className={styles.paymentBadge}>UPI</span>
-            {storeSettings.codEnabled && <span className={styles.paymentBadge}>COD</span>}
+            <span className={styles.paymentBadge}>RAZORPAY</span>
+            <span className={styles.paymentBadge}>COD</span>
           </div>
         </div>
       </div>

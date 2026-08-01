@@ -24,7 +24,7 @@
   color: var(--text-light);
   text-decoration: none;
   font-weight: 500;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .crumbLink:hover {
@@ -60,5 +60,21 @@
 @media (max-width: 991px) {
   .accountGrid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.8rem;
+  }
+
+  .breadcrumbBar {
+    padding: 1rem 0 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .accountGrid {
+    gap: 1.2rem;
   }
 }

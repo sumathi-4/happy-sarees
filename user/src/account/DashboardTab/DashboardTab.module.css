@@ -35,7 +35,7 @@
 }
 
 .rewardCard {
-  background: linear-gradient(135deg, var(--bg-soft-pink-darker) 0%, #fff0f5 100%);
+  background: linear-gradient(135deg, var(--bg-soft-pink-darker) 0%, var(--bg-soft-pink-darker) 100%);
   border: 1px solid rgba(209, 27, 105, 0.12);
   border-radius: var(--radius-card);
   padding: 0.9rem 1.4rem;
@@ -44,7 +44,7 @@
   gap: 1rem;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(209, 27, 105, 0.06);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .rewardCard:hover {
@@ -111,7 +111,7 @@
   align-items: flex-start;
   gap: 1rem;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .statCard:hover {
@@ -165,9 +165,8 @@
 
 /* Middle Row Grid */
 .middleGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  display: block;
+  width: 100%;
 }
 
 .cardBox {
@@ -185,7 +184,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.2rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   padding-bottom: 0.6rem;
 }
 
@@ -220,14 +219,14 @@
   background-color: var(--bg-soft-pink);
   border-radius: var(--radius-button);
   padding: 0.8rem;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(43, 18, 32, 0.04);
 }
 
 .orderThumb {
   width: 50px;
   height: 65px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
 }
 
 .orderMeta {
@@ -282,19 +281,19 @@
   font-size: 0.68rem;
   font-weight: 700;
   padding: 0.2rem 0.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-premium);
 
   &.processing {
-    background-color: #fff3e0;
-    color: #e65100;
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
   }
   &.shipped {
-    background-color: #e3f2fd;
-    color: #1565c0;
+    background-color: var(--info-bg);
+    color: var(--info-color);
   }
   &.delivered {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: var(--success-bg);
+    color: var(--success-color);
   }
 }
 
@@ -306,7 +305,7 @@
 }
 
 .recCard {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   border-radius: var(--radius-card);
   overflow: hidden;
   display: flex;
@@ -388,7 +387,7 @@
   border: 1px solid var(--primary-color);
   color: var(--primary-color);
   padding: 0.35rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 700;
@@ -397,7 +396,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .recCartBtn:hover {
@@ -422,7 +421,7 @@
   background-color: var(--bg-soft-pink);
   border-radius: var(--radius-button);
   padding: 0.8rem;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .addrHeader {
@@ -445,7 +444,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   padding: 0.1rem 0.4rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .editIcon {
@@ -490,12 +489,12 @@
 }
 
 .greenText {
-  color: #2e7d32;
+  color: var(--success-color);
 }
 
 /* Promo Banner */
 .promoBanner {
-  background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%);
+  background: linear-gradient(135deg, var(--error-bg) 0%, rgba(174, 147, 217, 0.10) 100%);
   border-radius: var(--radius-card);
   border: 1px solid rgba(209, 27, 105, 0.1);
   padding: 1.8rem;
@@ -540,7 +539,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .promoBtn:hover {

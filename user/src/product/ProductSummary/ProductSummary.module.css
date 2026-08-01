@@ -27,13 +27,13 @@
 }
 
 .starIcon {
-  color: #dddddd;
+  color: var(--border-color);
   font-size: 0.95rem;
 }
 
 .starFilled {
-  color: #ffb400;
-  fill: #ffb400;
+  color: var(--gold-color);
+  fill: var(--gold-color);
 }
 
 .ratingScore {
@@ -69,7 +69,7 @@
 /* Pricing Container */
 .priceContainer {
   margin-bottom: 1.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   padding-bottom: 1.2rem;
 }
 
@@ -159,11 +159,11 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #2e7d32;
+  background-color: var(--success-color);
 }
 
 .stockStatus {
-  color: #2e7d32;
+  color: var(--success-color);
   font-weight: 700;
 }
 
@@ -223,7 +223,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .pincodeBtn:hover {
@@ -237,12 +237,12 @@
 }
 
 .deliverySuccess {
-  color: #2e7d32;
+  color: var(--success-color);
   margin: 0;
 }
 
 .deliveryError {
-  color: #c62828;
+  color: var(--error-color);
   margin: 0;
 }
 
@@ -282,7 +282,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .qtyBtn:hover {
@@ -318,7 +318,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .wishlistBtn:hover, .shareBtn:hover {
@@ -359,7 +359,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .addToCartBtn:hover {
@@ -382,7 +382,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   box-shadow: 0 4px 12px rgba(209, 27, 105, 0.2);
 }
 
@@ -401,7 +401,7 @@
 .trustBadges {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(43, 18, 32, 0.05);
   padding-top: 1.2rem;
 }
 

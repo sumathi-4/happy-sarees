@@ -21,7 +21,7 @@ function ResetPassword() {
 
     if (score <= 1) return { score: 25, label: 'Weak Password', color: '#e53935' };
     if (score <= 3) return { score: 65, label: 'Medium Strength', color: '#fb8c00' };
-    return { score: 100, label: 'Strong Password', color: '#2e7d32' };
+    return { score: 100, label: 'Strong Password', color: 'var(--success-color)' };
   };
 
   const strength = getPasswordStrength(newPassword);

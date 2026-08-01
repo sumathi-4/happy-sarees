@@ -14,7 +14,7 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .titleGroup {
@@ -67,7 +67,7 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   background-color: var(--bg-white);
 }
 
@@ -132,13 +132,13 @@
 }
 
 .freeBadge {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--success-bg);
+  color: var(--success-color);
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   padding: 0.3rem 0.7rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .priceVal {
@@ -156,7 +156,7 @@
 .footerRow {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(43, 18, 32, 0.05);
   padding-top: 1.2rem;
 }
 
@@ -182,10 +182,35 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   box-shadow: 0 4px 15px rgba(209, 27, 105, 0.2);
 }
 
 .nextBtn:hover {
   background-color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+  .stepCard {
+    padding: 1.2rem 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .footerRow {
+    flex-direction: column-reverse;
+    gap: 12px;
+    padding-top: 1.2rem;
+    width: 100%;
+  }
+
+  .backBtn,
+  .nextBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.9rem 1rem;
+    box-sizing: border-box;
+  }
 }

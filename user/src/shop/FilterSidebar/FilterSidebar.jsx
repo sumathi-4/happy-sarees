@@ -9,10 +9,10 @@ const DEFAULT_FILTER_DATA = {
   occasions: ['Wedding', 'Reception', 'Party', 'Office', 'Daily Wear', 'Festive'],
   colors: [
     { name: 'Pink', hex: '#ffc0cb' },
-    { name: 'Green', hex: '#2e7d32' },
+    { name: 'Green', hex: 'var(--success-color)' },
     { name: 'Lavender', hex: '#e6e6fa' },
     { name: 'Peach', hex: '#ffdab9' },
-    { name: 'Red', hex: '#d32f2f' },
+    { name: 'Red', hex: 'var(--error-color)' },
     { name: 'Purple', hex: '#7b1fa2' },
     { name: 'Gold', hex: '#d4af37' },
     { name: 'Teal', hex: '#008080' }

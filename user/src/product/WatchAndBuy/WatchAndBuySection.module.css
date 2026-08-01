@@ -14,14 +14,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   padding-bottom: 0.8rem;
 }
 
 .title {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0;
   text-transform: uppercase;
@@ -36,7 +36,7 @@
   font-weight: 700;
   color: var(--primary-color);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .viewAllBtn:hover {
@@ -59,10 +59,10 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   overflow: hidden;
   background-color: var(--bg-soft-pink);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(43, 18, 32, 0.05);
 }
 
 .thumbnailImg {
@@ -86,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .videoCard:hover .playOverlay {
@@ -103,7 +103,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(209, 27, 105, 0.4);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .videoCard:hover .playCircle {
@@ -126,7 +126,7 @@
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .videoTitle {
@@ -136,7 +136,7 @@
   color: var(--text-color);
   margin: 0.8rem 0 0 0;
   line-height: 1.4;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .videoCard:hover .videoTitle {

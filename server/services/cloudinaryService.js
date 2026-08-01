@@ -62,7 +62,47 @@ async function uploadToCloudinary(fileStr, folder = 'happy_sarees/products') {
   return fileStr;
 }
 
+/**
+ * Uploads a file buffer (from multer memory storage) to Cloudinary via upload_stream.
+ *
+ * @param {Buffer} fileBuffer - The file buffer
+ * @param {string} folder - Cloudinary folder
+ * @param {string} resourceType - Cloudinary resource type ('raw', 'image', 'video', 'auto')
+ * @returns {Promise<string>} Secure Cloudinary CDN URL
+ */
+async function uploadStreamToCloudinary(fileBuffer, folder = 'happy_sarees/products', resourceType = 'auto') {
+  if (!fileBuffer) return null;
+
+  if (isCloudinaryConfigured) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        folder: folder,
+        resource_type: resourceType
+      };
+
+      if (resourceType === 'video') {
+        options.fetch_format = 'auto';
+        options.quality = 'auto';
+      }
+
+      const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+        if (error) {
+          console.error('[CloudinaryService] Stream upload error:', error.message);
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      });
+      stream.write(fileBuffer);
+      stream.end();
+    });
+  }
+  
+  throw new Error('Cloudinary credentials not configured.');
+}
+
 module.exports = {
   uploadToCloudinary,
+  uploadStreamToCloudinary,
   isCloudinaryConfigured
 };

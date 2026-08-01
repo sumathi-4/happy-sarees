@@ -68,6 +68,9 @@ function Testimonials() {
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
         <h2 className={styles.title}>CUSTOMER REVIEWS</h2>
+        <div className={styles.divider}>
+          <span className={styles.dot}></span>
+        </div>
       </div>
 
       <div className={styles.carouselWrapper}>

@@ -97,9 +97,6 @@ function RatingsReviewsManagement() {
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FiStar style={{ color: '#f59e0b' }} /> Ratings & Reviews Management
-          </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
             Single source of truth for moderating customer reviews, homepage featured reviews, and image selections.
           </p>
@@ -111,7 +108,7 @@ function RatingsReviewsManagement() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#ffffff',
+            background: 'var(--bg-white)',
             border: '1.5px solid #e2e8f0',
             padding: '10px 18px',
             borderRadius: '10px',
@@ -127,7 +124,7 @@ function RatingsReviewsManagement() {
       </div>
 
       {/* Filter Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', background: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', background: 'var(--bg-white)', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <div style={{ flex: 1, minWidth: '260px', position: 'relative' }}>
           <FiSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
           <input
@@ -144,7 +141,7 @@ function RatingsReviewsManagement() {
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            style={{ padding: '9px 14px', border: '1.5px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', outline: 'none', background: '#fff', fontWeight: 600 }}
+            style={{ padding: '9px 14px', border: '1.5px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', outline: 'none', background: 'var(--bg-white)', fontWeight: 600 }}
           >
             <option value="All">All Reviews ({reviews.length})</option>
             <option value="pending">Pending Approval ({reviews.filter(r => r.status === 'pending').length})</option>
@@ -155,10 +152,10 @@ function RatingsReviewsManagement() {
       </div>
 
       {/* Table Container */}
-      <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
         {loading && reviews.length === 0 ? (
           <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-            <FiRefreshCw style={{ fontSize: '2rem', animation: 'spin 1s linear infinite', marginBottom: '12px', color: '#d11b69' }} />
+            <FiRefreshCw style={{ fontSize: '2rem', animation: 'spin 1s linear infinite', marginBottom: '12px', color: 'var(--primary-color)' }} />
             <p>Loading customer reviews from Neon PostgreSQL...</p>
           </div>
         ) : filteredReviews.length === 0 ? (
@@ -170,7 +167,7 @@ function RatingsReviewsManagement() {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0', color: '#475569', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0', color: '#27189D', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 <th style={{ padding: '14px 16px' }}>Customer</th>
                 <th style={{ padding: '14px 16px' }}>Product</th>
                 <th style={{ padding: '14px 16px' }}>Rating & Review</th>
@@ -247,13 +244,13 @@ function RatingsReviewsManagement() {
                                     cursor: 'pointer',
                                     borderRadius: '6px',
                                     overflow: 'hidden',
-                                    border: isFeatured ? '2px solid #d11b69' : '1px solid #cbd5e1',
+                                    border: isFeatured ? '2px solid var(--primary-color)' : '1px solid #cbd5e1',
                                     boxShadow: isFeatured ? '0 0 8px rgba(209, 27, 105, 0.4)' : 'none'
                                   }}
                                 >
                                   <img src={imgUrl} alt="Review attachment" style={{ width: '46px', height: '46px', objectFit: 'cover', display: 'block' }} />
                                   {isFeatured && (
-                                    <span style={{ position: 'absolute', top: 2, right: 2, background: '#d11b69', color: '#fff', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
+                                    <span style={{ position: 'absolute', top: 2, right: 2, background: 'var(--primary-color)', color: 'var(--bg-white)', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
                                       <FiCheck />
                                     </span>
                                   )}
@@ -293,9 +290,9 @@ function RatingsReviewsManagement() {
                           type="checkbox"
                           checked={r.displayOnHomepage}
                           onChange={() => handleToggleHomepage(r.id, r.displayOnHomepage)}
-                          style={{ accentColor: '#d11b69', width: '16px', height: '16px', cursor: 'pointer' }}
+                          style={{ accentColor: 'var(--primary-color)', width: '16px', height: '16px', cursor: 'pointer' }}
                         />
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: r.displayOnHomepage ? '#d11b69' : '#64748b' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: r.displayOnHomepage ? 'var(--primary-color)' : '#64748b' }}>
                           {r.displayOnHomepage ? 'Featured' : 'Off'}
                         </span>
                       </label>
@@ -307,7 +304,7 @@ function RatingsReviewsManagement() {
                         {!isApproved && (
                           <button
                             onClick={() => handleUpdateStatus(r.id, 'approved')}
-                            style={{ background: '#16a34a', color: '#ffffff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                            style={{ background: 'var(--success-color)', color: 'var(--bg-white)', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                           >
                             Approve
                           </button>
@@ -315,7 +312,7 @@ function RatingsReviewsManagement() {
                         {!isRejected && (
                           <button
                             onClick={() => handleUpdateStatus(r.id, 'rejected')}
-                            style={{ background: '#dc2626', color: '#ffffff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                            style={{ background: '#dc2626', color: 'var(--bg-white)', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                           >
                             Reject
                           </button>

@@ -187,7 +187,7 @@ function AdminDashboard() {
               <button 
                 onClick={() => navigate('/orders')}
                 style={{
-                  background: 'none', border: 'none', color: '#d11b69', 
+                  background: 'none', border: 'none', color: 'var(--primary-color)', 
                   fontSize: '12px', fontWeight: 600, cursor: 'pointer'
                 }}
               >
@@ -203,7 +203,7 @@ function AdminDashboard() {
               <DataTable headers={['Order ID', 'Customer', 'Date', 'Amount', 'Status', 'Action']}>
                 {recentOrders.map((order, index) => (
                   <tr key={order.id || index}>
-                    <td style={{ fontWeight: 600, color: '#d11b69' }}>
+                    <td style={{ fontWeight: 600, color: 'var(--primary-color)' }}>
                       {order.orderNumber || `#ORD-${order.id}`}
                     </td>
                     <td>{order.customer || 'Customer'}</td>
@@ -252,7 +252,7 @@ function AdminDashboard() {
               <button 
                 onClick={() => navigate('/products')}
                 style={{
-                  background: 'none', border: 'none', color: '#d11b69', 
+                  background: 'none', border: 'none', color: 'var(--primary-color)', 
                   fontSize: '12px', fontWeight: 600, cursor: 'pointer'
                 }}
               >
@@ -288,7 +288,7 @@ function AdminDashboard() {
           {/* Dynamic Low Stock Products */}
           <DashboardCard title="Low Stock Products">
             {lowStockProducts.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#16a34a', fontSize: '13px', fontWeight: 600 }}>
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--success-color)', fontSize: '13px', fontWeight: 600 }}>
                 ✓ All products have healthy inventory!
               </div>
             ) : (
@@ -303,7 +303,7 @@ function AdminDashboard() {
                     />
                     <div className={styles.productMeta}>
                       <span className={styles.productName} title={p.name}>{p.name}</span>
-                      <span className={styles.productPrice} style={{ color: '#c62828', fontWeight: 600 }}>
+                      <span className={styles.productPrice} style={{ color: 'var(--error-color)', fontWeight: 600 }}>
                         Only {p.stockCount} left
                       </span>
                     </div>

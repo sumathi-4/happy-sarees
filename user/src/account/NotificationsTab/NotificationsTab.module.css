@@ -13,7 +13,7 @@
   align-items: flex-end;
   margin-bottom: 1.8rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .tabTitle {
@@ -37,14 +37,14 @@
 }
 
 .notifCard {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   border-radius: var(--radius-card);
   padding: 1.2rem;
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   background-color: var(--bg-white);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .unreadCard {

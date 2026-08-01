@@ -21,6 +21,9 @@ function ProductForm() {
 
   // Video Input Mode state: 'upload' | 'url'
   const [videoMode, setVideoMode] = useState('upload');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   // Form Field State
   const [formData, setFormData] = useState({
@@ -138,7 +141,12 @@ function ProductForm() {
           if (match.videoData || match.video_data) {
             setVideoMode('upload');
           } else if (match.videoUrl || match.video_url) {
-            setVideoMode('url');
+            const vurl = match.videoUrl || match.video_url;
+            if (vurl.includes('cloudinary.com')) {
+              setVideoMode('upload');
+            } else {
+              setVideoMode('url');
+            }
           }
         }
       };
@@ -277,20 +285,152 @@ function ProductForm() {
     }
   };
 
-  // Video File Upload Handler (MP4, WEBM)
+  // Video File Upload Handler (MP4, WEBM, MOV) with FormData and Progress tracking
   const handleVideoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const videoBase64 = reader.result;
-      setFormData(prev => ({
-        ...prev,
-        videoData: videoBase64
-      }));
+    // Allowed formats: MP4, WEBM, MOV
+    const allowedExtensions = ['mp4', 'webm', 'mov'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      setUploadError('Unsupported format. Allowed formats: MP4, WEBM, MOV');
+      e.target.value = '';
+      return;
+    }
+
+    // Maximum Size: 50MB
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setUploadError('File too large. Maximum size is 50MB.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const xhr = new XMLHttpRequest();
+    const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+    
+    // Determine API host dynamically
+    const isLocal = window.location.hostname === 'localhost';
+    const uploadUrl = isLocal 
+      ? 'http://localhost:5001/api/admin/upload/video'
+      : `${window.location.origin}/api/admin/upload/video`;
+
+    xhr.open('POST', uploadUrl, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    // Track upload progress
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
+      }
     };
-    reader.readAsDataURL(file);
+
+    xhr.onload = () => {
+      setIsUploading(false);
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success && response.url) {
+            setFormData(prev => ({
+              ...prev,
+              videoUrl: response.url,
+              videoData: '' // Clear base64 placeholder
+            }));
+            setToastMessage("Video uploaded successfully to Cloudinary!");
+            setTimeout(() => setToastMessage(null), 3000);
+          } else {
+            setUploadError(response.message || 'Upload failed.');
+          }
+        } catch (err) {
+          setUploadError('Failed to parse server response.');
+        }
+      } else {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          setUploadError(response.message || `Upload failed with status ${xhr.status}`);
+        } catch (e) {
+          setUploadError(`Upload failed with status ${xhr.status}`);
+        }
+      }
+    };
+
+    xhr.onerror = () => {
+      setIsUploading(false);
+      setUploadError('Network error occurred during upload.');
+    };
+
+    const uploadData = new FormData();
+    uploadData.append('video', file);
+    xhr.send(uploadData);
+  };
+
+  const handleRemoveVideo = async () => {
+    const videoUrlToRemove = formData.videoUrl;
+    if (!videoUrlToRemove) return;
+
+    try {
+      setToastMessage("Deleting video from Cloudinary...");
+      const token = localStorage.getItem('hs_admin_token') || 'demo_token';
+      
+      const isLocal = window.location.hostname === 'localhost';
+      const deleteUrl = isLocal 
+        ? 'http://localhost:5001/api/admin/upload/delete-video'
+        : `${window.location.origin}/api/admin/upload/delete-video`;
+
+      const res = await fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ videoUrl: videoUrlToRemove })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setFormData(prev => ({
+          ...prev,
+          videoUrl: '',
+          videoData: ''
+        }));
+        setUploadProgress(0);
+        setToastMessage("Video removed successfully from Cloudinary.");
+        setTimeout(() => setToastMessage(null), 3000);
+      } else {
+        setUploadError(data.message || 'Failed to delete video.');
+        setToastMessage(null);
+      }
+    } catch (err) {
+      console.log('[ProductForm] Error removing video:', err.message);
+      setUploadError(`Failed to delete video: ${err.message}`);
+      setToastMessage(null);
+    }
+  };
+
+  const handleTestInvalidUpload = () => {
+    // Create a mock File object with an invalid format (.txt)
+    const file = new File(['mock content'], 'test_file.txt', { type: 'text/plain' });
+    const mockEvent = { target: { files: [file] } };
+    handleVideoUpload(mockEvent);
+  };
+
+  const handleTestValidUpload = async () => {
+    try {
+      setToastMessage("Downloading test video for mock upload...");
+      const res = await fetch('/test_video.mp4');
+      const blob = await res.blob();
+      const file = new File([blob], 'test_video.mp4', { type: 'video/mp4' });
+      const mockEvent = { target: { files: [file] } };
+      handleVideoUpload(mockEvent);
+    } catch (err) {
+      setUploadError(`Mock test failed: ${err.message}`);
+    }
   };
 
   const handleDeleteGalleryImage = (idx) => {
@@ -353,10 +493,14 @@ function ProductForm() {
       image: formData.image,
       galleryImages: formData.galleryImages,
       images: formData.galleryImages,
-      videoUrl: formData.videoUrl,
-      videoData: formData.videoData,
-      video_url: formData.videoUrl,
-      video_data: formData.videoData
+      // Only send videoData when it's a real Base64 payload (not empty)
+      // videoUrl holds the Cloudinary URL from multipart upload
+      videoUrl: formData.videoUrl || '',
+      video_url: formData.videoUrl || '',
+      ...(formData.videoData && formData.videoData.trim() !== '' ? {
+        videoData: formData.videoData,
+        video_data: formData.videoData,
+      } : {})
     };
 
     if (isEditMode) {
@@ -405,7 +549,7 @@ function ProductForm() {
           </button>
           <div style={{ marginLeft: '12px' }}>
             <h2 className={styles.pageTitle}>{isEditMode ? 'Edit Product' : 'Add New Product'}</h2>
-            <nav style={{ fontSize: '12px', color: '#999999' }}>
+            <nav style={{ fontSize: '12px', color: 'var(--text-light)' }}>
               Dashboard &gt; Products &gt; {isEditMode ? 'Edit' : 'Add'}
             </nav>
           </div>
@@ -486,7 +630,7 @@ function ProductForm() {
                             const num = Math.floor(1000 + Math.random() * 9000);
                             setFormData(prev => ({ ...prev, sku: `HS-${nameCode}-${num}` }));
                           }}
-                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                          style={{ border: 'none', background: 'none', color: 'var(--primary-color)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                         >
                           ⚡ Auto Generate SKU
                         </button>
@@ -535,7 +679,7 @@ function ProductForm() {
               {activeTab === 'classification' && (
                 <div className={styles.tabPanel}>
                   <h3>Classification</h3>
-                  <p style={{ fontSize: '12px', color: '#999999', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '16px' }}>
                     All dropdown options are loaded dynamically from Master Data.
                   </p>
                   <div className={styles.formGrid}>
@@ -614,7 +758,7 @@ function ProductForm() {
                     </div>
                   </div>
 
-                  <h3 style={{ marginTop: '24px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '20px' }}>Inventory</h3>
+                  <h3 style={{ marginTop: '24px', borderTop: '1px solid rgba(43, 18, 32, 0.06)', paddingTop: '20px' }}>Inventory</h3>
                   <div className={styles.formGrid}>
                     <div className={styles.formGroupHalf}>
                       <label>Stock Quantity</label>
@@ -633,7 +777,7 @@ function ProductForm() {
                         style={{ 
                           backgroundColor: '#f5f5f5', 
                           fontWeight: 'bold', 
-                          color: currentStockCount > 0 ? '#2e7d32' : '#c62828' 
+                          color: currentStockCount > 0 ? 'var(--success-color)' : 'var(--error-color)' 
                         }} 
                       />
                     </div>
@@ -690,7 +834,7 @@ function ProductForm() {
               {activeTab === 'media' && (
                 <div className={styles.tabPanel}>
                   <h3>Product Images & Gallery</h3>
-                  <p style={{ fontSize: '12px', color: '#666666', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
                     Supported formats: <strong>JPG, PNG, WEBP</strong>. Set cover image and drag/order thumbnails below.
                   </p>
 
@@ -702,7 +846,7 @@ function ProductForm() {
                         type="button" 
                         className={styles.uploadBtn}
                         onClick={() => document.getElementById('cover-image-upload-input').click()}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#d11b69', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
                       >
                         <FiUpload /> Choose Cover Image
                       </button>
@@ -721,7 +865,7 @@ function ProductForm() {
                         type="button" 
                         className={styles.uploadBtnSecondary}
                         onClick={() => document.getElementById('gallery-images-upload-input').click()}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#2b2b2b', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'var(--text-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
                       >
                         <FiPlus /> Add Gallery Images
                       </button>
@@ -749,7 +893,7 @@ function ProductForm() {
                                     type="button" 
                                     className={styles.uploadedActionBtn}
                                     onClick={() => handleSetCoverImage(img)}
-                                    style={{ color: isCover ? '#d11b69' : '#666666', fontWeight: isCover ? 'bold' : 'normal' }}
+                                    style={{ color: isCover ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: isCover ? 'bold' : 'normal' }}
                                   >
                                     {isCover ? '✓ Cover' : 'Set Cover'}
                                   </button>
@@ -786,16 +930,16 @@ function ProductForm() {
                           })}
                         </div>
                       ) : (
-                        <p style={{ fontSize: '12px', color: '#999999', fontStyle: 'italic' }}>No images uploaded yet.</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-light)', fontStyle: 'italic' }}>No images uploaded yet.</p>
                       )}
                     </div>
                   </div>
 
                   {/* Product Video Management */}
-                  <h3 style={{ marginTop: '28px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '20px' }}>
-                    <FiVideo style={{ marginRight: '8px', color: '#d11b69' }} /> Product Video
+                  <h3 style={{ marginTop: '28px', borderTop: '1px solid rgba(43, 18, 32, 0.06)', paddingTop: '20px' }}>
+                    <FiVideo style={{ marginRight: '8px', color: 'var(--primary-color)' }} /> Product Video
                   </h3>
-                  <p style={{ fontSize: '12px', color: '#666666', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
                     Choose either an <strong>Uploaded Video File (MP4/WEBM)</strong> or a <strong>YouTube/Vimeo URL</strong>. If both are provided, the uploaded video file takes priority.
                   </p>
 
@@ -806,9 +950,9 @@ function ProductForm() {
                       style={{
                         padding: '8px 16px',
                         borderRadius: '6px',
-                        border: '1px solid #d11b69',
-                        background: videoMode === 'upload' ? '#d11b69' : '#ffffff',
-                        color: videoMode === 'upload' ? '#ffffff' : '#d11b69',
+                        border: '1px solid var(--primary-color)',
+                        background: videoMode === 'upload' ? 'var(--primary-color)' : 'var(--bg-white)',
+                        color: videoMode === 'upload' ? 'var(--bg-white)' : 'var(--primary-color)',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'flex',
@@ -824,9 +968,9 @@ function ProductForm() {
                       style={{
                         padding: '8px 16px',
                         borderRadius: '6px',
-                        border: '1px solid #2b2b2b',
-                        background: videoMode === 'url' ? '#2b2b2b' : '#ffffff',
-                        color: videoMode === 'url' ? '#ffffff' : '#2b2b2b',
+                        border: '1px solid var(--text-color)',
+                        background: videoMode === 'url' ? 'var(--text-color)' : 'var(--bg-white)',
+                        color: videoMode === 'url' ? 'var(--bg-white)' : 'var(--text-color)',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'flex',
@@ -841,18 +985,72 @@ function ProductForm() {
                   <div className={styles.formGrid}>
                     {videoMode === 'upload' ? (
                       <div className={styles.formGroupFull}>
-                        <label>Upload Video File (.mp4, .webm)</label>
+                        <label>Upload Video File (.mp4, .webm, .mov)</label>
                         <input 
                           type="file" 
-                          accept="video/mp4,video/webm"
+                          accept="video/mp4,video/webm,video/quicktime"
                           onChange={handleVideoUpload}
-                          style={{ border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', width: '100%' }}
+                          disabled={isUploading}
+                          style={{ border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', width: '100%', cursor: isUploading ? 'not-allowed' : 'pointer' }}
                         />
-                        {formData.videoData && (
+                        {/* Automated Testing Helper Buttons */}
+                        <div style={{ marginTop: '8px', display: 'flex', gap: '10px' }}>
+                          <button
+                            id="run-test-invalid-upload"
+                            type="button"
+                            onClick={handleTestInvalidUpload}
+                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer', background: '#f5f5f5' }}
+                          >
+                            [Test: Invalid File]
+                          </button>
+                          <button
+                            id="run-test-upload"
+                            type="button"
+                            onClick={handleTestValidUpload}
+                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer', background: '#f5f5f5' }}
+                          >
+                            [Test: Valid Video]
+                          </button>
+                        </div>
+                        {isUploading && (
+                          <div style={{ marginTop: '12px', width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                              <span style={{ fontWeight: 600 }}>Uploading to Cloudinary...</span>
+                              <span>{uploadProgress}%</span>
+                            </div>
+                            <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-soft-pink-darker)', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.1s ease' }}></div>
+                            </div>
+                          </div>
+                        )}
+                        {uploadError && (
+                          <div style={{ color: 'var(--error-color)', fontSize: '12px', fontWeight: 600, marginTop: '8px' }}>
+                            ⚠ {uploadError}
+                          </div>
+                        )}
+                        {formData.videoUrl && formData.videoUrl.includes('cloudinary.com') && (
                           <div style={{ marginTop: '12px' }}>
-                            <span style={{ fontSize: '12px', color: '#2e7d32', fontWeight: 600 }}>✓ Video File Attached</span>
-                            <div style={{ marginTop: '6px' }}>
-                              <video src={formData.videoData} controls style={{ maxWidth: '300px', borderRadius: '6px' }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--success-color)', fontWeight: 600 }}>✓ Video File Attached</span>
+                              <button 
+                                type="button" 
+                                onClick={handleRemoveVideo}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'var(--error-color)',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  textDecoration: 'underline',
+                                  padding: 0
+                                }}
+                              >
+                                Remove Video
+                              </button>
+                            </div>
+                            <div style={{ marginTop: '8px' }}>
+                              <video src={formData.videoUrl} controls style={{ maxWidth: '300px', borderRadius: '6px' }} />
                             </div>
                           </div>
                         )}
@@ -868,7 +1066,7 @@ function ProductForm() {
                           placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://vimeo.com/123456" 
                         />
                         {formData.videoUrl && (
-                          <p style={{ fontSize: '11px', color: '#666666', marginTop: '4px' }}>
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                             Linked Video: <code>{formData.videoUrl}</code>
                           </p>
                         )}
@@ -883,7 +1081,7 @@ function ProductForm() {
               {activeTab === 'visibility' && (
                 <div className={styles.tabPanel}>
                   <h3>Homepage Visibility</h3>
-                  <p style={{ fontSize: '13px', color: '#666666', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
                     Select which homepage collection sections this product should appear in.
                   </p>
 
@@ -923,7 +1121,7 @@ function ProductForm() {
                           metaDescription: `Buy authentic ${nameStr} online at Happy Sarees. Crafted in pure ${fabricStr} for weddings and festive occasions. ${descStr}`
                         }));
                       }}
-                      style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                      style={{ border: 'none', background: 'none', color: 'var(--primary-color)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
                     >
                       ⚡ Auto Generate Full SEO
                     </button>
@@ -940,7 +1138,7 @@ function ProductForm() {
                             const fabricStr = formData.fabric || 'Silk';
                             setFormData(prev => ({ ...prev, seoTitle: `${nameStr} - Premium ${fabricStr} | Happy Sarees` }));
                           }}
-                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                          style={{ border: 'none', background: 'none', color: 'var(--primary-color)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                         >
                           ⚡ Auto Generate Title
                         </button>
@@ -968,7 +1166,7 @@ function ProductForm() {
                               metaDescription: `Buy authentic ${nameStr} online at Happy Sarees. Crafted in pure ${fabricStr} for weddings and festive occasions. ${descStr}` 
                             }));
                           }}
-                          style={{ border: 'none', background: 'none', color: '#d11b69', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                          style={{ border: 'none', background: 'none', color: 'var(--primary-color)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                         >
                           ⚡ Auto Generate Description
                         </button>
@@ -992,7 +1190,7 @@ function ProductForm() {
                         type="text" 
                         value={`https://happysarees.com/product/${formData.slug || 'saree-slug'}`} 
                         disabled 
-                        style={{ backgroundColor: '#f5f5f5', color: '#1565c0' }} 
+                        style={{ backgroundColor: '#f5f5f5', color: 'var(--info-color)' }} 
                       />
                     </div>
                   </div>
@@ -1064,7 +1262,7 @@ function ProductForm() {
                 className={styles.addThumbBox} 
                 onClick={() => document.getElementById('assistant-panel-file-input').click()}
               >
-                <FiPlus style={{ fontSize: '20px', color: '#d11b69' }} />
+                <FiPlus style={{ fontSize: '20px', color: 'var(--primary-color)' }} />
                 <span>Add Image</span>
                 <input 
                   id="assistant-panel-file-input"
@@ -1088,7 +1286,7 @@ function ProductForm() {
                 </div>
                 <div>
                   <strong>Selling Price:</strong>
-                  <span style={{ color: '#d11b69', fontWeight: 'bold' }}>₹{formData.price || '0'}</span>
+                  <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>₹{formData.price || '0'}</span>
                 </div>
               </div>
 
@@ -1112,7 +1310,7 @@ function ProductForm() {
                   <strong>Status:</strong>
                   <span style={{ 
                     fontWeight: 'bold', 
-                    color: formData.status === 'Published' ? '#2e7d32' : formData.status === 'Draft' ? '#ed6c02' : '#d32f2f' 
+                    color: formData.status === 'Published' ? 'var(--success-color)' : formData.status === 'Draft' ? '#ed6c02' : 'var(--error-color)' 
                   }}>
                     {formData.status}
                   </span>
@@ -1120,12 +1318,12 @@ function ProductForm() {
               </div>
 
               <div style={{ marginTop: '12px' }}>
-                <strong style={{ fontSize: '11px', color: '#666666' }}>Homepage Collections:</strong>
+                <strong style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Homepage Collections:</strong>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                  {formData.newArrival && <span style={{ fontSize: '10px', background: '#e3f2fd', color: '#1565c0', padding: '2px 6px', borderRadius: '4px' }}>New Arrival</span>}
+                  {formData.newArrival && <span style={{ fontSize: '10px', background: 'var(--info-bg)', color: 'var(--info-color)', padding: '2px 6px', borderRadius: '4px' }}>New Arrival</span>}
                   {formData.bestSeller && <span style={{ fontSize: '10px', background: '#fff8e1', color: '#f57f17', padding: '2px 6px', borderRadius: '4px' }}>Best Seller</span>}
-                  {formData.featuredCollection && <span style={{ fontSize: '10px', background: '#e8f5e9', color: '#2e7d32', padding: '2px 6px', borderRadius: '4px' }}>Featured</span>}
-                  {formData.saleProduct && <span style={{ fontSize: '10px', background: '#ffebee', color: '#c62828', padding: '2px 6px', borderRadius: '4px' }}>Sale</span>}
+                  {formData.featuredCollection && <span style={{ fontSize: '10px', background: 'var(--success-bg)', color: 'var(--success-color)', padding: '2px 6px', borderRadius: '4px' }}>Featured</span>}
+                  {formData.saleProduct && <span style={{ fontSize: '10px', background: 'var(--error-bg)', color: 'var(--error-color)', padding: '2px 6px', borderRadius: '4px' }}>Sale</span>}
                   {!formData.newArrival && !formData.bestSeller && !formData.featuredCollection && !formData.saleProduct && (
                     <span style={{ fontSize: '10px', color: '#888' }}>Standard Listing</span>
                   )}
@@ -1134,13 +1332,13 @@ function ProductForm() {
 
               {formData.shortDescription && (
                 <div style={{ marginTop: '10px', background: '#fdf8fa', padding: '8px', borderRadius: '6px', border: '1px solid #f8e1ec' }}>
-                  <strong style={{ fontSize: '11px', color: '#d11b69' }}>Short Description:</strong>
+                  <strong style={{ fontSize: '11px', color: 'var(--primary-color)' }}>Short Description:</strong>
                   <p style={{ fontSize: '12px', color: '#444444', marginTop: '2px', marginBottom: 0 }}>{formData.shortDescription}</p>
                 </div>
               )}
               {(formData.fullDescription || formData.description) && (
                 <div style={{ marginTop: '8px', background: '#f9f9f9', padding: '8px', borderRadius: '6px', border: '1px solid #eeeeee' }}>
-                  <strong style={{ fontSize: '11px', color: '#555555' }}>Full Description:</strong>
+                  <strong style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Full Description:</strong>
                   <p style={{ fontSize: '12px', color: '#444444', marginTop: '2px', marginBottom: 0, lineHeight: '1.4' }}>
                     {(formData.fullDescription || formData.description).slice(0, 150)}
                     {(formData.fullDescription || formData.description).length > 150 ? '...' : ''}

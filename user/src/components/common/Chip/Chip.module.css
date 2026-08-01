@@ -3,15 +3,15 @@
   align-items: center;
   gap: 0.4rem;
   background-color: var(--bg-soft-pink);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   color: var(--text-muted);
   padding: 0.4rem 0.9rem;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .chip:hover {
@@ -42,5 +42,5 @@
 }
 
 .removeBtn:hover {
-  color: #ff1744;
+  color: var(--error-color);
 }

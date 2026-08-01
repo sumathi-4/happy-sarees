@@ -16,13 +16,13 @@
   align-items: flex-end;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.06);
 }
 
 .title {
   font-family: var(--font-display);
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0;
 }
@@ -34,7 +34,7 @@
   color: var(--primary-color);
   background-color: var(--bg-soft-pink-darker);
   padding: 0.35rem 0.8rem;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
 }
 
 .productGrid {

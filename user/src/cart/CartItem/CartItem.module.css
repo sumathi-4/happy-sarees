@@ -6,7 +6,7 @@
   padding: 1.5rem;
   display: flex;
   gap: 1.5rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   margin-bottom: 1.5rem;
   text-align: left;
 }
@@ -20,7 +20,7 @@
   position: relative;
   width: 140px;
   aspect-ratio: 3 / 4;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   overflow: hidden;
   background-color: var(--bg-soft-pink);
   flex-shrink: 0;
@@ -53,7 +53,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 /* Details Column */
@@ -81,7 +81,7 @@
 .nameLink {
   color: inherit;
   text-decoration: none;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .nameLink:hover {
@@ -102,11 +102,11 @@
   font-size: 1.15rem;
   cursor: pointer;
   padding: 0.2rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .trashBtn:hover {
-  color: #c62828;
+  color: var(--error-color);
   transform: scale(1.1);
 }
 
@@ -140,13 +140,13 @@
 }
 
 .starIcon {
-  color: #dddddd;
+  color: var(--border-color);
   font-size: 0.75rem;
 }
 
 .starFilled {
-  color: #ffb400;
-  fill: #ffb400;
+  color: var(--gold-color);
+  fill: var(--gold-color);
 }
 
 .ratingScore {
@@ -214,7 +214,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .qtyBtn:hover {
@@ -241,7 +241,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .moveToWishlistBtn:hover {

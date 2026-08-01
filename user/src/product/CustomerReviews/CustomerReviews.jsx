@@ -180,7 +180,7 @@ function CustomerReviews({ productId, rating = 0, reviewCount = 0, reviewsList =
       {/* Customer Photo Reviews List */}
       <div className={styles.reviewsGrid}>
         {reviews.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', background: '#fff', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', background: 'var(--bg-white)', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
             <p style={{ margin: 0, fontSize: '14px' }}>No verified customer reviews published for this saree yet.</p>
           </div>
         ) : (
@@ -279,7 +279,7 @@ function CustomerReviews({ productId, rating = 0, reviewCount = 0, reviewsList =
                       <button
                         type="button"
                         onClick={() => removeImage(idx)}
-                        style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '10px' }}
+                        style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: 'var(--bg-white)', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '10px' }}
                       >
                         <FiX />
                       </button>

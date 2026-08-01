@@ -121,7 +121,7 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
                         if (onClose) onClose();
                         navigate(`/product/${product.id}#customer-reviews`);
                       }}
-                      style={{ marginLeft: 'auto', background: '#d11b69', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
+                      style={{ marginLeft: 'auto', background: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}
                     >
                       {existingReview ? 'Edit Review' : 'Write Review'}
                     </button>
@@ -147,7 +147,7 @@ function QuickViewModal({ product, onClose, onAddToWishlist, onAddToCart }) {
 
             {/* Dynamic Short Description */}
             {(product.shortDescription || product.short_description) && (
-              <p style={{ fontSize: '13px', color: '#555555', marginTop: '8px', marginBottom: '12px', lineHeight: '1.5' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', marginBottom: '12px', lineHeight: '1.5' }}>
                 {product.shortDescription || product.short_description}
               </p>
             )}

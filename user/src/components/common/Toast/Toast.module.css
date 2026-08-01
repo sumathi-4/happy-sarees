@@ -16,13 +16,13 @@
   background-color: var(--bg-white);
   border-radius: var(--radius-card);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   padding: 1rem 1.2rem;
   display: flex;
   align-items: center;
   gap: 0.8rem;
   animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 @keyframes slideUp {
@@ -44,11 +44,11 @@
 }
 
 .success .toastIcon {
-  color: #2e7d32;
+  color: var(--success-color);
 }
 
 .error .toastIcon {
-  color: #c62828;
+  color: var(--error-color);
 }
 
 .info .toastIcon {

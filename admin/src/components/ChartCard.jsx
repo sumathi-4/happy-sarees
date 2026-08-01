@@ -49,8 +49,8 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
         <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
           <defs>
             <linearGradient id="chart-gradient-dynamic" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d11b69" stopOpacity="0.25"/>
-              <stop offset="100%" stopColor="#d11b69" stopOpacity="0.0"/>
+              <stop offset="0%" stopColor="var(--primary-color)" stopOpacity="0.25"/>
+              <stop offset="100%" stopColor="var(--primary-color)" stopOpacity="0.0"/>
             </linearGradient>
           </defs>
           {/* Horizontal Gridlines */}
@@ -60,7 +60,7 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
             return (
               <g key={i}>
                 <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#f0f0f0" strokeWidth="1" />
-                <text x="5" y={y + 3} fill="#999999" fontSize="9">
+                <text x="5" y={y + 3} fill="var(--text-light)" fontSize="9">
                   ₹{val >= 100000 ? `${(val / 100000).toFixed(1)}L` : val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val}
                 </text>
               </g>
@@ -69,7 +69,7 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
 
           {/* Area & Line */}
           <path d={areaD} fill="url(#chart-gradient-dynamic)" />
-          <path d={pathD} fill="none" stroke="#d11b69" strokeWidth="3" strokeLinecap="round" />
+          <path d={pathD} fill="none" stroke="var(--primary-color)" strokeWidth="3" strokeLinecap="round" />
 
           {/* Points */}
           {points.map((pt, i) => (
@@ -78,8 +78,8 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
               cx={pt.x}
               cy={pt.y}
               r={i === points.length - 1 ? "5" : "3.5"}
-              fill={i === points.length - 1 ? "#d11b69" : "#ffffff"}
-              stroke="#d11b69"
+              fill={i === points.length - 1 ? "var(--primary-color)" : "var(--bg-white)"}
+              stroke="var(--primary-color)"
               strokeWidth="2"
             />
           ))}
@@ -95,8 +95,8 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
           {lastPt && (
             <g transform={`translate(${Math.min(lastPt.x - 45, width - 110)}, ${Math.max(lastPt.y - 45, 10)})`}>
               <rect width="95" height="38" rx="6" fill="#1e1e1e" opacity="0.9" />
-              <text x="47.5" y="16" fill="#ffffff" fontSize="9" fontWeight="600" textAnchor="middle">{lastPt.month}</text>
-              <text x="47.5" y="30" fill="#ffffff" fontSize="10" fontWeight="700" textAnchor="middle">₹{Number(lastPt.revenue).toLocaleString('en-IN')}</text>
+              <text x="47.5" y="16" fill="var(--bg-white)" fontSize="9" fontWeight="600" textAnchor="middle">{lastPt.month}</text>
+              <text x="47.5" y="30" fill="var(--bg-white)" fontSize="10" fontWeight="700" textAnchor="middle">₹{Number(lastPt.revenue).toLocaleString('en-IN')}</text>
             </g>
           )}
         </svg>
@@ -114,18 +114,18 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
     const circumference = 251.2; // 2 * PI * r(40)
 
     const statusColors = {
-      'Delivered': '#2e7d32',
+      'Delivered': 'var(--success-color)',
       'Processing': '#f57f17',
       'Confirmed': '#0284c7',
-      'Shipped': '#1565c0',
-      'Cancelled': '#d32f2f',
+      'Shipped': 'var(--info-color)',
+      'Cancelled': 'var(--error-color)',
       'Returned': '#9333ea',
       'Pending Payment': '#ea580c',
       'Pending': '#eab308',
       'Order Placed': '#6366f1'
     };
 
-    const palette = ['#2e7d32', '#f57f17', '#1565c0', '#d32f2f', '#9333ea', '#0284c7', '#ea580c'];
+    const palette = ['var(--success-color)', '#f57f17', 'var(--info-color)', 'var(--error-color)', '#9333ea', '#0284c7', '#ea580c'];
 
     let accumulatedOffset = 0;
     const segments = list.map((item, i) => {
@@ -171,8 +171,8 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
           }}>
-            <span style={{ fontSize: '18px', fontWeight: 800, color: '#2b2b2b' }}>{total.toLocaleString()}</span>
-            <span style={{ fontSize: '9px', color: '#999999', textTransform: 'uppercase', fontWeight: 600 }}>Total Orders</span>
+            <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-color)' }}>{total.toLocaleString()}</span>
+            <span style={{ fontSize: '9px', color: 'var(--text-light)', textTransform: 'uppercase', fontWeight: 600 }}>Total Orders</span>
           </div>
         </div>
 
@@ -181,8 +181,8 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
           {segments.map((seg, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: seg.color }} />
-              <span style={{ color: '#666666', width: '80px', textTransform: 'capitalize' }}>{seg.status}</span>
-              <strong style={{ color: '#2b2b2b' }}>{seg.count} ({seg.pct}%)</strong>
+              <span style={{ color: 'var(--text-muted)', width: '80px', textTransform: 'capitalize' }}>{seg.status}</span>
+              <strong style={{ color: 'var(--text-color)' }}>{seg.count} ({seg.pct}%)</strong>
             </div>
           ))}
         </div>
@@ -204,9 +204,9 @@ function ChartCard({ title, type, selectOptions, salesData = [], statusData = []
               border: '1px solid rgba(0,0,0,0.1)',
               fontSize: '12px',
               fontWeight: 600,
-              color: '#666666',
+              color: 'var(--text-muted)',
               outline: 'none',
-              backgroundColor: '#ffffff'
+              backgroundColor: 'var(--bg-white)'
             }}
           >
             {selectOptions.map((opt, i) => (

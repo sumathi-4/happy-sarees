@@ -296,7 +296,10 @@ class ProductService {
     const { uploadToCloudinary } = require('../cloudinaryService');
 
     let videoUrlToSave = null;
-    const rawVideoInput = data.videoData || data.videoUrl || data.video_url;
+    // Prefer non-empty videoData (Base64), then fall through to videoUrl (Cloudinary URL from multipart upload)
+    const rawVideoData = (data.videoData && String(data.videoData).trim() !== '') ? data.videoData : null;
+    const rawVideoUrl  = data.videoUrl || data.video_url || null;
+    const rawVideoInput = rawVideoData || rawVideoUrl;
     if (rawVideoInput && String(rawVideoInput).trim() !== '') {
       videoUrlToSave = await uploadToCloudinary(rawVideoInput, 'happy_sarees/videos');
     }
@@ -383,14 +386,28 @@ class ProductService {
     const { uploadToCloudinary } = require('../cloudinaryService');
 
     let videoUrlToSave = existing.video_url || null;
-    const rawVideoInput = data.videoData !== undefined ? data.videoData : (data.videoUrl !== undefined ? data.videoUrl : data.video_url);
-    if (rawVideoInput !== undefined) {
-      if (rawVideoInput && String(rawVideoInput).trim() !== '') {
-        videoUrlToSave = await uploadToCloudinary(rawVideoInput, 'happy_sarees/videos');
+    // Prefer non-empty videoData (Base64). Fall through to videoUrl (Cloudinary URL from multipart upload).
+    // An empty string videoData must NOT wipe out a valid Cloudinary videoUrl.
+    const rawVideoData = (data.videoData !== undefined && data.videoData !== null && String(data.videoData).trim() !== '')
+      ? data.videoData
+      : null;
+    const rawVideoUrl  = (data.videoUrl !== undefined && data.videoUrl !== null && String(data.videoUrl).trim() !== '')
+      ? data.videoUrl
+      : (data.video_url !== undefined && data.video_url !== null && String(data.video_url).trim() !== '' ? data.video_url : undefined);
+
+    if (rawVideoData) {
+      // Legacy Base64 path — upload via uploadToCloudinary
+      videoUrlToSave = await uploadToCloudinary(rawVideoData, 'happy_sarees/videos');
+    } else if (rawVideoUrl !== undefined) {
+      // New multipart path — videoUrl is already a Cloudinary HTTPS URL (or explicit empty = remove)
+      if (rawVideoUrl && String(rawVideoUrl).startsWith('http')) {
+        videoUrlToSave = rawVideoUrl;
       } else {
+        // Explicit empty string passed = admin removed the video
         videoUrlToSave = null;
       }
     }
+    // If neither videoData nor videoUrl was sent, keep existing.video_url (no change)
 
     const descToSave = data.description !== undefined && data.description !== null && data.description !== ''
       ? data.description 

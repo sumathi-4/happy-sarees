@@ -63,7 +63,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   padding: 0.35rem 0.8rem;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   color: var(--bg-white);
 }
 

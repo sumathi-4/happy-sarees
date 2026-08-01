@@ -291,7 +291,7 @@ function Coupons() {
     <div className={styles.wrapper}>
       {toastMsg && (
         <div className={styles.toast}>
-          <FiCheck style={{ marginRight: '8px', color: '#4caf50' }} />
+          <FiCheck style={{ marginRight: '8px', color: 'var(--success-color)' }} />
           {toastMsg}
         </div>
       )}
@@ -302,7 +302,6 @@ function Coupons() {
           {/* Header Bar */}
           <div className={styles.pageHeader}>
             <div>
-              <h1 className={styles.pageTitle}>Coupon Curation</h1>
               <p className={styles.pageSubtitle}>Manage promotional codes, discounts, and customer redemptions</p>
             </div>
             <button className={styles.primaryCreateBtn} onClick={handleOpenCreate}>
@@ -314,7 +313,7 @@ function Coupons() {
           {/* 4 Summary Dashboard Cards */}
           <div className={styles.statsRow}>
             <div className={styles.statCard}>
-              <div className={styles.statIconBox} style={{ backgroundColor: '#fce4ec', color: '#d11b69' }}>
+              <div className={styles.statIconBox} style={{ backgroundColor: '#fce4ec', color: 'var(--primary-color)' }}>
                 <FiTag />
               </div>
               <div>
@@ -324,7 +323,7 @@ function Coupons() {
             </div>
 
             <div className={styles.statCard}>
-              <div className={styles.statIconBox} style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+              <div className={styles.statIconBox} style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success-color)' }}>
                 <FiCheck />
               </div>
               <div>
@@ -334,7 +333,7 @@ function Coupons() {
             </div>
 
             <div className={styles.statCard}>
-              <div className={styles.statIconBox} style={{ backgroundColor: '#fff3e0', color: '#e65100' }}>
+              <div className={styles.statIconBox} style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning-color)' }}>
                 <FiClock />
               </div>
               <div>
@@ -344,7 +343,7 @@ function Coupons() {
             </div>
 
             <div className={styles.statCard}>
-              <div className={styles.statIconBox} style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
+              <div className={styles.statIconBox} style={{ backgroundColor: 'var(--info-bg)', color: 'var(--info-color)' }}>
                 <FiRepeat />
               </div>
               <div>

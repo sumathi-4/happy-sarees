@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import styles from '../styles/AdminLogin.module.css';
-import logoImg from '../../../userhttps://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+
+const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
 
 function AdminLogin() {
   const { adminLogin } = useAdminAuth();
@@ -47,7 +48,7 @@ function AdminLogin() {
     <div className={styles.loginWrapper}>
       <div className={styles.loginCard}>
         <div className={styles.logoWrapper}>
-          <img src={logoImg} alt="Happy Sarees" className={styles.logo} />
+          <img src={LOGO_URL} alt="Happy Sarees" className={styles.logo} />
           <h1 className={styles.heading}>Admin Portal</h1>
           <p className={styles.subtitle}>Welcome back! Please sign in to your account</p>
         </div>

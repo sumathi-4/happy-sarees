@@ -129,8 +129,8 @@ function ProductDetails() {
 
         {/* Product Video Feature (Uploaded Video File or YouTube/Vimeo Embed) */}
         {(product.videoData || product.videoUrl || product.video) && (
-          <div style={{ marginTop: '32px', padding: '24px', background: '#ffffff', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#2b2b2b' }}>
+          <div style={{ marginTop: '32px', padding: '24px', background: 'var(--bg-white)', borderRadius: '12px', boxShadow: '0 2px 12px rgba(43, 18, 32, 0.04)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'var(--text-color)' }}>
               🎥 Product Draping Video
             </h3>
             {product.videoData ? (

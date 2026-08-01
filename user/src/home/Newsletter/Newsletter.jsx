@@ -15,8 +15,8 @@ function Newsletter() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.container}>
-        <span className={styles.tagline}>JOIN THE SISTERHOOD</span>
+      <span className={styles.tagline}>NEWSLETTER</span>
+      <div className={styles.cardContainer}>
         <h2 className={styles.title}>Subscribe to our Newsletter</h2>
         <p className={styles.desc}>
           Sign up to receive early access to new designer collection drops, festival offers, and exclusive draping tips directly in your inbox.

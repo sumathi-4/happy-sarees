@@ -13,6 +13,7 @@ router.post('/reset-password',  ctrl.resetPassword);
 // Protected
 router.get('/me',               adminAuth, ctrl.getMe);
 router.put('/profile',          adminAuth, ctrl.updateProfile);
+router.put('/avatar',           adminAuth, ctrl.updateAvatar);
 router.put('/change-password',  adminAuth, ctrl.changePassword);
 
 module.exports = router;

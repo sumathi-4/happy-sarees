@@ -60,7 +60,7 @@ function DeliveryStep({
       </div>
 
       {qualifiesForFreeShipping && (
-        <div style={{ margin: '0 0 14px', padding: '10px 16px', background: '#e8f5e9', border: '1px solid #a5d6a7', borderRadius: '10px', fontSize: '13px', color: '#2e7d32', fontWeight: 600 }}>
+        <div style={{ margin: '0 0 14px', padding: '10px 16px', background: 'var(--success-bg)', border: '1px solid #a5d6a7', borderRadius: '10px', fontSize: '13px', color: 'var(--success-color)', fontWeight: 600 }}>
           🎉 Your cart qualifies for <strong>Free Shipping</strong> (min. ₹{freeShippingMinAmount.toLocaleString()})! Eligible methods are now FREE.
         </div>
       )}
@@ -107,7 +107,7 @@ function DeliveryStep({
                       {opt.description || opt.estimate || opt.estimated_delivery_days}
                     </p>
                     {isFreeByRule && (
-                      <span style={{ fontSize: '11px', color: '#2e7d32', fontWeight: 700 }}>
+                      <span style={{ fontSize: '11px', color: 'var(--success-color)', fontWeight: 700 }}>
                         ✓ Free Shipping Applied
                       </span>
                     )}

@@ -196,8 +196,8 @@ function OrdersTab({ orders: parentOrders }) {
                       <span 
                         className={styles.statusBadge} 
                         style={{ 
-                          backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? '#ffebee' : '#fff5f8'), 
-                          color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? '#c62828' : '#d11b69'), 
+                          backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? 'var(--error-bg)' : '#fff5f8'), 
+                          color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? 'var(--error-color)' : 'var(--primary-color)'), 
                           border: retStatus === 'Refunded' ? '1px solid #7dd3fc' : (retStatus === 'Return Rejected' ? '1px solid #ffcdd2' : '1px solid #f8bbd0'),
                           marginLeft: '6px'
                         }}
@@ -252,7 +252,7 @@ function OrdersTab({ orders: parentOrders }) {
                       <div className={styles.detailBox}>
                         <h6><FiTruck style={{ marginRight: '4px' }} /> Order & Return Status</h6>
                         <p><strong>Order Status:</strong> {order.status}</p>
-                        <p><strong>Return Status:</strong> <span style={{ fontWeight: '700', color: retStatus === 'Refunded' ? '#2e7d32' : (retStatus === 'Return Requested' ? '#d11b69' : '#555') }}>{retStatus}</span></p>
+                        <p><strong>Return Status:</strong> <span style={{ fontWeight: '700', color: retStatus === 'Refunded' ? 'var(--success-color)' : (retStatus === 'Return Requested' ? 'var(--primary-color)' : '#555') }}>{retStatus}</span></p>
                         {order.trackingNumber && (
                           <>
                             <p style={{ marginTop: '4px' }}><strong>Courier:</strong> {order.courierName || 'Express Courier'}</p>
@@ -264,8 +264,8 @@ function OrdersTab({ orders: parentOrders }) {
 
                     {/* Return status details alert if return initiated */}
                     {retStatus !== 'No Request' && (
-                      <div style={{ marginTop: '14px', padding: '12px 16px', borderRadius: '8px', backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? '#ffebee' : '#fff5f8'), border: retStatus === 'Refunded' ? '1px solid #7dd3fc' : (retStatus === 'Return Rejected' ? '1px solid #ffcdd2' : '1px solid #f8bbd0') }}>
-                        <strong style={{ fontSize: '13.5px', color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? '#c62828' : '#d11b69') }}>🔄 Return Status: {retStatus}</strong>
+                      <div style={{ marginTop: '14px', padding: '12px 16px', borderRadius: '8px', backgroundColor: retStatus === 'Refunded' ? '#e0f2fe' : (retStatus === 'Return Rejected' ? 'var(--error-bg)' : '#fff5f8'), border: retStatus === 'Refunded' ? '1px solid #7dd3fc' : (retStatus === 'Return Rejected' ? '1px solid #ffcdd2' : '1px solid #f8bbd0') }}>
+                        <strong style={{ fontSize: '13.5px', color: retStatus === 'Refunded' ? '#0284c7' : (retStatus === 'Return Rejected' ? 'var(--error-color)' : 'var(--primary-color)') }}>🔄 Return Status: {retStatus}</strong>
                         {(order.returnReason || order.return_reason) && (
                           <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#444' }}>
                             <strong>Reason:</strong> "{order.returnReason || order.return_reason}"
@@ -286,9 +286,9 @@ function OrdersTab({ orders: parentOrders }) {
                           onClick={() => handleCancelOrder(order.dbId || order.id)}
                           style={{
                             padding: '8px 16px',
-                            backgroundColor: '#fff',
-                            border: '1px solid #d32f2f',
-                            color: '#d32f2f',
+                            backgroundColor: 'var(--bg-white)',
+                            border: '1px solid var(--error-color)',
+                            color: 'var(--error-color)',
                             borderRadius: '6px',
                             fontSize: '13px',
                             fontWeight: '600',
@@ -306,9 +306,9 @@ function OrdersTab({ orders: parentOrders }) {
                               onClick={() => handleReturnOrder(order.dbId || order.id)}
                               style={{
                                 padding: '8px 16px',
-                                backgroundColor: '#d11b69',
+                                backgroundColor: 'var(--primary-color)',
                                 border: 'none',
-                                color: '#fff',
+                                color: 'var(--bg-white)',
                                 borderRadius: '6px',
                                 fontSize: '13px',
                                 fontWeight: '600',
@@ -322,9 +322,9 @@ function OrdersTab({ orders: parentOrders }) {
                               disabled
                               style={{
                                 padding: '8px 16px',
-                                backgroundColor: '#fff0f5',
+                                backgroundColor: 'var(--bg-soft-pink-darker)',
                                 border: '1px solid #f8bbd0',
-                                color: '#d11b69',
+                                color: 'var(--primary-color)',
                                 borderRadius: '6px',
                                 fontSize: '13px',
                                 fontWeight: '600',

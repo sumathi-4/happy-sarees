@@ -393,7 +393,7 @@ function Checkout() {
           contact: selectedAddress?.phone || '9876543210'
         },
         theme: {
-          color: '#d11b69'
+          color: 'var(--primary-color)'
         }
       };
 

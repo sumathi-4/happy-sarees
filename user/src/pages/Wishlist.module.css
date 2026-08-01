@@ -24,7 +24,7 @@
   color: var(--text-light);
   text-decoration: none;
   font-weight: 500;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .crumbLink:hover {
@@ -48,7 +48,7 @@
   align-items: flex-end;
   margin-bottom: 2rem;
   padding-bottom: 1.2rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   flex-wrap: wrap;
   gap: 1.5rem;
 }
@@ -60,7 +60,7 @@
 .pageTitle {
   font-family: var(--font-display);
   font-size: 2.4rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0 0 0.4rem 0;
   display: flex;
@@ -121,7 +121,7 @@
   background-repeat: no-repeat;
   background-position: right 0.6rem center;
   background-size: 0.8rem;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .sortSelect:hover {
@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .activeToggle {
@@ -159,7 +159,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
+  gap: 1rem;
   margin-bottom: 4rem;
 }
 

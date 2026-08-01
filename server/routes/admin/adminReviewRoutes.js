@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
       SELECT r.id, r.product_id, r.user_id, r.rating, r.comment, r.reviewer_name,
              r.status, r.display_on_homepage, r.images, r.featured_image, r.created_at, r.updated_at,
              p.name as product_name,
-             (SELECT COALESCE(pi.image_url, pi.image_data)
+             (SELECT pi.image_url
               FROM product_images pi
               WHERE pi.product_id = p.id
               ORDER BY pi.is_primary DESC, pi.display_order ASC

@@ -206,7 +206,7 @@ function SignatureCollections() {
                          L 22 86 
                          C 22 93, 14 93, 14 86 
                          L 14 42" 
-                      stroke="#ffffff" 
+                      stroke="var(--bg-white)" 
                       strokeWidth="1.1" 
                       strokeOpacity="0.85"
                       strokeLinecap="round" 

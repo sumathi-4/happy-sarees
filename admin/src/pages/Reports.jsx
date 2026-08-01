@@ -33,14 +33,14 @@ const RECENT_SALES = [
 ];
 
 const FABRICS = [
-  { name: 'Silk', percentage: 85, color: '#d11b69' },
+  { name: 'Silk', percentage: 85, color: 'var(--primary-color)' },
   { name: 'Organza', percentage: 65, color: '#e040fb' },
   { name: 'Cotton', percentage: 45, color: '#00e5ff' },
   { name: 'Tissue', percentage: 35, color: '#ffc107' }
 ];
 
 const OCCASIONS = [
-  { name: 'Bridal', percentage: 75, color: '#d11b69' },
+  { name: 'Bridal', percentage: 75, color: 'var(--primary-color)' },
   { name: 'Festive', percentage: 60, color: '#ab47bc' },
   { name: 'Casual', percentage: 40, color: '#26c6da' },
   { name: 'Party', percentage: 30, color: '#ffca28' }
@@ -79,7 +79,6 @@ function Reports() {
       {/* Header parameters */}
       <div className={styles.header}>
         <div>
-          <h2 className={styles.title}>Reports & Analytics</h2>
           <p className={styles.desc}>Analyze your business trends, transactions, and inventory performance</p>
         </div>
         <button 
@@ -192,7 +191,7 @@ function OverviewReportView() {
         </div>
         <div className={styles.chartWrapper}>
           <div className={styles.chartLegend}>
-            <span className={styles.legendItem}><span style={{ backgroundColor: '#d11b69' }} /> Monthly Revenue</span>
+            <span className={styles.legendItem}><span style={{ backgroundColor: 'var(--primary-color)' }} /> Monthly Revenue</span>
           </div>
           {/* Custom SVG line chart representing Jan to Jun */}
           <svg className={styles.svgLineChart} viewBox="0 0 600 220">
@@ -220,17 +219,17 @@ function OverviewReportView() {
             <path 
               d="M 50 170 Q 140 120 230 140 T 320 80 T 410 90 T 500 40" 
               fill="none" 
-              stroke="#d11b69" 
+              stroke="var(--primary-color)" 
               strokeWidth="3.5"
               strokeLinecap="round"
             />
             {/* Points */}
-            <circle cx="50" cy="170" r="5" fill="#d11b69" />
-            <circle cx="140" cy="120" r="5" fill="#d11b69" />
-            <circle cx="230" cy="140" r="5" fill="#d11b69" />
-            <circle cx="320" cy="80" r="5" fill="#d11b69" />
-            <circle cx="410" cy="90" r="5" fill="#d11b69" />
-            <circle cx="500" cy="40" r="5" fill="#d11b69" />
+            <circle cx="50" cy="170" r="5" fill="var(--primary-color)" />
+            <circle cx="140" cy="120" r="5" fill="var(--primary-color)" />
+            <circle cx="230" cy="140" r="5" fill="var(--primary-color)" />
+            <circle cx="320" cy="80" r="5" fill="var(--primary-color)" />
+            <circle cx="410" cy="90" r="5" fill="var(--primary-color)" />
+            <circle cx="500" cy="40" r="5" fill="var(--primary-color)" />
           </svg>
         </div>
       </div>
@@ -327,12 +326,12 @@ function SalesReportView() {
           <svg className={styles.svgBarChart} viewBox="0 0 600 200">
             <line x1="40" y1="160" x2="580" y2="160" stroke="#cccccc" strokeWidth="1.5" />
             {/* Monthly bars */}
-            <rect x="60" y="70" width="30" height="90" rx="3" fill="#d11b69" />
-            <rect x="150" y="90" width="30" height="70" rx="3" fill="#d11b69" />
-            <rect x="240" y="50" width="30" height="110" rx="3" fill="#d11b69" />
-            <rect x="330" y="40" width="30" height="120" rx="3" fill="#d11b69" />
-            <rect x="420" y="80" width="30" height="80" rx="3" fill="#d11b69" />
-            <rect x="510" y="30" width="30" height="130" rx="3" fill="#d11b69" />
+            <rect x="60" y="70" width="30" height="90" rx="3" fill="var(--primary-color)" />
+            <rect x="150" y="90" width="30" height="70" rx="3" fill="var(--primary-color)" />
+            <rect x="240" y="50" width="30" height="110" rx="3" fill="var(--primary-color)" />
+            <rect x="330" y="40" width="30" height="120" rx="3" fill="var(--primary-color)" />
+            <rect x="420" y="80" width="30" height="80" rx="3" fill="var(--primary-color)" />
+            <rect x="510" y="30" width="30" height="130" rx="3" fill="var(--primary-color)" />
             
             <text x="65" y="180" className={styles.svgText}>Jan</text>
             <text x="155" y="180" className={styles.svgText}>Feb</text>
@@ -364,7 +363,7 @@ function SalesReportView() {
             <tbody>
               {RECENT_SALES.map((sale, i) => (
                 <tr key={i}>
-                  <td><strong style={{ color: '#d11b69' }}>{sale.id}</strong></td>
+                  <td><strong style={{ color: 'var(--primary-color)' }}>{sale.id}</strong></td>
                   <td>{sale.customer}</td>
                   <td><strong>{sale.amount}</strong></td>
                   <td>
@@ -524,10 +523,10 @@ function OrdersReportView() {
             </div>
             
             <div className={styles.doughnutLegend}>
-              <div className={styles.legendRow}><span style={{ backgroundColor: '#2e7d32' }} /> Delivered (45%)</div>
-              <div className={styles.legendRow}><span style={{ backgroundColor: '#1565c0' }} /> Shipped (20%)</div>
+              <div className={styles.legendRow}><span style={{ backgroundColor: 'var(--success-color)' }} /> Delivered (45%)</div>
+              <div className={styles.legendRow}><span style={{ backgroundColor: 'var(--info-color)' }} /> Shipped (20%)</div>
               <div className={styles.legendRow}><span style={{ backgroundColor: '#ff8f00' }} /> Processing (15%)</div>
-              <div className={styles.legendRow}><span style={{ backgroundColor: '#c62828' }} /> Cancelled (10%)</div>
+              <div className={styles.legendRow}><span style={{ backgroundColor: 'var(--error-color)' }} /> Cancelled (10%)</div>
             </div>
           </div>
         </div>
@@ -538,7 +537,7 @@ function OrdersReportView() {
             <h3>Payment Method Splits</h3>
           </div>
           <div className={styles.doughnutWrapper}>
-            <div className={styles.circleGraph} style={{ background: 'conic-gradient(#d11b69 0% 55%, #ab47bc 55% 85%, #ffca28 85% 100%)' }}>
+            <div className={styles.circleGraph} style={{ background: 'conic-gradient(var(--primary-color) 0% 55%, #ab47bc 55% 85%, #ffca28 85% 100%)' }}>
               <div className={styles.centerHole}>
                 <strong>100%</strong>
                 <span>Transactions</span>
@@ -546,7 +545,7 @@ function OrdersReportView() {
             </div>
 
             <div className={styles.doughnutLegend}>
-              <div className={styles.legendRow}><span style={{ backgroundColor: '#d11b69' }} /> Razorpay (55%)</div>
+              <div className={styles.legendRow}><span style={{ backgroundColor: 'var(--primary-color)' }} /> Razorpay (55%)</div>
               <div className={styles.legendRow}><span style={{ backgroundColor: '#ab47bc' }} /> COD (30%)</div>
               <div className={styles.legendRow}><span style={{ backgroundColor: '#ffca28' }} /> UPI / Bank (15%)</div>
             </div>

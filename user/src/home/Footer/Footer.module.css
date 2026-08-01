@@ -10,7 +10,7 @@
   margin: 0 auto;
   padding: 0 2rem 4rem;
   display: grid;
-  grid-template-columns: 1.6fr repeat(4, 1fr);
+  grid-template-columns: 1.8fr 1.2fr 1.2fr;
   gap: 3.5rem;
 }
 
@@ -61,7 +61,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-premium);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .socialLink:hover {
@@ -113,7 +113,7 @@
   font-family: var(--font-sans);
   font-size: 0.88rem;
   color: var(--text-muted);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .linkList a:hover {
@@ -123,7 +123,7 @@
 
 /* Bottom bar */
 .footerBottom {
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(43, 18, 32, 0.05);
   background-color: rgba(0, 0, 0, 0.02);
   padding: 1.8rem 0;
 }
@@ -153,12 +153,12 @@
 
 .paymentBadge {
   background-color: var(--bg-white);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(43, 18, 32, 0.05);
   font-family: var(--font-sans);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 0.25rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   color: var(--text-muted);
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);

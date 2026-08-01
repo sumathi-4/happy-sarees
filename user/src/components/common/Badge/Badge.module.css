@@ -4,7 +4,7 @@
   font-size: 0.68rem;
   font-weight: 800;
   padding: 0.2rem 0.6rem;
-  border-radius: 12px;
+  border-radius: var(--radius-premium);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -20,16 +20,16 @@
 }
 
 .gold {
-  background-color: #fff8e1;
-  color: #c5a059;
+  background-color: var(--warning-bg);
+  color: var(--gold-color);
 }
 
 .green {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--success-bg);
+  color: var(--success-color);
 }
 
 .blue {
-  background-color: #e3f2fd;
-  color: #1565c0;
+  background-color: var(--info-bg);
+  color: var(--info-color);
 }

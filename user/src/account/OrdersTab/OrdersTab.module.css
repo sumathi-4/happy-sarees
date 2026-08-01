@@ -13,7 +13,7 @@
   align-items: flex-end;
   margin-bottom: 1.5rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .tabTitle {
@@ -38,15 +38,15 @@
 
 .filterBtn {
   background-color: var(--bg-soft-pink);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   color: var(--text-muted);
   padding: 0.45rem 1rem;
-  border-radius: 20px;
+  border-radius: var(--radius-large);
   font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .filterBtn:hover {
@@ -66,16 +66,16 @@
 }
 
 .orderCard {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   border-radius: var(--radius-card);
   overflow: hidden;
   background-color: var(--bg-white);
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .orderCard:hover {
   border-color: rgba(209, 27, 105, 0.15);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 15px rgba(43, 18, 32, 0.04);
 }
 
 .cardHeader {
@@ -85,7 +85,7 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .headerLeft {
@@ -124,27 +124,27 @@
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.2rem 0.6rem;
-  border-radius: 12px;
+  border-radius: var(--radius-premium);
 
   &.processing {
-    background-color: #fff3e0;
-    color: #e65100;
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
   }
   &.shipped {
-    background-color: #e3f2fd;
-    color: #1565c0;
+    background-color: var(--info-bg);
+    color: var(--info-color);
   }
   &.delivered {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: var(--success-bg);
+    color: var(--success-color);
   }
   &.returned {
     background-color: #efebe9;
-    color: #4e342e;
+    color: var(--text-color);
   }
   &.cancelled {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: var(--error-bg);
+    color: var(--error-color);
   }
 }
 
@@ -182,7 +182,7 @@
   width: 44px;
   height: 58px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .itemInfo {
@@ -211,8 +211,8 @@
 }
 
 .expandedPanel {
-  background-color: #fafafa;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-soft-pink);
+  border-top: 1px solid rgba(43, 18, 32, 0.05);
   padding: 1.2rem 1.5rem;
 }
 

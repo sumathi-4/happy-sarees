@@ -6,15 +6,15 @@ function StatCard({ title, value, icon, trend, trendValue, colorTheme, actionLin
   const getThemeStyles = () => {
     switch (colorTheme) {
       case 'pink':
-        return { bg: 'rgba(209, 27, 105, 0.08)', color: '#d11b69' };
+        return { bg: 'rgba(209, 27, 105, 0.08)', color: 'var(--primary-color)' };
       case 'blue':
-        return { bg: 'rgba(6, 31, 235, 0.08)', color: '#061feb' };
+        return { bg: 'rgba(6, 31, 235, 0.08)', color: 'var(--secondary-color)' };
       case 'green':
-        return { bg: 'rgba(46, 125, 50, 0.08)', color: '#2e7d32' };
+        return { bg: 'rgba(46, 125, 50, 0.08)', color: 'var(--success-color)' };
       case 'orange':
         return { bg: 'rgba(245, 127, 23, 0.08)', color: '#f57f17' };
       default:
-        return { bg: 'rgba(0, 0, 0, 0.04)', color: '#666666' };
+        return { bg: 'rgba(43, 18, 32, 0.04)', color: 'var(--text-muted)' };
     }
   };
 
@@ -48,7 +48,7 @@ function StatCard({ title, value, icon, trend, trendValue, colorTheme, actionLin
         {actionLink && (
           <span 
             onClick={actionLink.onClick}
-            style={{ color: '#d11b69', fontWeight: 600, cursor: 'pointer', marginLeft: 'auto' }}
+            style={{ color: 'var(--primary-color)', fontWeight: 600, cursor: 'pointer', marginLeft: 'auto' }}
           >
             {actionLink.label}
           </span>

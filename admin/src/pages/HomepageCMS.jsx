@@ -148,7 +148,7 @@ function HomepageCMS() {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    color: '#ffffff',
+                    color: 'var(--bg-white)',
                     textAlign: 'center',
                     padding: '20px',
                     position: 'relative'
@@ -156,20 +156,20 @@ function HomepageCMS() {
                 >
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }} />
                   <div style={{ position: 'relative', zIndex: 2 }}>
-                    <p style={{ textTransform: 'uppercase', fontSize: '11px', letterSpacing: '2px', color: '#c5a059', marginBottom: '8px', fontWeight: 700 }}>
+                    <p style={{ textTransform: 'uppercase', fontSize: '11px', letterSpacing: '2px', color: 'var(--gold-color)', marginBottom: '8px', fontWeight: 700 }}>
                       {cmsData.heroBanner.subHeading}
                     </p>
-                    <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', color: '#ffffff', marginBottom: '12px' }}>
+                    <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '28px', color: 'var(--bg-white)', marginBottom: '12px' }}>
                       {cmsData.heroBanner.heading}
                     </h1>
                     <p style={{ fontSize: '13px', maxWidth: '500px', margin: '0 auto 20px auto', opacity: 0.9 }}>
                       {cmsData.heroBanner.description}
                     </p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                      <button style={{ padding: '8px 18px', backgroundColor: '#d11b69', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '12px' }}>
+                      <button style={{ padding: '8px 18px', backgroundColor: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '12px' }}>
                         {cmsData.heroBanner.primaryBtnText}
                       </button>
-                      <button style={{ padding: '8px 18px', backgroundColor: 'transparent', color: '#ffffff', border: '1px solid #ffffff', borderRadius: '4px', fontWeight: 600, fontSize: '12px' }}>
+                      <button style={{ padding: '8px 18px', backgroundColor: 'transparent', color: 'var(--bg-white)', border: '1px solid var(--bg-white)', borderRadius: '4px', fontWeight: 600, fontSize: '12px' }}>
                         {cmsData.heroBanner.secondaryBtnText}
                       </button>
                     </div>
@@ -179,16 +179,16 @@ function HomepageCMS() {
 
               {/* 3. Shop by Occasion */}
               {cmsData.shopByOccasion.enabled && (
-                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: '#fef8f9' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '4px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: 'var(--bg-soft-cream)' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '4px' }}>
                     {cmsData.shopByOccasion.title}
                   </h2>
-                  <p style={{ fontSize: '12px', color: '#666666', fontStyle: 'italic', marginBottom: '20px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '20px' }}>
                     {cmsData.shopByOccasion.subtitle}
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                     {cmsData.shopByOccasion.selectedOccasions?.slice(0, cmsData.shopByOccasion.displayCount).map((occ, i) => (
-                      <div key={i} style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)', fontWeight: 600, fontSize: '13px' }}>
+                      <div key={i} style={{ backgroundColor: 'var(--bg-white)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(43, 18, 32, 0.05)', fontWeight: 600, fontSize: '13px' }}>
                         🎉 {occ}
                       </div>
                     ))}
@@ -198,18 +198,18 @@ function HomepageCMS() {
 
               {/* 4. New Arrivals */}
               {cmsData.newArrivals.enabled && (
-                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: '#ffffff' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '20px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: 'var(--bg-white)' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '20px' }}>
                     New Arrivals
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                     {products.slice(0, cmsData.newArrivals.displayCount).map((p) => (
-                      <div key={p.id} style={{ textAlign: 'left', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div key={p.id} style={{ textAlign: 'left', border: '1px solid rgba(43, 18, 32, 0.05)', borderRadius: '8px', overflow: 'hidden' }}>
                         <img src={p.image} alt={p.name} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
                         <div style={{ padding: '10px' }}>
-                          <span style={{ fontSize: '11px', color: '#d11b69', fontWeight: 600 }}>{p.fabric}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--primary-color)', fontWeight: 600 }}>{p.fabric}</span>
                           <h4 style={{ fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '4px 0' }}>{p.name}</h4>
-                          <strong style={{ fontSize: '12px', color: '#d11b69' }}>₹{p.price}</strong>
+                          <strong style={{ fontSize: '12px', color: 'var(--primary-color)' }}>₹{p.price}</strong>
                         </div>
                       </div>
                     ))}
@@ -229,7 +229,7 @@ function HomepageCMS() {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    color: '#ffffff',
+                    color: 'var(--bg-white)',
                     position: 'relative',
                     textAlign: 'center',
                     padding: '20px'
@@ -239,7 +239,7 @@ function HomepageCMS() {
                   <div style={{ position: 'relative', zIndex: 2 }}>
                     <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '22px', marginBottom: '6px' }}>{cmsData.featuredCollection.title}</h2>
                     <p style={{ fontSize: '12px', opacity: 0.9, marginBottom: '16px' }}>{cmsData.featuredCollection.subtitle}</p>
-                    <button style={{ padding: '6px 14px', backgroundColor: '#d11b69', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11px' }}>
+                    <button style={{ padding: '6px 14px', backgroundColor: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11px' }}>
                       {cmsData.featuredCollection.btnText}
                     </button>
                   </div>
@@ -248,18 +248,18 @@ function HomepageCMS() {
 
               {/* 6. Best Sellers */}
               {cmsData.bestSellers.enabled && (
-                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: '#fef8f9' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '20px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: 'var(--bg-soft-cream)' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '20px' }}>
                     Bestsellers
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                     {products.slice(0, cmsData.bestSellers.displayCount).map((p) => (
-                      <div key={p.id} style={{ textAlign: 'left', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+                      <div key={p.id} style={{ textAlign: 'left', border: '1px solid rgba(43, 18, 32, 0.05)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--bg-white)' }}>
                         <img src={p.image} alt={p.name} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
                         <div style={{ padding: '10px' }}>
-                          <span style={{ fontSize: '11px', color: '#d11b69', fontWeight: 600 }}>{p.fabric}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--primary-color)', fontWeight: 600 }}>{p.fabric}</span>
                           <h4 style={{ fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '4px 0' }}>{p.name}</h4>
-                          <strong style={{ fontSize: '12px', color: '#d11b69' }}>₹{p.price}</strong>
+                          <strong style={{ fontSize: '12px', color: 'var(--primary-color)' }}>₹{p.price}</strong>
                         </div>
                       </div>
                     ))}
@@ -269,13 +269,13 @@ function HomepageCMS() {
 
               {/* 7. Shop by Fabric */}
               {cmsData.shopByFabric.enabled && (
-                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: '#ffffff' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '20px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', backgroundColor: 'var(--bg-white)' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '20px' }}>
                     Shop By Fabric
                   </h2>
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     {cmsData.shopByFabric.selectedFabrics?.slice(0, cmsData.shopByFabric.displayCount).map((fab, i) => (
-                      <div key={i} style={{ padding: '8px 20px', backgroundColor: 'rgba(209,27,105,0.06)', color: '#d11b69', fontWeight: 700, borderRadius: '20px', fontSize: '12px' }}>
+                      <div key={i} style={{ padding: '8px 20px', backgroundColor: 'rgba(209,27,105,0.06)', color: 'var(--primary-color)', fontWeight: 700, borderRadius: '20px', fontSize: '12px' }}>
                         {fab}
                       </div>
                     ))}
@@ -285,16 +285,16 @@ function HomepageCMS() {
 
               {/* 8. Why Happy Sarees */}
               {cmsData.whyHappySarees.enabled && (
-                <div style={{ padding: '30px 20px', backgroundColor: '#fef8f9', textAlign: 'center' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '20px' }}>
+                <div style={{ padding: '30px 20px', backgroundColor: 'var(--bg-soft-cream)', textAlign: 'center' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '20px' }}>
                     Why Shop With Us
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                     {cmsData.whyHappySarees.cards?.map((card, i) => (
-                      <div key={i} style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.04)' }}>
-                        <span style={{ fontSize: '22px', color: '#d11b69' }}>💎</span>
+                      <div key={i} style={{ backgroundColor: 'var(--bg-white)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(43, 18, 32, 0.04)' }}>
+                        <span style={{ fontSize: '22px', color: 'var(--primary-color)' }}>💎</span>
                         <h4 style={{ fontSize: '13px', margin: '8px 0 4px 0', fontWeight: 'bold' }}>{card.title}</h4>
-                        <p style={{ fontSize: '11px', color: '#666666', lineHeight: 1.4 }}>{card.description}</p>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{card.description}</p>
                       </div>
                     ))}
                   </div>
@@ -303,16 +303,16 @@ function HomepageCMS() {
 
               {/* 9. Reviews */}
               {cmsData.customerReviews.enabled && (
-                <div style={{ padding: '30px 20px', backgroundColor: '#ffffff', textAlign: 'center' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '20px' }}>
+                <div style={{ padding: '30px 20px', backgroundColor: 'var(--bg-white)', textAlign: 'center' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '20px' }}>
                     Customer Reviews
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                     {cmsData.customerReviews.selectedReviews?.slice(0, cmsData.customerReviews.reviewCount).map((rev, i) => (
-                      <div key={i} style={{ backgroundColor: '#fafafa', padding: '16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)', textAlign: 'left' }}>
+                      <div key={i} style={{ backgroundColor: '#fafafa', padding: '16px', borderRadius: '8px', border: '1px solid rgba(43, 18, 32, 0.05)', textAlign: 'left' }}>
                         <div style={{ color: '#ffb300', marginBottom: '6px' }}>⭐⭐⭐⭐⭐</div>
-                        <p style={{ fontSize: '12px', color: '#666666', fontStyle: 'italic', marginBottom: '8px', lineHeight: 1.4 }}>"{rev.comment}"</p>
-                        <h5 style={{ fontSize: '11px', fontWeight: 'bold', color: '#2b2b2b' }}>- {rev.reviewer}</h5>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '8px', lineHeight: 1.4 }}>"{rev.comment}"</p>
+                        <h5 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-color)' }}>- {rev.reviewer}</h5>
                       </div>
                     ))}
                   </div>
@@ -321,11 +321,11 @@ function HomepageCMS() {
 
               {/* 10. Watch & Buy */}
               {cmsData.watchAndBuy.enabled && (
-                <div style={{ padding: '30px 20px', backgroundColor: '#fef8f9', textAlign: 'center' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#2b2b2b', fontSize: '20px', marginBottom: '4px' }}>
+                <div style={{ padding: '30px 20px', backgroundColor: 'var(--bg-soft-cream)', textAlign: 'center' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: 'var(--text-color)', fontSize: '20px', marginBottom: '4px' }}>
                     Watch &amp; Buy
                   </h2>
-                  <p style={{ fontSize: '12px', color: '#666666', marginBottom: '20px' }}>{cmsData.watchAndBuy.title}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>{cmsData.watchAndBuy.title}</p>
                   <div style={{ maxWidth: '400px', margin: '0 auto', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
                     <video src={cmsData.watchAndBuy.videoUrl} poster={cmsData.watchAndBuy.thumbnail} controls style={{ width: '100%', height: '220px', display: 'block', objectFit: 'cover' }} />
                   </div>
@@ -334,12 +334,12 @@ function HomepageCMS() {
 
               {/* 11. Newsletter */}
               {cmsData.newsletter.enabled && (
-                <div style={{ padding: '30px 20px', backgroundColor: '#2b2b2b', color: '#ffffff', textAlign: 'center' }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px', marginBottom: '6px', color: '#ffffff' }}>{cmsData.newsletter.heading}</h2>
+                <div style={{ padding: '30px 20px', backgroundColor: 'var(--text-color)', color: 'var(--bg-white)', textAlign: 'center' }}>
+                  <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px', marginBottom: '6px', color: 'var(--bg-white)' }}>{cmsData.newsletter.heading}</h2>
                   <p style={{ fontSize: '12px', opacity: 0.8, marginBottom: '16px', maxWidth: '450px', margin: '0 auto 16px auto' }}>{cmsData.newsletter.description}</p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', maxWidth: '380px', margin: '0 auto' }}>
                     <input type="text" placeholder={cmsData.newsletter.placeholder} style={{ flex: 1, padding: '8px 12px', border: 'none', borderRadius: '4px', fontSize: '12px' }} disabled />
-                    <button style={{ padding: '8px 14px', backgroundColor: '#d11b69', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                    <button style={{ padding: '8px 14px', backgroundColor: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
                       {cmsData.newsletter.btnText}
                     </button>
                   </div>
@@ -348,7 +348,7 @@ function HomepageCMS() {
 
               {/* 12. Footer */}
               {cmsData.footer.enabled && (
-                <div style={{ padding: '24px 20px', backgroundColor: '#1a1a1a', color: '#999999', fontSize: '11px', textAlign: 'center', borderTop: '1px solid #333' }}>
+                <div style={{ padding: '24px 20px', backgroundColor: '#1a1a1a', color: 'var(--text-light)', fontSize: '11px', textAlign: 'center', borderTop: '1px solid #333' }}>
                   <p style={{ marginBottom: '10px' }}>{cmsData.footer.copyright}</p>
                   <p>Policies: {cmsData.footer.policies?.map(p => p.label).join(' | ')}</p>
                 </div>
@@ -363,24 +363,11 @@ function HomepageCMS() {
         </div>
       )}
 
-      {/* Top title area */}
-      <div className={styles.cmsHeader}>
-        <div>
-          <h2 className={styles.pageTitle}>Homepage CMS</h2>
-          <p className={styles.pageDesc}>Manage and customize all sections of your homepage</p>
-        </div>
-      </div>
-
       {/* Main split grid layout */}
       <div className={styles.cmsGrid}>
         
         {/* Left Side: Cards grid representing homepage sections */}
         <div className={styles.leftColumn}>
-          <h3 className={styles.panelTitle}>Homepage Sections</h3>
-          <p style={{ fontSize: '11px', color: '#999999', marginBottom: '16px' }}>
-            Select any section to manage its content in the edit panel on the right.
-          </p>
-
           <div className={styles.sectionsCardGrid}>
             {sectionsList.map((sec) => {
               const currentData = cmsData[sec.key] || {};
@@ -431,12 +418,12 @@ function HomepageCMS() {
             <div className={styles.editCardHeader}>
               <div>
                 <h3>Edit Section: {sectionsList.find(s => s.key === selectedSection)?.name.substring(3)}</h3>
-                <p style={{ fontSize: '11px', color: '#999999' }}>Customize layout text and images</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>Customize layout text and images</p>
               </div>
 
               {/* Status toggles */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#666666' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
                   {localSectionData.enabled ? 'Enabled' : 'Disabled'}
                 </span>
                 <label className={styles.switchLabel}>
@@ -947,7 +934,7 @@ function HomepageCMS() {
 
                   {/* Fallback for other sections that do not have custom media */}
                   {selectedSection !== 'heroBanner' && selectedSection !== 'featuredCollection' && selectedSection !== 'watchAndBuy' && (
-                    <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: '#999999', fontStyle: 'italic' }}>
+                    <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px', color: 'var(--text-light)', fontStyle: 'italic' }}>
                       No media uploads required for this section.
                     </div>
                   )}
@@ -985,10 +972,10 @@ function HomepageCMS() {
 
             {/* Collapsible Local preview block */}
             <div className={styles.localPreviewCollapseCard}>
-              <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: '#2b2b2b' }}>
+              <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-color)' }}>
                 Section Curation Mockup
               </h4>
-              <p style={{ fontSize: '11px', color: '#999999', marginBottom: '10px' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-light)', marginBottom: '10px' }}>
                 How this section will render with current unsaved form fields.
               </p>
               
@@ -1000,13 +987,13 @@ function HomepageCMS() {
                 )}
                 {selectedSection === 'heroBanner' && (
                   <div style={{ padding: '20px', backgroundColor: '#fafafa', border: '1px dashed #ccc', textAlign: 'center' }}>
-                    <h2 style={{ fontSize: '18px', color: '#d11b69', fontFamily: 'Playfair Display, serif' }}>{localSectionData.heading}</h2>
-                    <p style={{ fontSize: '12px', color: '#666666' }}>{localSectionData.subHeading}</p>
-                    <button style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: '#d11b69', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '11px' }}>{localSectionData.primaryBtnText}</button>
+                    <h2 style={{ fontSize: '18px', color: 'var(--primary-color)', fontFamily: 'Playfair Display, serif' }}>{localSectionData.heading}</h2>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{localSectionData.subHeading}</p>
+                    <button style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: 'var(--primary-color)', color: 'var(--bg-white)', border: 'none', borderRadius: '4px', fontSize: '11px' }}>{localSectionData.primaryBtnText}</button>
                   </div>
                 )}
                 {selectedSection !== 'announcementBar' && selectedSection !== 'heroBanner' && (
-                  <div style={{ fontSize: '12px', color: '#666666', fontStyle: 'italic', textAlign: 'center', padding: '10px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '10px' }}>
                     Section "{sectionsList.find(s => s.key === selectedSection)?.name.substring(3)}" is enabled: {localSectionData.enabled ? 'YES' : 'NO'}. Check full emulator preview.
                   </div>
                 )}

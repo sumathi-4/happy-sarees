@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PATHS } from '../../routes/paths';
 import {
   FiShoppingBag,
   FiPackage,
@@ -15,6 +17,7 @@ import { useCart } from '../../context/CartContext';
 import styles from './DashboardTab.module.css';
 
 function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelectTab }) {
+  const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -86,7 +89,7 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
         </div>
       </div>
 
-      {/* Middle Row: Recent Orders & Recently Viewed */}
+      {/* Middle Row: Recent Orders */}
       <div className={styles.middleGrid}>
         {/* Left Box: Recent Orders */}
         <div className={styles.cardBox}>
@@ -124,55 +127,6 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
             ) : (
               <div style={{ padding: '1.5rem', textAlign: 'center', color: '#666' }}>
                 <p style={{ margin: 0, fontSize: '0.9rem' }}>No recent orders placed yet.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Box: Recently Viewed Carousel */}
-        <div className={styles.cardBox}>
-          <div className={styles.boxHeader}>
-            <h3 className={styles.boxTitle}>Recently Viewed</h3>
-            <button onClick={() => onSelectTab('wishlist')} className={styles.viewAllBtn}>
-              View All &gt;
-            </button>
-          </div>
-
-          <div className={styles.recGrid}>
-            {recentlyViewed.length > 0 ? (
-              recentlyViewed.map((prod) => {
-                const isWish = isInWishlist(prod.id);
-                return (
-                  <div key={prod.id} className={styles.recCard}>
-                    <div className={styles.recImgFrame}>
-                      <img 
-                        src={prod.image || prod.image_url || 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'} 
-                        alt={prod.name} 
-                        className={styles.recImg} 
-                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'; }}
-                      />
-                      <button onClick={() => toggleWishlist(prod)} className={styles.recHeartBtn}>
-                        {isWish ? <FaHeart style={{ color: '#e91e63' }} /> : <FiHeart />}
-                      </button>
-                    </div>
-                    <div className={styles.recMeta}>
-                      <h5 className={styles.recTitle}>{prod.name}</h5>
-                      <div className={styles.recPriceRow}>
-                        <strong className={styles.recPrice}>₹{Number(prod.price || 0).toLocaleString()}</strong>
-                      </div>
-                      <button
-                        onClick={() => addToCart(prod, 1)}
-                        className={styles.recCartBtn}
-                      >
-                        <FiShoppingCart /> Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#666', gridColumn: '1 / -1' }}>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>No recently viewed products yet.</p>
               </div>
             )}
           </div>
@@ -243,7 +197,7 @@ function DashboardTab({ userProfile, recentOrders = [], addresses = [], onSelect
             <p className={styles.promoSub}>
               Enjoy special offers and early access to new saree collections.
             </p>
-            <button onClick={() => onSelectTab('wishlist')} className={styles.promoBtn}>
+            <button onClick={() => navigate(PATHS.SALE)} className={styles.promoBtn}>
               Explore Offers
             </button>
           </div>

@@ -14,14 +14,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
   padding-bottom: 1rem;
 }
 
 .title {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-color);
   margin: 0;
   text-transform: uppercase;
@@ -38,7 +38,7 @@
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
   box-shadow: 0 4px 10px rgba(209, 27, 105, 0.15);
 }
 
@@ -65,7 +65,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(43, 18, 32, 0.06);
   padding-right: 2rem;
 }
 
@@ -85,13 +85,13 @@
 }
 
 .starIcon {
-  color: #dddddd;
+  color: var(--border-color);
   font-size: 1rem;
 }
 
 .starFilled {
-  color: #ffb400;
-  fill: #ffb400;
+  color: var(--gold-color);
+  fill: var(--gold-color);
   font-size: 1rem;
 }
 
@@ -124,15 +124,15 @@
 
 .progressTrack {
   height: 8px;
-  background-color: rgba(0, 0, 0, 0.08);
-  border-radius: 4px;
+  background-color: rgba(43, 18, 32, 0.06);
+  border-radius: var(--radius-small);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: #ffb400;
-  border-radius: 4px;
+  background-color: var(--gold-color);
+  border-radius: var(--radius-small);
   transition: width 0.6s ease;
 }
 
@@ -150,13 +150,13 @@
 
 .reviewCard {
   background-color: var(--bg-white);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   border-radius: var(--radius-card);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-premium);
+  transition: all var(--motion-premium);
 }
 
 .reviewCard:hover {
@@ -203,7 +203,7 @@
   font-family: var(--font-sans);
   font-size: 0.7rem;
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--success-color);
   display: flex;
   align-items: center;
   gap: 0.2rem;
@@ -234,9 +234,9 @@
 .photoFrame {
   width: 60px;
   height: 60px;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
 }
 
 .photoImg {
@@ -334,7 +334,7 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--motion-premium);
 }
 
 .submitFormBtn:hover {
@@ -350,7 +350,7 @@
   }
   .scoreBox {
     border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(43, 18, 32, 0.06);
     padding-right: 0;
     padding-bottom: 1.2rem;
   }

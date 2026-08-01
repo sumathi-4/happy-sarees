@@ -4,7 +4,7 @@
 
 .section {
   padding: 60px 0 140px 0;
-  background: radial-gradient(circle at 50% 30%, #fffcf8 0%, #faf4ed 70%, #f7eee4 100%);
+  background: radial-gradient(circle at 50% 30%, var(--bg-soft-pink) 0%, var(--bg-soft-pink) 70%, var(--bg-soft-pink) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -15,43 +15,68 @@
 }
 
 .tagline {
-  font-family: 'Great Vibes', 'Caveat', cursive;
-  font-size: 1.7rem;
-  color: #c88d2d;
   display: block;
+  font-family: var(--font-script);
+  font-size: clamp(1.8rem, 2.6vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  color: var(--gold-color);
   margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .title {
-  font-family: 'Playfair Display', 'Cinzel', serif;
-  font-size: 2.3rem;
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.5vw, 38px);
   font-weight: 800;
-  color: #3e1708;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
+  background: linear-gradient(135deg, #ce145a 0%, #9c1664 50%, #6b1464 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
   margin: 0;
 }
 
-.titleDivider {
+.titleDivider, .divider {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 12px;
+  margin-top: 14px;
+  width: 100%;
 }
 
-.line {
-  width: 70px;
+.titleDivider::before, .divider::before {
+  content: '';
+  width: 75px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #c88d2d, transparent);
+  background: linear-gradient(90deg, transparent 0%, var(--gold-color) 100%);
+  border-radius: 2px;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
-  background-color: #c88d2d;
+  width: 8px;
+  height: 8px;
+  background-color: var(--gold-color);
   transform: rotate(45deg);
   display: inline-block;
+  flex-shrink: 0;
+  border-radius: 0;
+  margin: 0;
+}
+
+.line {
+  display: none;
+}
+
+.titleDivider::after, .divider::after {
+  content: '';
+  width: 75px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-color) 0%, transparent 100%);
+  border-radius: 2px;
 }
 
 /* GRID CONTAINER — TIGHT SPACING (20PX GAP) */
@@ -130,7 +155,7 @@
   opacity: 0;
   pointer-events: none;
   z-index: 10;
-  transition: opacity 0.3s ease;
+  transition: opacity 250ms ease;
 }
 
 .cardItem:hover .shimmerEffect {
@@ -159,30 +184,33 @@
 }
 
 .priceLabel {
-  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-family: var(--font-serif);
   font-size: 1.5rem;
   font-weight: 800;
-  color: #3e1708;
-  letter-spacing: 1px;
+  background: linear-gradient(135deg, #ce145a 0%, #9c1664 50%, #6b1464 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
   margin: 0;
-  transition: color 0.35s ease, transform 0.35s ease;
+  transition: transform 0.35s ease;
 }
 
 .cardItem:hover .priceLabel {
-  color: #c88d2d;
   transform: scale(1.06);
 }
 
 .shopNowHint {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #c88d2d;
+  color: var(--gold-color);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-top: 5px;
   opacity: 0.8;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 250ms ease, transform 250ms ease;
 }
 
 .cardItem:hover .shopNowHint {

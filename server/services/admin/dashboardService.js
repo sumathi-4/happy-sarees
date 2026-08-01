@@ -95,7 +95,7 @@ class DashboardService {
     const res = await db.query(`
       SELECT p.id, p.name, p.price,
              COALESCE(SUM(oi.quantity), 0) as total_sold,
-             (SELECT COALESCE(pi.image_url, pi.image_data)
+             (SELECT pi.image_url
               FROM product_images pi
               WHERE pi.product_id = p.id
               ORDER BY pi.is_primary DESC, pi.display_order ASC
@@ -121,7 +121,7 @@ class DashboardService {
   async getLowStockProducts() {
     const res = await db.query(`
       SELECT p.id, p.name, p.sku, p.stock_count, p.status, p.price,
-             (SELECT COALESCE(pi.image_url, pi.image_data)
+             (SELECT pi.image_url
               FROM product_images pi
               WHERE pi.product_id = p.id
               ORDER BY pi.is_primary DESC, pi.display_order ASC

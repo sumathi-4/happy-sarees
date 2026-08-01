@@ -4,34 +4,6 @@ import { FiChevronLeft, FiChevronRight, FiPlay } from 'react-icons/fi';
 import { api } from '../../services/api';
 import styles from './WatchAndBuy.module.css';
 
-// Premium Sample Saree Draping Videos for initial demo fallback if no admin video uploaded yet
-const SAMPLE_SAREE_VIDEOS = [
-  {
-    id: 1,
-    name: "Kanchipuram Silk Bridal Saree",
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-showing-a-red-dress-41584-large.mp4"
-  },
-  {
-    id: 2,
-    name: "Banarasi Zari Tissue Saree",
-    image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-woman-posing-with-a-traditional-costume-41617-large.mp4"
-  },
-  {
-    id: 3,
-    name: "Chanderi Handloom Floral Saree",
-    image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-model-posing-in-a-studio-41588-large.mp4"
-  },
-  {
-    id: 4,
-    name: "Organza Embroidered Designer Saree",
-    image: "https://images.unsplash.com/photo-1583391733975-d86bc21e42bb?q=80&w=800&auto=format&fit=crop",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-young-woman-with-long-hair-posing-41582-large.mp4"
-  }
-];
-
 function WatchAndBuy() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -49,18 +21,17 @@ function WatchAndBuy() {
         const res = await api.getProductVideos();
         const videoItems = res.data || res.products || [];
         if (isMounted) {
-          if (Array.isArray(videoItems) && videoItems.length > 0) {
+          if (Array.isArray(videoItems)) {
             setProducts(videoItems);
           } else {
-            // Fallback to sample videos if no admin videos uploaded yet
-            setProducts(SAMPLE_SAREE_VIDEOS);
+            setProducts([]);
           }
           setLoading(false);
         }
       } catch (err) {
         console.log('[WatchAndBuy] Error fetching videos:', err.message);
         if (isMounted) {
-          setProducts(SAMPLE_SAREE_VIDEOS);
+          setProducts([]);
           setLoading(false);
         }
       }
@@ -78,7 +49,7 @@ function WatchAndBuy() {
     }
   };
 
-  // Video Mouse Interactions
+  // Video Mouse Interactions: Pause on Hover, Play on Mouse Leave
   const handleMouseEnter = (productId) => {
     setHoveredId(productId);
     const videoEl = videoRefs.current[productId];
@@ -99,7 +70,7 @@ function WatchAndBuy() {
     navigate(`/product/${productId}`);
   };
 
-  if (loading) {
+  if (loading || products.length === 0) {
     return null;
   }
 

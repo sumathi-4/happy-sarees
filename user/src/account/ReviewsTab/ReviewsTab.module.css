@@ -13,7 +13,7 @@
   align-items: flex-end;
   margin-bottom: 1.8rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
 }
 
 .tabTitle {
@@ -37,7 +37,7 @@
 }
 
 .reviewCard {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(43, 18, 32, 0.06);
   border-radius: var(--radius-card);
   padding: 1.2rem;
   background-color: var(--bg-white);
@@ -54,7 +54,7 @@
   width: 48px;
   height: 60px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .meta {
@@ -81,13 +81,13 @@
 }
 
 .starIcon {
-  color: #dddddd;
+  color: var(--border-color);
   font-size: 0.8rem;
 }
 
 .starFilled {
-  color: #ffb400;
-  fill: #ffb400;
+  color: var(--gold-color);
+  fill: var(--gold-color);
 }
 
 .dateText {
@@ -97,13 +97,13 @@
 }
 
 .verifiedTag {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--success-bg);
+  color: var(--success-color);
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.3rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   display: flex;
   align-items: center;
   gap: 0.3rem;
