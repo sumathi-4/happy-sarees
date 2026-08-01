@@ -65,13 +65,13 @@ class ProductService {
     const [data, count, images] = await Promise.all([
       db.query(dataQ, params),
       db.query(countQ, countParams),
-      db.query(`SELECT product_id, image_url, image_data, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`),
+      db.query(`SELECT product_id, image_url, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`),
     ]);
 
     const imagesMap = {};
     images.rows.forEach(img => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_data || img.image_url);
+      imagesMap[img.product_id].push(img.image_url);
     });
 
     const products = data.rows.map(r => {
@@ -161,7 +161,7 @@ class ProductService {
         [id]
       ),
       db.query(
-        `SELECT id, image_url, image_data, alt_text, is_primary, display_order
+        `SELECT id, image_url, alt_text, is_primary, display_order
          FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, display_order ASC`,
         [id]
       ),
@@ -180,9 +180,9 @@ class ProductService {
     if (prod.rows.length === 0) throw { status: 404, message: 'Product not found.' };
 
     const p = prod.rows[0];
-    const imgUrls = images.rows.map(img => img.image_data || img.image_url).filter(Boolean);
+    const imgUrls = images.rows.map(img => img.image_url).filter(Boolean);
     const primaryImgObj = images.rows.find(img => img.is_primary);
-    const coverImage = primaryImgObj ? (primaryImgObj.image_data || primaryImgObj.image_url) : (imgUrls[0] || null);
+    const coverImage = primaryImgObj ? primaryImgObj.image_url : (imgUrls[0] || null);
 
     const seoData = seo.rows[0] || {};
 
@@ -293,6 +293,14 @@ class ProductService {
       }
     });
 
+    const { uploadToCloudinary } = require('../cloudinaryService');
+
+    let videoUrlToSave = null;
+    const rawVideoInput = data.videoData || data.videoUrl || data.video_url;
+    if (rawVideoInput && String(rawVideoInput).trim() !== '') {
+      videoUrlToSave = await uploadToCloudinary(rawVideoInput, 'happy_sarees/videos');
+    }
+
     const res = await db.query(
       `INSERT INTO products (
         name, slug, category_id, description, short_description, price, original_price,
@@ -316,14 +324,12 @@ class ProductService {
         data.newArrival !== undefined ? Boolean(data.newArrival) : (data.isNewArrival !== undefined ? Boolean(data.isNewArrival) : (data.is_new_arrival !== undefined ? Boolean(data.is_new_arrival) : true)),
         data.featuredOnHomepage ?? data.showOnHomepage ?? true,
         data.isTrending ?? data.trendingProduct ?? false,
-        (data.status && data.status.toLowerCase() === 'draft') ? 'published' : (data.status ? data.status.toLowerCase() : 'published'),
+        (data.status ? data.status.toLowerCase() : 'published'),
         data.rating || 0, data.reviewCount || 0,
-        data.videoUrl ?? data.video_url ?? null, data.videoData ?? data.video_data ?? null,
+        videoUrlToSave, null,
         JSON.stringify(customMasterData)
       ]
     );
-
-    const { uploadToCloudinary } = require('../cloudinaryService');
 
     const productId = res.rows[0].id;
 
@@ -342,9 +348,9 @@ class ProductService {
         const strVal = await uploadToCloudinary(rawStr);
         const isCover = (i === 0);
         await db.query(
-          `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [productId, strVal, null, data.name, i, isCover]
+          `INSERT INTO product_images (product_id, image_url, alt_text, display_order, is_primary)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [productId, strVal, data.name, i, isCover]
         );
       }
     }
@@ -374,8 +380,17 @@ class ProductService {
     const stockCount = Number(data.stockCount ?? data.stock ?? existing.stock_count);
     const inStock = stockCount > 0;
 
-    const finalVideoUrl = data.videoUrl !== undefined ? data.videoUrl : (data.video_url !== undefined ? data.video_url : existing.video_url);
-    const finalVideoData = data.videoData !== undefined ? data.videoData : (data.video_data !== undefined ? data.video_data : existing.video_data);
+    const { uploadToCloudinary } = require('../cloudinaryService');
+
+    let videoUrlToSave = existing.video_url || null;
+    const rawVideoInput = data.videoData !== undefined ? data.videoData : (data.videoUrl !== undefined ? data.videoUrl : data.video_url);
+    if (rawVideoInput !== undefined) {
+      if (rawVideoInput && String(rawVideoInput).trim() !== '') {
+        videoUrlToSave = await uploadToCloudinary(rawVideoInput, 'happy_sarees/videos');
+      } else {
+        videoUrlToSave = null;
+      }
+    }
 
     const descToSave = data.description !== undefined && data.description !== null && data.description !== ''
       ? data.description 
@@ -445,8 +460,8 @@ class ProductService {
         data.featuredOnHomepage ?? data.showOnHomepage ?? existing.featured_on_homepage,
         data.isTrending ?? data.trendingProduct ?? existing.is_trending ?? false,
         data.status ?? existing.status,
-        finalVideoUrl,
-        finalVideoData,
+        videoUrlToSave,
+        null,
         JSON.stringify(customMasterData),
         id,
       ]
@@ -491,9 +506,9 @@ class ProductService {
 
       for (const item of uploadedImages) {
         await db.query(
-          `INSERT INTO product_images (product_id, image_url, image_data, alt_text, display_order, is_primary)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [id, item.strVal, null, data.name || existing.name, item.index, item.isCover]
+          `INSERT INTO product_images (product_id, image_url, alt_text, display_order, is_primary)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [id, item.strVal, data.name || existing.name, item.index, item.isCover]
         );
       }
     }

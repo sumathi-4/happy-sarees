@@ -15,14 +15,14 @@ if (isCloudinaryConfigured) {
     api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true
   });
-  console.log('☁️ Cloudinary Image CDN connected successfully!');
+  console.log('☁️ Cloudinary Media CDN connected successfully!');
 } else {
-  console.log('ℹ️ Cloudinary credentials not set. Using optimized lightweight image handling.');
+  console.log('ℹ️ Cloudinary credentials not set. Using optimized media URL handling.');
 }
 
 /**
- * Uploads an image (Base64 data URI or file buffer) to Cloudinary.
- * Returns the secure Cloudinary CDN URL (or original value if Cloudinary is unconfigured).
+ * Uploads media (Base64 data URI or file buffer) to Cloudinary.
+ * Returns the secure Cloudinary CDN URL (or original value if unconfigured).
  *
  * @param {string} fileStr - Base64 data URI or HTTP URL
  * @param {string} folder - Destination folder on Cloudinary (default: 'happy_sarees/products')
@@ -36,16 +36,22 @@ async function uploadToCloudinary(fileStr, folder = 'happy_sarees/products') {
     return fileStr;
   }
 
-  // If Cloudinary is configured, upload Base64 image to Cloudinary CDN
+  // If Cloudinary is configured, upload Base64 media to Cloudinary CDN
   if (isCloudinaryConfigured && fileStr.startsWith('data:')) {
     try {
-      const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+      const isVideo = fileStr.startsWith('data:video/');
+      const options = {
         folder: folder,
-        resource_type: 'auto',
-        transformation: [
+        resource_type: isVideo ? 'video' : 'auto'
+      };
+
+      if (!isVideo) {
+        options.transformation = [
           { width: 1200, crop: 'limit', quality: 'auto', fetch_format: 'auto' }
-        ]
-      });
+        ];
+      }
+
+      const uploadResponse = await cloudinary.uploader.upload(fileStr, options);
       return uploadResponse.secure_url;
     } catch (err) {
       console.error('[CloudinaryService] Upload error:', err.message);

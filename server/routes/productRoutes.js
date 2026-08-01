@@ -52,10 +52,8 @@ function formatProductRow(row, imagesMap = {}) {
     newArrival: Boolean(row.is_new_arrival),
     is_new_arrival: Boolean(row.is_new_arrival),
     rating: (row.review_count && Number(row.review_count) > 0) ? (row.rating !== null && row.rating !== undefined ? Number(row.rating) : 0) : 0,
-    reviewCount: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
     videoUrl: row.video_url || null,
-    videoData: row.video_data || null,
-    video: row.video_data || row.video_url || null
+    video: row.video_url || null
   };
 }
 
@@ -190,6 +188,35 @@ router.get('/new-arrivals', async (req, res) => {
     res.json({ success: true, products });
   } catch (error) {
     console.error('Fetch New Arrivals Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 4. Get Products With Uploaded Videos (Reusable Endpoint for Watch & Buy, Homepage, Apps)
+router.get('/videos', async (req, res) => {
+  try {
+    const productsRes = await db.query(`
+      SELECT p.*, s.meta_title, s.meta_description 
+      FROM products p 
+      LEFT JOIN product_seo s ON s.product_id = p.id 
+      WHERE p.deleted_at IS NULL 
+        AND LOWER(p.status) = 'published' 
+        AND p.video_url IS NOT NULL 
+        AND TRIM(p.video_url) <> '' 
+      ORDER BY p.id DESC
+    `);
+    
+    const imagesRes = await db.query(`SELECT product_id, image_url, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`);
+    const imagesMap = {};
+    imagesRes.rows.forEach((img) => {
+      if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
+      imagesMap[img.product_id].push(img.image_url);
+    });
+
+    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
+    res.json({ success: true, count: products.length, data: products, products });
+  } catch (error) {
+    console.error('Fetch Video Products Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

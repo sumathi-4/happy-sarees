@@ -2,7 +2,8 @@
 
 - [x] Create Independent React Apps:
   - [x] Moved customer storefront codebase into `user/` subdirectory with its own `package.json`, `vite.config.js`, and build directories
-  - [x] Created separate admin portal React app under `admin/` subdirectory with its own `package.json`, `vite.config.js`, and assets
+  - [x] Audit `master_types` table columns in database
+- [/] Remove `/api/admin/master` duplicate route mapping from backend `server.js`
 - [x] Configure Routing:
   - [x] Restored `user/src/routes/AppRoutes.jsx` to its clean, customer-only routing configuration
   - [x] Setup `admin/src/App.jsx` with isolated root-level admin routing rules

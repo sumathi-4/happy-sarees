@@ -256,7 +256,6 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP;
 
 -- product_images: admin upload support
-ALTER TABLE product_images ADD COLUMN IF NOT EXISTS image_data TEXT;
 ALTER TABLE product_images ADD COLUMN IF NOT EXISTS alt_text VARCHAR(255);
 ALTER TABLE product_images ADD COLUMN IF NOT EXISTS is_primary BOOLEAN DEFAULT false;
 

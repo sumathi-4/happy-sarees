@@ -863,6 +863,8 @@ const INITIAL_NOTIFS = [
 export function AdminDataProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [masterData, setMasterData] = useState(INITIAL_MASTER_DATA);
+  const [masterTypes, setMasterTypes] = useState([]);
+  const [masterItems, setMasterItems] = useState([]);
   const [cmsData, setCmsData] = useState(INITIAL_CMS_DATA);
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -1035,54 +1037,63 @@ export function AdminDataProvider({ children }) {
   const refreshMasterData = async () => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      const typesRes = await fetch('http://localhost:5001/api/admin/master-data/types', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Fetch types and ALL items in parallel — single network round-trip for items
+      const [typesRes, itemsRes] = await Promise.all([
+        fetch('http://localhost:5001/api/admin/master-data/types', { headers }),
+        fetch('http://localhost:5001/api/admin/master-data/items', { headers })
+      ]);
+
       const typesData = await typesRes.json();
+      const itemsData = await itemsRes.json();
+
       const typesList = typesData.data?.types || typesData.types || [];
+      const rawItems  = itemsData.data?.items  || itemsData.items  || [];
 
       if (Array.isArray(typesList)) {
+        const formattedTypes = typesList.map(type => ({
+          id: type.id,
+          name: type.name,
+          slug: type.slug,
+          description: type.description || '',
+          icon: type.icon || '',
+          isActive: !!type.isActive,
+          sortOrder: Number(type.sortOrder || 0),
+          showInFilters: type.showInFilters ?? true,
+          showInSpecifications: type.showInSpecifications ?? true,
+          itemCount: Number(type.itemCount || 0)
+        }));
+        setMasterTypes(formattedTypes);
+
+        const formattedItems = rawItems.map(item => ({
+          id: item.id,
+          typeId: item.typeId ?? item.type_id,
+          name: item.name,
+          slug: item.slug || '',
+          description: item.description || '',
+          imageData: item.imageData || item.image_data || '',
+          colorHex: item.colorHex || item.color_hex || '',
+          sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
+          isActive: item.isActive !== undefined ? !!item.isActive : !!item.is_active
+        }));
+        setMasterItems(formattedItems);
+
+        // Keep masterData populated for any legacy code still using it
         const newMasterData = {};
-        for (const typeObj of typesList) {
-          const rawSlug = (typeObj.slug || typeObj.name || '').toLowerCase().trim();
+        for (const typeObj of formattedTypes) {
+          const rawSlug = (typeObj.slug || '').toLowerCase();
           const cleanKey = rawSlug.replace(/-/g, '_');
           const pluralKey = cleanKey.endsWith('s') ? cleanKey : cleanKey + 's';
           const singularKey = cleanKey.endsWith('s') ? cleanKey.slice(0, -1) : cleanKey;
-
-          try {
-            const itemsRes = await fetch(`http://localhost:5001/api/admin/master-data/${typeObj.slug}?limit=200`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            const itemsData = await itemsRes.json();
-            const rawList = Array.isArray(itemsData.data)
-              ? itemsData.data
-              : (Array.isArray(itemsData.items) ? itemsData.items : (itemsData.data?.items || []));
-
-            const formattedItems = rawList.map(item => ({
-              id: item.id,
-              name: item.name,
-              slug: item.slug || item.name.toLowerCase().trim().replace(/\s+/g, '-'),
-              description: item.description || '',
-              imageData: item.image_data || item.imageData || item.image || '',
-              image_data: item.image_data || item.imageData || item.image || '',
-              colorHex: item.color_hex || item.colorHex || '',
-              color_hex: item.color_hex || item.colorHex || '',
-              status: item.is_active ? 'Active' : 'Inactive',
-              isActive: item.is_active,
-              sortOrder: item.sort_order || 0
-            }));
-
-            newMasterData[pluralKey] = formattedItems;
-            newMasterData[singularKey] = formattedItems;
-            if (!newMasterData[cleanKey]) newMasterData[cleanKey] = formattedItems;
-          } catch (e) {
-            newMasterData[pluralKey] = [];
-            newMasterData[singularKey] = [];
-          }
+          const typeItems = formattedItems.filter(i => i.typeId === typeObj.id);
+          newMasterData[pluralKey] = typeItems;
+          newMasterData[singularKey] = typeItems;
+          if (!newMasterData[cleanKey]) newMasterData[cleanKey] = typeItems;
         }
-
         setMasterData(newMasterData);
-        return newMasterData;
+
+        return { masterTypes: formattedTypes, masterItems: formattedItems };
       }
     } catch (err) {
       console.log('[AdminDataContext] Fetch master data error:', err.message);
@@ -1194,16 +1205,23 @@ export function AdminDataProvider({ children }) {
   };
 
   // Master Data CRUD (Connected to Neon Cloud PostgreSQL DB)
-  const addMasterItem = async (type, item) => {
+  const addMasterItem = async (typeId, item) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeId}/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(item)
+        body: JSON.stringify({
+          name: item.name,
+          description: item.description || '',
+          imageData: item.imageData || '',
+          colorHex: item.colorHex || '',
+          sortOrder: Number(item.sortOrder || 0),
+          isActive: item.isActive ?? true
+        })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -1212,19 +1230,27 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Add master item error:', err.message);
+      throw err;
     }
   };
 
-  const updateMasterItem = async (type, itemId, updatedFields) => {
+  const updateMasterItem = async (typeId, itemId, updatedFields) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeId}/items/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(updatedFields)
+        body: JSON.stringify({
+          name: updatedFields.name,
+          description: updatedFields.description,
+          imageData: updatedFields.imageData,
+          colorHex: updatedFields.colorHex,
+          sortOrder: updatedFields.sortOrder !== undefined ? Number(updatedFields.sortOrder) : undefined,
+          isActive: updatedFields.isActive
+        })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -1233,13 +1259,14 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Update master item error:', err.message);
+      throw err;
     }
   };
 
-  const deleteMasterItem = async (type, itemId) => {
+  const deleteMasterItem = async (typeId, itemId) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${type}/items/${itemId}`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeId}/items/${itemId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -1250,6 +1277,7 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Delete master item error:', err.message);
+      throw err;
     }
   };
 
@@ -1262,7 +1290,15 @@ export function AdminDataProvider({ children }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ name: typeName, ...options })
+        body: JSON.stringify({
+          name: typeName,
+          description: options.description || '',
+          icon: options.icon || '',
+          isActive: options.isActive ?? true,
+          sortOrder: Number(options.sortOrder || 0),
+          showInFilters: options.showInFilters ?? true,
+          showInSpecifications: options.showInSpecifications ?? true
+        })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -1271,6 +1307,7 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Add master type error:', err.message);
+      throw err;
     }
   };
 
@@ -1283,7 +1320,15 @@ export function AdminDataProvider({ children }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(updatedData)
+        body: JSON.stringify({
+          name: updatedData.name,
+          description: updatedData.description,
+          icon: updatedData.icon,
+          isActive: updatedData.isActive,
+          sortOrder: updatedData.sortOrder !== undefined ? Number(updatedData.sortOrder) : undefined,
+          showInFilters: updatedData.showInFilters,
+          showInSpecifications: updatedData.showInSpecifications
+        })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -1292,6 +1337,7 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Update master type error:', err.message);
+      throw err;
     }
   };
 
@@ -1309,19 +1355,25 @@ export function AdminDataProvider({ children }) {
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Delete master type error:', err.message);
+      throw err;
     }
   };
 
   const toggleMasterType = async (typeKey) => {
     try {
       const token = localStorage.getItem('hs_admin_token') || 'demo_token';
-      await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}/toggle`, {
+      const res = await fetch(`http://localhost:5001/api/admin/master-data/types/${typeKey}/toggle`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to toggle type');
+      }
       await refreshMasterData();
     } catch (err) {
       console.log('[AdminDataContext] Toggle master type error:', err.message);
+      throw err;
     }
   };
 
@@ -1332,6 +1384,9 @@ export function AdminDataProvider({ children }) {
         setProducts,
         refreshProducts,
         masterData,
+        masterTypes,
+        masterItems,
+        setMasterItems,
         cmsData,
         setCmsData,
         refreshCms,

@@ -1,18 +1,20 @@
 .section {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 5rem 2rem;
+  padding: 4.5rem 2rem 5rem 2rem;
   background: linear-gradient(135deg, var(--bg-soft-pink-darker) 0%, #fae2e5 100%);
   text-align: center;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
+/* Section Header on top */
 .sectionHeader {
-  margin-bottom: 3.5rem;
+  margin-bottom: 3rem;
+  text-align: center;
 }
 
 .tagline {
@@ -59,24 +61,40 @@
   margin: 0 12px;
 }
 
-/* Grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2.5rem;
+/* 2-Column Split Layout: Cards Grid on Left, Image on Right */
+.layoutWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
 }
 
+/* Left Column - 2x2 Cards Grid */
+.leftColumn {
+  flex: 1 1 52%;
+  max-width: 660px;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+}
+
+/* Compact Natural Card Styling - No Vertical Stretching */
 .card {
   background-color: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-premium);
-  padding: 2.5rem 1.8rem;
+  padding: 2.2rem 1.6rem;
   box-shadow: var(--shadow-premium);
   transition: var(--transition-smooth);
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  height: auto;
 }
 
 .card:hover {
@@ -87,17 +105,17 @@
 }
 
 .iconCircle {
-  width: 70px;
-  height: 70px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   background-color: var(--bg-white);
   color: var(--primary-color);
-  font-size: 2rem;
+  font-size: 1.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 15px rgba(209, 27, 105, 0.06);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   transition: var(--transition-smooth);
 }
 
@@ -109,7 +127,7 @@
 
 .cardTitle {
   font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-color);
   margin-bottom: 0.3rem;
@@ -117,7 +135,7 @@
 
 .qualityText {
   font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-color);
   margin-bottom: 0.3rem;
@@ -125,23 +143,100 @@
 
 .cardSubtitle {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--secondary-color);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 .cardDesc {
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
   line-height: 1.6;
 }
 
-@media (max-width: 768px) {
-  .grid {
-    gap: 1.8rem;
+/* Right Column - Image Sized based on Natural Cards Grid Height */
+.rightColumn {
+  flex: 1 1 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.imageWrapper {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.modelsImage {
+  width: 100%;
+  max-height: 680px;
+  object-fit: contain;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+  transform: scale(1.05);
+  transition: transform 0.4s ease-in-out;
+}
+
+.modelsImage:hover {
+  transform: scale(1.025);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .layoutWrapper {
+    gap: 2rem;
+  }
+  .leftColumn {
+    flex: 1 1 52%;
+  }
+  .rightColumn {
+    flex: 1 1 48%;
+  }
+  .modelsImage {
+    max-height: 460px;
+  }
+}
+
+@media (max-width: 868px) {
+  .layoutWrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+  .leftColumn {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+  .rightColumn {
+    flex: 1 1 100%;
+    margin-top: 2.5rem;
+  }
+  .modelsImage {
+    max-height: 480px;
+  }
+}
+
+@media (max-width: 576px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  .section {
+    padding: 3.5rem 1.2rem;
   }
 }

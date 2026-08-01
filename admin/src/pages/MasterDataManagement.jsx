@@ -12,15 +12,15 @@ import styles from '../styles/MasterDataManagement.module.css';
 
 function MasterDataManagement() {
   const { 
-    masterData, addMasterItem, updateMasterItem, deleteMasterItem, 
+    masterData, masterTypes, masterItems, addMasterItem, updateMasterItem, deleteMasterItem, 
     addMasterType, updateMasterType, deleteMasterType, toggleMasterType 
   } = useAdminData();
 
   // View mode: 'grid' (overview of all master type cards) or 'table' (single master type detail view matching Image 3)
   const [viewMode, setViewMode] = useState('grid');
 
-  // Selected Master Type key (e.g., 'fabrics', 'occasions')
-  const [selectedType, setSelectedType] = useState('fabrics');
+  // Selected Master Type key (database ID integer)
+  const [selectedType, setSelectedType] = useState(null);
 
   // Search & Pagination inside current type
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,8 +59,10 @@ function MasterDataManagement() {
   };
 
   // Human readable title helper
-  const formatTypeLabel = (key) => {
-    return key
+  const formatTypeLabel = (typeIdOrSlug) => {
+    const found = masterTypes.find(t => t.id === typeIdOrSlug || t.slug === typeIdOrSlug);
+    if (found) return found.name;
+    return String(typeIdOrSlug || '')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase());
   };
@@ -80,11 +82,13 @@ function MasterDataManagement() {
     }
   };
 
-  // Get list of master types dynamically (unique plural categories)
-  const masterKeys = Object.keys(masterData).filter(key => key.endsWith('s') || !masterData[key + 's']);
+  // Get list of master types dynamically from PostgreSQL
+  const masterKeys = masterTypes.map(t => t.slug);
 
-  // Get active items
-  const activeItems = masterData[selectedType] || [];
+  const currentTypeId = selectedType || masterTypes[0]?.id;
+
+  // Get active items by filtering by typeId
+  const activeItems = masterItems.filter(item => item.typeId === currentTypeId);
 
   // Filter items
   const filteredItems = activeItems.filter(item => 
@@ -107,36 +111,41 @@ function MasterDataManagement() {
     }
 
     const sortOrderVal = Number(itemSortOrder) || (activeItems.length + 1);
+    const isActiveVal = itemStatus === 'Active';
 
-    if (editingItem) {
-      // Edit mode
-      await updateMasterItem(selectedType, editingItem.id, {
-        name: itemName.trim(),
-        imageData: itemImageData,
-        description: itemDescription,
-        status: itemStatus,
-        sortOrder: sortOrderVal
-      });
-      triggerToast(`Updated "${itemName}" successfully.`);
-    } else {
-      // Add mode
-      await addMasterItem(selectedType, {
-        name: itemName.trim(),
-        imageData: itemImageData,
-        description: itemDescription,
-        status: itemStatus,
-        sortOrder: sortOrderVal
-      });
-      triggerToast(`Added "${itemName}" successfully.`);
+    try {
+      if (editingItem) {
+        // Edit mode
+        await updateMasterItem(currentTypeId, editingItem.id, {
+          name: itemName.trim(),
+          imageData: itemImageData,
+          description: itemDescription,
+          isActive: isActiveVal,
+          sortOrder: sortOrderVal
+        });
+        triggerToast(`Updated "${itemName}" successfully.`);
+      } else {
+        // Add mode
+        await addMasterItem(currentTypeId, {
+          name: itemName.trim(),
+          imageData: itemImageData,
+          description: itemDescription,
+          isActive: isActiveVal,
+          sortOrder: sortOrderVal
+        });
+        triggerToast(`Added "${itemName}" successfully.`);
+      }
+
+      setShowItemModal(false);
+      setEditingItem(null);
+      setItemName('');
+      setItemImageData('');
+      setItemDescription('');
+      setItemStatus('Active');
+      setItemSortOrder('');
+    } catch (err) {
+      alert(err.message || "Failed to save master item.");
     }
-
-    setShowItemModal(false);
-    setEditingItem(null);
-    setItemName('');
-    setItemImageData('');
-    setItemDescription('');
-    setItemStatus('Active');
-    setItemSortOrder('');
   };
 
   // Open Add Modal
@@ -154,81 +163,106 @@ function MasterDataManagement() {
   const openEditModal = (item) => {
     setEditingItem(item);
     setItemName(item.name || '');
-    setItemImageData(item.imageData || item.image_data || item.image || '');
+    setItemImageData(item.imageData || '');
     setItemDescription(item.description || '');
-    setItemStatus(item.status || (item.isActive ? 'Active' : 'Inactive'));
-    setItemSortOrder((item.sortOrder ?? item.sort_order ?? '').toString());
+    setItemStatus(item.isActive ? 'Active' : 'Inactive');
+    setItemSortOrder((item.sortOrder ?? '').toString());
     setShowItemModal(true);
   };
 
   // Toggle status directly in table row
   const handleToggleStatus = async (item) => {
-    const nextStatus = item.status === 'Active' ? 'Inactive' : 'Active';
-    await updateMasterItem(selectedType, item.id, { status: nextStatus });
-    triggerToast(`Status for "${item.name}" changed to ${nextStatus}.`);
+    const nextActive = !item.isActive;
+    try {
+      await updateMasterItem(currentTypeId, item.id, {
+        name: item.name,
+        isActive: nextActive
+      });
+      triggerToast(`Status for "${item.name}" changed to ${nextActive ? 'Active' : 'Inactive'}.`);
+    } catch (err) {
+      alert(err.message || "Failed to toggle status");
+    }
   };
 
   // Execute Delete
   const handleDeleteExecute = async () => {
     const targetItem = activeItems.find(x => x.id === deleteConfirmId);
     if (targetItem) {
-      await deleteMasterItem(selectedType, deleteConfirmId);
-      triggerToast(`Removed "${targetItem.name}" from ${formatTypeLabel(selectedType)}.`);
+      try {
+        await deleteMasterItem(currentTypeId, deleteConfirmId);
+        triggerToast(`Removed "${targetItem.name}" from ${formatTypeLabel(currentTypeId)}.`);
+      } catch (err) {
+        alert(err.message || "Failed to delete item.");
+      }
     }
     setDeleteConfirmId(null);
   };
 
   // Add new Custom Master Category Type
-  const handleTypeSubmit = (e) => {
+  const handleTypeSubmit = async (e) => {
     e.preventDefault();
     if (!newTypeName.trim()) {
       alert("Type name is required.");
       return;
     }
-    const cleanKey = newTypeName.toLowerCase().trim().replace(/\s+/g, '_');
-    if (masterKeys.includes(cleanKey)) {
+    const slug = newTypeName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (masterKeys.includes(slug)) {
       alert("This Master Type already exists.");
       return;
     }
-    addMasterType(newTypeName, {
-      showInFilters: newTypeShowInFilters,
-      showInSpecs: newTypeShowInSpecs,
-      show_in_filters: newTypeShowInFilters,
-      show_in_specifications: newTypeShowInSpecs
-    });
-    setSelectedType(cleanKey);
-    setViewMode('table');
-    setShowTypeModal(false);
-    setNewTypeName('');
-    setNewTypeShowInFilters(true);
-    setNewTypeShowInSpecs(true);
-    triggerToast(`Created new category classification "${newTypeName}".`);
+    try {
+      const res = await addMasterType(newTypeName, {
+        showInFilters: newTypeShowInFilters,
+        showInSpecifications: newTypeShowInSpecs
+      });
+      const newType = res?.masterTypes?.find(t => t.slug === slug);
+      if (newType) {
+        setSelectedType(newType.id);
+      } else {
+        setSelectedType(slug);
+      }
+      setViewMode('table');
+      setShowTypeModal(false);
+      setNewTypeName('');
+      setNewTypeShowInFilters(true);
+      setNewTypeShowInSpecs(true);
+      triggerToast(`Created new category classification "${newTypeName}".`);
+    } catch (err) {
+      alert(err.message || "Failed to create master type");
+    }
   };
 
   // Handle Master Type Edit Submit
   const handleEditTypeSubmit = async (e) => {
     e.preventDefault();
     if (!editTypeName.trim()) return;
-    await updateMasterType(editingTypeKey, { 
-      name: editTypeName.trim(),
-      showInFilters: editTypeShowInFilters,
-      showInSpecs: editTypeShowInSpecs,
-      show_in_filters: editTypeShowInFilters,
-      show_in_specifications: editTypeShowInSpecs
-    });
-    triggerToast(`Updated Master Type to "${editTypeName.trim()}".`);
-    setEditingTypeKey(null);
+    try {
+      await updateMasterType(editingTypeKey, { 
+        name: editTypeName.trim(),
+        showInFilters: editTypeShowInFilters,
+        showInSpecifications: editTypeShowInSpecs
+      });
+      triggerToast(`Updated Master Type to "${editTypeName.trim()}".`);
+      setEditingTypeKey(null);
+    } catch (err) {
+      alert(err.message || "Failed to update master type");
+    }
   };
 
   // Handle Master Type Delete Execute
   const handleDeleteTypeExecute = async () => {
     if (deleteTypeConfirmKey) {
       const typeLabel = formatTypeLabel(deleteTypeConfirmKey);
-      await deleteMasterType(deleteTypeConfirmKey);
-      triggerToast(`Deleted Master Type "${typeLabel}".`);
-      setDeleteTypeConfirmKey(null);
-      if (selectedType === deleteTypeConfirmKey) {
-        setSelectedType(masterKeys.find(k => k !== deleteTypeConfirmKey) || 'fabrics');
+      try {
+        await deleteMasterType(deleteTypeConfirmKey);
+        triggerToast(`Deleted Master Type "${typeLabel}".`);
+        if (selectedType === deleteTypeConfirmKey) {
+          const nextType = masterTypes.find(t => t.slug !== deleteTypeConfirmKey);
+          setSelectedType(nextType ? nextType.slug : 'fabrics');
+        }
+        setDeleteTypeConfirmKey(null);
+      } catch (err) {
+        alert(err.message || "Failed to delete master type");
       }
     }
   };
@@ -493,13 +527,14 @@ function MasterDataManagement() {
 
           {/* Master Type Cards Grid */}
           <div className={styles.cardsGrid}>
-            {masterKeys.map((key) => {
-              const count = masterData[key]?.length || 0;
+            {masterTypes.map((typeObj) => {
+              const count = masterItems.filter(item => item.typeId === typeObj.id).length;
+              const key = typeObj.slug;
               return (
                 <div 
-                  key={key} 
+                  key={typeObj.id} 
                   className={styles.typeCard}
-                  onClick={() => { setSelectedType(key); setViewMode('table'); setSearchQuery(''); setCurrentPage(1); }}
+                  onClick={() => { setSelectedType(typeObj.id); setViewMode('table'); setSearchQuery(''); setCurrentPage(1); }}
                 >
                   <div className={styles.cardHeader}>
                     <div className={styles.iconCircle}>
@@ -510,7 +545,13 @@ function MasterDataManagement() {
                       <div className={styles.cardActionGroup} onClick={(e) => e.stopPropagation()}>
                         <button 
                           className={styles.cardActionBtn} 
-                          onClick={(e) => { e.stopPropagation(); setEditingTypeKey(key); setEditTypeName(formatTypeLabel(key)); }}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setEditingTypeKey(key); 
+                            setEditTypeName(typeObj.name); 
+                            setEditTypeShowInFilters(typeObj.showInFilters);
+                            setEditTypeShowInSpecs(typeObj.showInSpecifications);
+                          }}
                           title="Edit Master Type Name"
                         >
                           <FiEdit />
@@ -526,14 +567,14 @@ function MasterDataManagement() {
                     </div>
                   </div>
 
-                  <h3 className={styles.cardTitle}>{formatTypeLabel(key)}</h3>
+                  <h3 className={styles.cardTitle}>{typeObj.name}</h3>
                   <p className={styles.cardDesc}>
-                    Manage options and values for {formatTypeLabel(key).toLowerCase()} in saree forms.
+                    Manage options and values for {typeObj.name.toLowerCase()} in saree forms.
                   </p>
 
                   <div className={styles.cardFooter}>
                     <span className={styles.manageLink}>
-                      Manage {formatTypeLabel(key)} <FiArrowRight style={{ marginLeft: '4px' }} />
+                      Manage {typeObj.name} <FiArrowRight style={{ marginLeft: '4px' }} />
                     </span>
                   </div>
                 </div>
@@ -567,13 +608,13 @@ function MasterDataManagement() {
 
             {/* Quick Type Switcher Pills */}
             <div className={styles.quickTypePills}>
-              {masterKeys.map((key) => (
+              {masterTypes.map((typeObj) => (
                 <button
-                  key={key}
-                  className={`${styles.pillBtn} ${selectedType === key ? styles.pillBtnActive : ''}`}
-                  onClick={() => { setSelectedType(key); setSearchQuery(''); setCurrentPage(1); }}
+                  key={typeObj.id}
+                  className={`${styles.pillBtn} ${currentTypeId === typeObj.id ? styles.pillBtnActive : ''}`}
+                  onClick={() => { setSelectedType(typeObj.id); setSearchQuery(''); setCurrentPage(1); }}
                 >
-                  {formatTypeLabel(key)} ({masterData[key]?.length || 0})
+                  {typeObj.name} ({masterItems.filter(item => item.typeId === typeObj.id).length})
                 </button>
               ))}
             </div>
@@ -582,11 +623,11 @@ function MasterDataManagement() {
           {/* Panel Header */}
           <div className={styles.panelHeader}>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#2b2b2b' }}>{formatTypeLabel(selectedType)}</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#2b2b2b' }}>{formatTypeLabel(currentTypeId)}</h3>
               <p style={{ fontSize: '13px', color: '#666666', marginTop: '2px' }}>Manage options and values for your sarees</p>
             </div>
             <button className={styles.addBtn} onClick={() => { setEditingItem(null); setItemName(''); setItemStatus('Active'); setItemSortOrder(''); setShowItemModal(true); }}>
-              + Add {formatTypeLabel(selectedType).replace(/s$/, '') || 'Option'}
+              + Add {formatTypeLabel(currentTypeId).replace(/s$/, '') || 'Option'}
             </button>
           </div>
 
@@ -595,7 +636,7 @@ function MasterDataManagement() {
             <FiSearch className={styles.searchIcon} />
             <input 
               type="text" 
-              placeholder={`Search ${formatTypeLabel(selectedType)}...`}
+              placeholder={`Search ${formatTypeLabel(currentTypeId)}...`}
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
@@ -620,10 +661,10 @@ function MasterDataManagement() {
                     <td>
                       <button 
                         onClick={() => handleToggleStatus(item)}
-                        className={item.status === 'Active' ? styles.statusActive : styles.statusInactive}
+                        className={item.isActive ? styles.statusActive : styles.statusInactive}
                         title="Click to toggle status"
                       >
-                        {item.status}
+                        {item.isActive ? 'Active' : 'Inactive'}
                       </button>
                     </td>
                     <td>
@@ -679,8 +720,8 @@ function MasterDataManagement() {
             </div>
           ) : (
             <EmptyState
-              title={`No ${formatTypeLabel(selectedType)} Options Found`}
-              description={`We couldn't find any metadata option for "${selectedType}" matching your search keywords.`}
+              title={`No ${formatTypeLabel(currentTypeId)} Options Found`}
+              description={`We couldn't find any metadata option for "${formatTypeLabel(currentTypeId)}" matching your search keywords.`}
             />
           )}
         </div>

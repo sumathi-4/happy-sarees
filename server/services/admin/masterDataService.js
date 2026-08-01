@@ -15,30 +15,41 @@ class MasterDataService {
        FROM master_types mt ORDER BY sort_order ASC, name ASC`
     );
     return res.rows.map(r => ({
-      ...r,
-      isActive: r.is_active,
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description || null,
+      icon: r.icon || null,
+      isActive: !!r.is_active,
+      sortOrder: Number(r.sort_order || 0),
       showInFilters: r.show_in_filters ?? true,
-      showInSpecs: r.show_in_specifications ?? true,
+      showInSpecifications: r.show_in_specifications ?? true,
       itemCount: Number(r.item_count || 0)
     }));
   }
 
-  // Helper to query master_types by slug or ID flexibly (singular/plural)
-  getTypeQuery() {
-    return `SELECT * FROM master_types 
-            WHERE slug = $1 
-               OR slug = $1 || 's' 
-               OR slug = RTRIM($1, 's') 
-               OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') 
-               OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') || 's'
-               OR REPLACE(slug, '-', '_') = RTRIM(REPLACE($1, '-', '_'), 's')
-               OR id::text = $1`;
+  // ── List All Items ─────────────────────────────────────────
+  async getAllItems() {
+    const res = await db.query(
+      `SELECT * FROM master_items ORDER BY sort_order ASC, name ASC`
+    );
+    return res.rows.map(r => ({
+      id: r.id,
+      typeId: r.type_id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description || null,
+      imageData: r.image_data || null,
+      colorHex: r.color_hex || null,
+      sortOrder: Number(r.sort_order || 0),
+      isActive: !!r.is_active
+    }));
   }
 
-  // ── List Items by Type Slug ────────────────────────────────
-  async getItems(typeSlug, query = {}) {
-    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: `Master type '${typeSlug}' not found.` };
+  // ── List Items by Type ID ──────────────────────────────────
+  async getItems(typeId, query = {}) {
+    const typeRes = await db.query(`SELECT * FROM master_types WHERE id = $1`, [typeId]);
+    if (typeRes.rows.length === 0) throw { status: 404, message: `Master type ID '${typeId}' not found.` };
 
     const type = typeRes.rows[0];
     const { page, limit, offset } = parsePagination(query, 200);
@@ -67,12 +78,27 @@ class MasterDataService {
 
     return {
       type: {
-        ...type,
-        isActive: type.is_active,
+        id: type.id,
+        name: type.name,
+        slug: type.slug,
+        description: type.description,
+        icon: type.icon,
+        isActive: !!type.is_active,
+        sortOrder: Number(type.sort_order || 0),
         showInFilters: type.show_in_filters ?? true,
-        showInSpecs: type.show_in_specifications ?? true
+        showInSpecifications: type.show_in_specifications ?? true
       },
-      items: items.rows.map(item => ({ ...item, isActive: item.is_active })),
+      items: items.rows.map(item => ({
+        id: item.id,
+        typeId: item.type_id,
+        name: item.name,
+        slug: item.slug,
+        description: item.description || null,
+        imageData: item.image_data || null,
+        colorHex: item.color_hex || null,
+        sortOrder: Number(item.sort_order || 0),
+        isActive: !!item.is_active
+      })),
       total: Number(countRes.rows[0].count),
       page,
       limit,
@@ -80,13 +106,12 @@ class MasterDataService {
   }
 
   // ── Create Item ────────────────────────────────────────────
-  async createItem(typeSlug, data) {
-    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: `Type '${typeSlug}' not found.` };
+  async createItem(typeId, data) {
+    const typeRes = await db.query(`SELECT id FROM master_types WHERE id = $1`, [typeId]);
+    if (typeRes.rows.length === 0) throw { status: 404, message: `Type ID '${typeId}' not found.` };
 
-    const typeId = typeRes.rows[0].id;
     const slug = slugify(data.name);
-    const isActiveBool = data.isActive !== undefined ? data.isActive : (data.status !== undefined ? data.status === 'Active' : true);
+    const isActiveBool = data.isActive ?? true;
 
     const res = await db.query(
       `INSERT INTO master_items (type_id, name, slug, description, image_data, color_hex, sort_order, is_active)
@@ -95,15 +120,22 @@ class MasterDataService {
       [typeId, data.name, slug, data.description || null, data.imageData || null, data.colorHex || null, data.sortOrder || 0, isActiveBool]
     );
 
-    return { ...res.rows[0], isActive: res.rows[0].is_active, status: res.rows[0].is_active ? 'Active' : 'Inactive' };
+    const r = res.rows[0];
+    return {
+      id: r.id,
+      typeId: r.type_id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description || null,
+      imageData: r.image_data || null,
+      colorHex: r.color_hex || null,
+      sortOrder: Number(r.sort_order || 0),
+      isActive: !!r.is_active
+    };
   }
 
   // ── Update Item ────────────────────────────────────────────
-  async updateItem(typeSlug, id, data) {
-    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
-
-    const typeId = typeRes.rows[0].id;
+  async updateItem(typeId, id, data) {
     const existing = await db.query(
       `SELECT * FROM master_items WHERE id = $1 AND type_id = $2`,
       [id, typeId]
@@ -111,35 +143,48 @@ class MasterDataService {
     if (existing.rows.length === 0) throw { status: 404, message: 'Master item not found.' };
 
     const item = existing.rows[0];
-    const slug = data.name ? slugify(data.name) : item.slug;
-    const isActiveBool = data.isActive !== undefined ? data.isActive : (data.status !== undefined ? data.status === 'Active' : item.is_active);
+    const name = data.name !== undefined ? data.name : item.name;
+    const slug = data.name !== undefined ? slugify(data.name) : item.slug;
+    const description = data.description !== undefined ? data.description : item.description;
+    const imageData = data.imageData !== undefined ? data.imageData : item.image_data;
+    const colorHex = data.colorHex !== undefined ? data.colorHex : item.color_hex;
+    const sortOrder = data.sortOrder !== undefined ? data.sortOrder : item.sort_order;
+    const isActiveBool = data.isActive !== undefined ? data.isActive : item.is_active;
 
     const res = await db.query(
       `UPDATE master_items SET
         name=$1, slug=$2, description=$3, image_data=$4, color_hex=$5,
         sort_order=$6, is_active=$7, updated_at=NOW()
-       WHERE id=$8 RETURNING *`,
+       WHERE id=$8 AND type_id=$9 RETURNING *`,
       [
-        data.name ?? item.name,
+        name,
         slug,
-        data.description ?? item.description,
-        data.imageData ?? item.image_data,
-        data.colorHex ?? item.color_hex,
-        data.sortOrder ?? item.sort_order,
+        description,
+        imageData,
+        colorHex,
+        sortOrder,
         isActiveBool,
         id,
+        typeId
       ]
     );
 
-    return { ...res.rows[0], isActive: res.rows[0].is_active, status: res.rows[0].is_active ? 'Active' : 'Inactive' };
+    const r = res.rows[0];
+    return {
+      id: r.id,
+      typeId: r.type_id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description || null,
+      imageData: r.image_data || null,
+      colorHex: r.color_hex || null,
+      sortOrder: Number(r.sort_order || 0),
+      isActive: !!r.is_active
+    };
   }
 
   // ── Delete Item ────────────────────────────────────────────
-  async deleteItem(typeSlug, id) {
-    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
-
-    const typeId = typeRes.rows[0].id;
+  async deleteItem(typeId, id) {
     const res = await db.query(
       `DELETE FROM master_items WHERE id = $1 AND type_id = $2 RETURNING id`,
       [id, typeId]
@@ -149,11 +194,7 @@ class MasterDataService {
   }
 
   // ── Toggle Status ──────────────────────────────────────────
-  async toggleItem(typeSlug, id) {
-    const typeRes = await db.query(this.getTypeQuery(), [typeSlug]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
-
-    const typeId = typeRes.rows[0].id;
+  async toggleItem(typeId, id) {
     const res = await db.query(
       `UPDATE master_items SET is_active = NOT is_active, updated_at = NOW()
        WHERE id = $1 AND type_id = $2
@@ -161,7 +202,18 @@ class MasterDataService {
       [id, typeId]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Item not found.' };
-    return { ...res.rows[0], isActive: res.rows[0].is_active };
+    const r = res.rows[0];
+    return {
+      id: r.id,
+      typeId: r.type_id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description || null,
+      imageData: r.image_data || null,
+      colorHex: r.color_hex || null,
+      sortOrder: Number(r.sort_order || 0),
+      isActive: !!r.is_active
+    };
   }
 
   // ── Reorder Items ──────────────────────────────────────────
@@ -177,28 +229,36 @@ class MasterDataService {
     const name = data.name.trim();
     const slug = slugify(name);
     const description = data.description || `Manage ${name.toLowerCase()} options`;
-    const isActive = data.isActive ?? data.is_active ?? true;
-    const showInFilters = data.showInFilters ?? data.show_in_filters ?? true;
-    const showInSpecs = data.showInSpecs ?? data.show_in_specifications ?? data.showInSpecifications ?? true;
+    const icon = data.icon || null;
+    const isActive = data.isActive ?? true;
+    const sortOrder = data.sortOrder ?? 0;
+    const showInFilters = data.showInFilters ?? true;
+    const showInSpecifications = data.showInSpecifications ?? true;
 
     const res = await db.query(
-      `INSERT INTO master_types (name, slug, description, is_active, show_in_filters, show_in_specifications)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO master_types (name, slug, description, icon, is_active, sort_order, show_in_filters, show_in_specifications)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (slug) DO UPDATE SET 
          name = EXCLUDED.name, 
          description = EXCLUDED.description,
+         icon = EXCLUDED.icon,
          show_in_filters = EXCLUDED.show_in_filters,
          show_in_specifications = EXCLUDED.show_in_specifications
        RETURNING *`,
-      [name, slug, description, isActive, showInFilters, showInSpecs]
+      [name, slug, description, icon, isActive, sortOrder, showInFilters, showInSpecifications]
     );
+    const r = res.rows[0];
     return {
-      ...res.rows[0],
-      isActive: res.rows[0].is_active,
-      showInFilters: res.rows[0].show_in_filters,
-      showInSpecs: res.rows[0].show_in_specifications,
-      show_in_specifications: res.rows[0].show_in_specifications,
-      show_in_filters: res.rows[0].show_in_filters
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      icon: r.icon,
+      isActive: !!r.is_active,
+      sortOrder: Number(r.sort_order || 0),
+      showInFilters: r.show_in_filters,
+      showInSpecifications: r.show_in_specifications,
+      itemCount: 0
     };
   }
 
@@ -213,23 +273,29 @@ class MasterDataService {
     const name = data.name ? data.name.trim() : item.name;
     const slug = data.name ? slugify(data.name) : item.slug;
     const description = data.description !== undefined ? data.description : item.description;
-    const isActive = data.isActive !== undefined ? data.isActive : (data.is_active !== undefined ? data.is_active : item.is_active);
-    const showInFilters = data.showInFilters !== undefined ? data.showInFilters : (data.show_in_filters !== undefined ? data.show_in_filters : (item.show_in_filters ?? true));
-    const showInSpecs = data.showInSpecs !== undefined ? data.showInSpecs : (data.show_in_specifications !== undefined ? data.show_in_specifications : (data.showInSpecifications !== undefined ? data.showInSpecifications : (item.show_in_specifications ?? true)));
+    const icon = data.icon !== undefined ? data.icon : item.icon;
+    const isActive = data.isActive !== undefined ? data.isActive : item.is_active;
+    const sortOrder = data.sortOrder !== undefined ? data.sortOrder : item.sort_order;
+    const showInFilters = data.showInFilters !== undefined ? data.showInFilters : (item.show_in_filters ?? true);
+    const showInSpecifications = data.showInSpecifications !== undefined ? data.showInSpecifications : (item.show_in_specifications ?? true);
 
     const res = await db.query(
       `UPDATE master_types SET
-        name = $1, slug = $2, description = $3, is_active = $4, show_in_filters = $5, show_in_specifications = $6, updated_at = NOW()
-       WHERE id = $7 RETURNING *`,
-      [name, slug, description, isActive, showInFilters, showInSpecs, item.id]
+        name = $1, slug = $2, description = $3, icon = $4, is_active = $5, sort_order = $6, show_in_filters = $7, show_in_specifications = $8
+       WHERE id = $9 RETURNING *`,
+      [name, slug, description, icon, isActive, sortOrder, showInFilters, showInSpecifications, item.id]
     );
+    const r = res.rows[0];
     return {
-      ...res.rows[0],
-      isActive: res.rows[0].is_active,
-      showInFilters: res.rows[0].show_in_filters,
-      showInSpecs: res.rows[0].show_in_specifications,
-      show_in_specifications: res.rows[0].show_in_specifications,
-      show_in_filters: res.rows[0].show_in_filters
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      icon: r.icon,
+      isActive: !!r.is_active,
+      sortOrder: Number(r.sort_order || 0),
+      showInFilters: r.show_in_filters,
+      showInSpecifications: r.show_in_specifications
     };
   }
 
@@ -248,16 +314,22 @@ class MasterDataService {
 
   async toggleType(idOrSlug) {
     const res = await db.query(
-      `UPDATE master_types SET is_active = NOT is_active, updated_at = NOW()
+      `UPDATE master_types SET is_active = NOT is_active
        WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1 RETURNING *`,
       [idOrSlug]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
+    const r = res.rows[0];
     return {
-      ...res.rows[0],
-      isActive: res.rows[0].is_active,
-      showInFilters: res.rows[0].show_in_filters,
-      showInSpecs: res.rows[0].show_in_specifications
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      icon: r.icon,
+      isActive: !!r.is_active,
+      sortOrder: Number(r.sort_order || 0),
+      showInFilters: r.show_in_filters,
+      showInSpecifications: r.show_in_specifications
     };
   }
 }

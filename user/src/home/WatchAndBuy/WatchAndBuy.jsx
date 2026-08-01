@@ -1,121 +1,193 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiPlay, FiShoppingCart, FiX } from 'react-icons/fi';
-import { WATCH_AND_BUY_VIDEOS, PRODUCTS } from '../../data/mockData';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiChevronLeft, FiChevronRight, FiPlay } from 'react-icons/fi';
+import { api } from '../../services/api';
 import styles from './WatchAndBuy.module.css';
+
+// Premium Sample Saree Draping Videos for initial demo fallback if no admin video uploaded yet
+const SAMPLE_SAREE_VIDEOS = [
+  {
+    id: 1,
+    name: "Kanchipuram Silk Bridal Saree",
+    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-showing-a-red-dress-41584-large.mp4"
+  },
+  {
+    id: 2,
+    name: "Banarasi Zari Tissue Saree",
+    image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-woman-posing-with-a-traditional-costume-41617-large.mp4"
+  },
+  {
+    id: 3,
+    name: "Chanderi Handloom Floral Saree",
+    image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-model-posing-in-a-studio-41588-large.mp4"
+  },
+  {
+    id: 4,
+    name: "Organza Embroidered Designer Saree",
+    image: "https://images.unsplash.com/photo-1583391733975-d86bc21e42bb?q=80&w=800&auto=format&fit=crop",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-young-woman-with-long-hair-posing-41582-large.mp4"
+  }
+];
 
 function WatchAndBuy() {
   const navigate = useNavigate();
-  const [activeVideo, setActiveVideo] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState(null);
 
-  const getProductForVideo = (productId) => {
-    return PRODUCTS.find((p) => p.id === productId);
+  const carouselRef = useRef(null);
+  const videoRefs = useRef({});
+
+  // Fetch dynamic products with videos from reusable GET /api/products/videos API
+  useEffect(() => {
+    let isMounted = true;
+    const fetchVideos = async () => {
+      try {
+        const res = await api.getProductVideos();
+        const videoItems = res.data || res.products || [];
+        if (isMounted) {
+          if (Array.isArray(videoItems) && videoItems.length > 0) {
+            setProducts(videoItems);
+          } else {
+            // Fallback to sample videos if no admin videos uploaded yet
+            setProducts(SAMPLE_SAREE_VIDEOS);
+          }
+          setLoading(false);
+        }
+      } catch (err) {
+        console.log('[WatchAndBuy] Error fetching videos:', err.message);
+        if (isMounted) {
+          setProducts(SAMPLE_SAREE_VIDEOS);
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchVideos();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Handle Carousel Scroll
+  const handleScroll = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = direction === 'left' ? -340 : 340;
+      carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
   };
+
+  // Video Mouse Interactions
+  const handleMouseEnter = (productId) => {
+    setHoveredId(productId);
+    const videoEl = videoRefs.current[productId];
+    if (videoEl) {
+      videoEl.pause();
+    }
+  };
+
+  const handleMouseLeave = (productId) => {
+    setHoveredId(null);
+    const videoEl = videoRefs.current[productId];
+    if (videoEl) {
+      videoEl.play().catch(() => {});
+    }
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <section className={styles.section}>
-      <div className={styles.sectionHeader}>
-        <span className={styles.tagline}>Loomed Stories & Draping Videos</span>
-        <h2 className={styles.title}>Watch & Buy</h2>
-        <div className={styles.divider}>
-          <span className={styles.dot}></span>
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        {WATCH_AND_BUY_VIDEOS.map((video) => {
-          const product = getProductForVideo(video.productId);
-          return (
-            <div key={video.id} className={styles.card}>
-              <div className={styles.thumbnailWrapper}>
-                <img src={video.thumbnail} alt={video.title} className={styles.thumbnail} />
-                <span className={styles.duration}>{video.duration}</span>
-                
-                {/* Play Button Overlay */}
-                <button 
-                  onClick={() => setActiveVideo(video)} 
-                  className={styles.playBtn}
-                  aria-label="Play Story"
-                >
-                  <FiPlay />
-                </button>
-
-                {/* Shop This Look Button */}
-                {product && (
-                  <div className={styles.shopOverlay}>
-                    <div className={styles.productBrief}>
-                      <span className={styles.pName}>{product.name}</span>
-                      <span className={styles.pPrice}>₹{product.price.toLocaleString('en-IN')}</span>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/product/${product.id}`)}
-                      className={styles.shopBtn}
-                    >
-                      <FiShoppingCart /> Shop Look
-                    </button>
-                  </div>
-                )}
-              </div>
-              <h3 className={styles.cardTitle}>{video.title}</h3>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Video Modal (Simulated Video Playback) */}
-      {activeVideo && (
-        <div className={styles.modalOverlay} onClick={() => setActiveVideo(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setActiveVideo(null)} aria-label="Close player">
-              <FiX />
-            </button>
-            <div className={styles.modalBody}>
-              {/* Simulated Video Player */}
-              <div className={styles.videoPlayer}>
-                <div className={styles.playerPlaceholder}>
-                  <img src={activeVideo.thumbnail} alt="Video playback" className={styles.playerBg} />
-                  <div className={styles.playerOverlay}>
-                    <FiPlay className={styles.playerPlayIcon} />
-                    <p className={styles.playingText}>Playing: {activeVideo.title}...</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Product Card Linked to the Video */}
-              {getProductForVideo(activeVideo.productId) && (() => {
-                const p = getProductForVideo(activeVideo.productId);
-                return (
-                  <div className={styles.linkedProduct}>
-                    <h4 className={styles.linkTitle}>Featured Saree</h4>
-                    <Link to={`/product/${p.id}`} onClick={() => setActiveVideo(null)}>
-                      <img src={p.image} alt={p.name} className={styles.linkImg} />
-                    </Link>
-                    <span className={styles.linkFabric}>{p.fabric}</span>
-                    <h5 className={styles.linkName}>
-                      <Link to={`/product/${p.id}`} onClick={() => setActiveVideo(null)} style={{ color: 'inherit', textDecoration: 'none' }}>
-                        {p.name}
-                      </Link>
-                    </h5>
-                    <div className={styles.linkPriceRow}>
-                      <span className={styles.linkPrice}>₹{p.price.toLocaleString('en-IN')}</span>
-                      <span className={styles.linkOriginal}>₹{p.originalPrice.toLocaleString('en-IN')}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setActiveVideo(null);
-                        navigate(`/product/${p.id}`);
-                      }}
-                      className={styles.linkBuyBtn}
-                    >
-                      View Product Details
-                    </button>
-                  </div>
-                );
-              })()}
-            </div>
+      <div className={styles.container}>
+        {/* Section Header */}
+        <div className={styles.sectionHeader}>
+          <span className={styles.tagline}>Loomed Stories & Draping Videos</span>
+          <h2 className={styles.title}>Watch & Buy</h2>
+          <div className={styles.divider}>
+            <span className={styles.dot}></span>
           </div>
         </div>
-      )}
+
+        {/* Carousel Container */}
+        <div className={styles.carouselWrapper}>
+          {/* Left Arrow */}
+          <button 
+            className={`${styles.navBtn} ${styles.navBtnLeft}`} 
+            onClick={() => handleScroll('left')}
+            aria-label="Scroll Left"
+          >
+            <FiChevronLeft />
+          </button>
+
+          {/* Horizontal Track */}
+          <div className={styles.carouselTrack} ref={carouselRef}>
+            {products.map((product) => {
+              const videoSrc = product.videoUrl || product.video_url || product.video;
+              const isHovered = hoveredId === product.id;
+
+              return (
+                <div 
+                  key={product.id} 
+                  className={styles.cardItem}
+                  onMouseEnter={() => handleMouseEnter(product.id)}
+                  onMouseLeave={() => handleMouseLeave(product.id)}
+                >
+                  {/* Portrait Video Frame */}
+                  <div 
+                    className={styles.videoFrame}
+                    onClick={() => handleProductClick(product.id)}
+                  >
+                    <video
+                      ref={(el) => (videoRefs.current[product.id] = el)}
+                      src={videoSrc}
+                      poster={product.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className={styles.videoElement}
+                    />
+
+                    {/* Dark Gradient Overlay on Hover */}
+                    <div className={`${styles.overlay} ${isHovered ? styles.overlayActive : ''}`} />
+
+                    {/* Translucent Play Button Overlay on Hover */}
+                    <div className={`${styles.playBtnWrapper} ${isHovered ? styles.playBtnActive : ''}`}>
+                      <div className={styles.playBtnCircle}>
+                        <FiPlay className={styles.playIcon} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product Title Only Below Card */}
+                  <h3 
+                    className={styles.productName}
+                    onClick={() => handleProductClick(product.id)}
+                  >
+                    {product.name}
+                  </h3>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right Arrow */}
+          <button 
+            className={`${styles.navBtn} ${styles.navBtnRight}`} 
+            onClick={() => handleScroll('right')}
+            aria-label="Scroll Right"
+          >
+            <FiChevronRight />
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

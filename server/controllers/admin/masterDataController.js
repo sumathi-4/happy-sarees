@@ -6,38 +6,42 @@ exports.getAllTypes = async (req, res, next) => {
   try { return success(res, { types: await masterDataService.getAllTypes() }); } catch (e) { next(e); }
 };
 
+exports.getAllItems = async (req, res, next) => {
+  try { return success(res, { items: await masterDataService.getAllItems() }); } catch (e) { next(e); }
+};
+
 exports.getItems = async (req, res, next) => {
   try {
-    const result = await masterDataService.getItems(req.params.type, req.query);
+    const result = await masterDataService.getItems(parseInt(req.params.typeId), req.query);
     return paginated(res, result.items, result.total, result.page, result.limit);
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
 
 exports.createItem = async (req, res, next) => {
   try {
-    const item = await masterDataService.createItem(req.params.type, req.body);
+    const item = await masterDataService.createItem(parseInt(req.params.typeId), req.body);
     return success(res, { item }, 'Item created.', 201);
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
 
 exports.updateItem = async (req, res, next) => {
   try {
-    const item = await masterDataService.updateItem(req.params.type, req.params.id, req.body);
+    const item = await masterDataService.updateItem(parseInt(req.params.typeId), parseInt(req.params.id), req.body);
     return success(res, { item }, 'Item updated.');
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
 
 exports.deleteItem = async (req, res, next) => {
   try {
-    await masterDataService.deleteItem(req.params.type, req.params.id);
+    await masterDataService.deleteItem(parseInt(req.params.typeId), parseInt(req.params.id));
     return success(res, {}, 'Item deleted.');
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
 
 exports.toggleItem = async (req, res, next) => {
   try {
-    const item = await masterDataService.toggleItem(req.params.type, req.params.id);
-    return success(res, { item }, `Item ${item.is_active ? 'activated' : 'deactivated'}.`);
+    const item = await masterDataService.toggleItem(parseInt(req.params.typeId), parseInt(req.params.id));
+    return success(res, { item }, `Item ${item.isActive ? 'activated' : 'deactivated'}.`);
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
 
@@ -72,6 +76,6 @@ exports.deleteType = async (req, res, next) => {
 exports.toggleType = async (req, res, next) => {
   try {
     const type = await masterDataService.toggleType(req.params.id);
-    return success(res, { type }, `Master type ${type.is_active ? 'activated' : 'deactivated'}.`);
+    return success(res, { type }, `Master type ${type.isActive ? 'activated' : 'deactivated'}.`);
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };

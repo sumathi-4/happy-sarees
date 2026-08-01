@@ -61,6 +61,7 @@ export const api = {
   getProductById: (id) => axiosInstance.get(`/products/${id}`),
   getBestsellers: () => axiosInstance.get('/products/bestsellers'),
   getNewArrivals: () => axiosInstance.get('/products/new-arrivals'),
+  getProductVideos: () => axiosInstance.get('/products/videos'),
 
   // Orders APIs
   createOrder: (orderData) => axiosInstance.post('/orders', orderData),
