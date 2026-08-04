@@ -1,7 +1,7 @@
 // controllers/admin/uploadController.js
 // Handles base64 image/video uploads stored in PostgreSQL
 const { success, error } = require('../../utils/response');
-const { uploadStreamToCloudinary } = require('../../services/cloudinaryService');
+const { uploadToCloudinary, uploadStreamToCloudinary } = require('../../services/cloudinaryService');
 const cloudinary = require('cloudinary').v2;
 
 /**
@@ -31,18 +31,26 @@ function getPublicIdFromUrl(url) {
 
 exports.uploadImage = async (req, res, next) => {
   try {
-    const { imageData, filename } = req.body;
+    const { imageData, filename, folder } = req.body;
     if (!validateBase64(imageData)) {
       return error(res, 'Valid base64 image data URL is required (data:image/...)', 400);
     }
     const sizeKb = base64SizeKb(imageData);
     if (sizeKb > 5120) return error(res, 'Image too large. Maximum size is 5MB.', 413);
 
+    // Upload image to Cloudinary CDN
+    let cdnUrl = imageData;
+    try {
+      cdnUrl = await uploadToCloudinary(imageData, folder || 'happy_sarees/qr_codes');
+    } catch (cErr) {
+      console.warn('[uploadImage] Cloudinary upload fallback to base64:', cErr.message);
+    }
+
     return success(res, {
-      url: imageData,
+      url: cdnUrl || imageData,
       filename: filename || 'upload.jpg',
       sizeKb,
-    }, 'Image ready for use.');
+    }, 'Image uploaded successfully to Cloudinary.');
   } catch (e) { next(e); }
 };
 

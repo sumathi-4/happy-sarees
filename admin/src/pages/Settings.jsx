@@ -6,7 +6,7 @@ import {
   FiTrash2, FiPlus, FiEye, FiEyeOff, FiRefreshCw, FiDownload, FiUpload,
   FiShare2, FiLayers, FiFileText
 } from 'react-icons/fi';
-import { settingsApi, shippingMethodsApi } from '../api/adminApi';
+import { settingsApi, shippingMethodsApi, uploadApi, fileToBase64 } from '../api/adminApi';
 import styles from '../styles/Settings.module.css';
 
 /* ─────────────────── Shared Toast ─────────────────── */
@@ -375,6 +375,9 @@ function Settings() {
     razorpayEnabled: true,
     codEnabled: true,
     codMaxAmount: 5000,
+    upiQrEnabled: true,
+    upiId: '',
+    qrCodeUrl: '',
     smtpHost: 'smtp.mailgun.org',
     smtpPort: 587,
     smtpUser: 'postmaster@happysarees.com',
@@ -385,22 +388,50 @@ function Settings() {
     facebookPixelId: '1234567890987654'
   });
 
+  const [isUploadingQr, setIsUploadingQr] = useState(false);
+
+  const handleQrImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingQr(true);
+      const base64 = await fileToBase64(file);
+      const res = await uploadApi.uploadImage(base64, file.name);
+      if (res.data?.url || res.url) {
+        const cdnUrl = res.data?.url || res.url;
+        handleChange('qrCodeUrl', cdnUrl);
+        fire("QR Code image uploaded to Cloudinary successfully!");
+      }
+    } catch (err) {
+      console.error("QR Code upload error:", err);
+      fire("Failed to upload QR Code image.");
+    } finally {
+      setIsUploadingQr(false);
+    }
+  };
+
   // Load from DB on mount
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
         const res = await settingsApi.getAll();
-        if (res.data?.settings) {
-          const fetched = res.data.settings;
+        const fetched = res.data?.settings || res.settings || (typeof res === 'object' ? res : {});
+        if (fetched && typeof fetched === 'object') {
           const merged = { ...settings };
 
-          // Parse JSON setting blobs for all 8 categories
+          // Parse JSON setting blobs for all categories
           ['store_general', 'store_contact', 'store_tax', 'store_shipping', 'store_policies', 'store_seo', 'store_social', 'store_integrations', 'store_payment', 'store_smtp'].forEach(key => {
             if (fetched[key]) {
               try {
                 const parsed = typeof fetched[key] === 'string' ? JSON.parse(fetched[key]) : fetched[key];
                 Object.assign(merged, parsed);
+                if (parsed.upi_id !== undefined) merged.upiId = parsed.upi_id;
+                if (parsed.upiId !== undefined) merged.upiId = parsed.upiId;
+                if (parsed.qr_code_url !== undefined) merged.qrCodeUrl = parsed.qr_code_url;
+                if (parsed.qrCodeUrl !== undefined) merged.qrCodeUrl = parsed.qrCodeUrl;
+                if (parsed.upi_qr_enabled !== undefined) merged.upiQrEnabled = parsed.upi_qr_enabled;
+                if (parsed.upiQrEnabled !== undefined) merged.upiQrEnabled = parsed.upiQrEnabled;
               } catch (e) {
                 console.error(`Error parsing setting ${key}:`, e);
               }
@@ -485,6 +516,9 @@ function Settings() {
           razorpayEnabled: settings.razorpayEnabled,
           codEnabled: settings.codEnabled,
           codMaxAmount: settings.codMaxAmount,
+          upiQrEnabled: settings.upiQrEnabled,
+          upiId: settings.upiId,
+          qrCodeUrl: settings.qrCodeUrl,
           smtpHost: settings.smtpHost,
           smtpPort: settings.smtpPort,
           smtpUser: settings.smtpUser,
@@ -536,6 +570,9 @@ function Settings() {
           razorpayEnabled: settings.razorpayEnabled,
           codEnabled: settings.codEnabled,
           codMaxAmount: settings.codMaxAmount,
+          upiQrEnabled: settings.upiQrEnabled,
+          upiId: settings.upiId,
+          qrCodeUrl: settings.qrCodeUrl,
           smtpHost: settings.smtpHost,
           smtpPort: settings.smtpPort,
           smtpUser: settings.smtpUser,
@@ -550,7 +587,10 @@ function Settings() {
           razorpaySecret: settings.razorpaySecret,
           razorpayEnabled: settings.razorpayEnabled,
           codEnabled: settings.codEnabled,
-          codMaxAmount: settings.codMaxAmount
+          codMaxAmount: settings.codMaxAmount,
+          upiQrEnabled: settings.upiQrEnabled,
+          upiId: settings.upiId,
+          qrCodeUrl: settings.qrCodeUrl
         })
       ]);
       fire("Payment & Integration settings saved to Neon DB!");
@@ -891,6 +931,94 @@ function Settings() {
                 <Field label="Maximum COD Order Amount (₹)" half>
                   <input className={styles.input} type="number" value={settings.codMaxAmount} onChange={e => handleChange('codMaxAmount', Number(e.target.value))} />
                 </Field>
+              </div>
+
+              {/* UPI / QR Code Scanner Payment */}
+              <div style={{ gridColumn: '1 / -1', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', marginBottom: '16px' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#0f172a' }}>UPI / QR Code Scanner Payment</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                  <Toggle checked={settings.upiQrEnabled} onChange={v => handleChange('upiQrEnabled', v)} />
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Enable UPI / QR Code Payment</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+                  <Field label="UPI ID / VPA (Optional)">
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={settings.upiId || ''}
+                      onChange={e => handleChange('upiId', e.target.value)}
+                      placeholder="e.g. storename@upi"
+                    />
+                  </Field>
+
+                  <Field label="UPI QR Code Image (Cloudinary Upload)">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {settings.qrCodeUrl ? (
+                        <div style={{ position: 'relative', width: '160px', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '8px', background: '#ffffff', textAlign: 'center' }}>
+                          <img
+                            src={settings.qrCodeUrl}
+                            alt="UPI QR Scanner"
+                            style={{ width: '100%', height: '160px', objectFit: 'contain', borderRadius: '8px' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleChange('qrCodeUrl', '')}
+                            style={{
+                              position: 'absolute',
+                              top: '-8px',
+                              right: '-8px',
+                              background: '#ef4444',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '24px',
+                              height: '24px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                            }}
+                            title="Remove QR Code Image"
+                          >
+                            <FiX />
+                          </button>
+                          <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'block', marginTop: '4px' }}>
+                            ✓ Cloudinary Hosted
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '16px', textAlign: 'center', background: '#f8fafc' }}>
+                          <FiUpload style={{ fontSize: '24px', color: '#64748b', marginBottom: '6px' }} />
+                          <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#475569', fontWeight: 500 }}>
+                            Upload QR Code Scanner Image
+                          </p>
+                          <label style={{
+                            display: 'inline-block',
+                            background: '#27189d',
+                            color: '#ffffff',
+                            padding: '6px 14px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: isUploadingQr ? 'wait' : 'pointer'
+                          }}>
+                            {isUploadingQr ? 'Uploading to Cloudinary...' : 'Choose QR Image'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={handleQrImageUpload}
+                              disabled={isUploadingQr}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+                </div>
               </div>
 
               {/* Analytics & Meta Pixel */}

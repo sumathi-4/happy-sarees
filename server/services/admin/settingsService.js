@@ -51,6 +51,9 @@ class SettingsService {
     const razorpaySecret = data.razorpaySecret || data.razorpay_secret || '';
     const codEnabled = data.codEnabled !== undefined ? !!data.codEnabled : (data.cod_enabled !== undefined ? !!data.cod_enabled : true);
     const codMaxAmount = Number(data.codMaxAmount !== undefined ? data.codMaxAmount : (data.cod_max_amount !== undefined ? data.cod_max_amount : 5000)) || 5000;
+    const upiQrEnabled = data.upiQrEnabled !== undefined ? !!data.upiQrEnabled : (data.upi_qr_enabled !== undefined ? !!data.upi_qr_enabled : true);
+    const upiId = data.upiId || data.upi_id || '';
+    const qrCodeUrl = data.qrCodeUrl || data.qr_code_url || '';
 
     const standardized = {
       ...data,
@@ -63,7 +66,13 @@ class SettingsService {
       codEnabled,
       cod_enabled: codEnabled,
       codMaxAmount,
-      cod_max_amount: codMaxAmount
+      cod_max_amount: codMaxAmount,
+      upiQrEnabled,
+      upi_qr_enabled: upiQrEnabled,
+      upiId,
+      upi_id: upiId,
+      qrCodeUrl,
+      qr_code_url: qrCodeUrl
     };
     return this.updateSetting('store_payment', standardized, adminUserId, 'payment');
   }
@@ -110,6 +119,9 @@ class SettingsService {
     const razorpaySecret = data.razorpaySecret || data.razorpay_secret || '';
     const codEnabled = data.codEnabled !== undefined ? !!data.codEnabled : (data.cod_enabled !== undefined ? !!data.cod_enabled : true);
     const codMaxAmount = Number(data.codMaxAmount !== undefined ? data.codMaxAmount : (data.cod_max_amount !== undefined ? data.cod_max_amount : 5000)) || 5000;
+    const upiQrEnabled = data.upiQrEnabled !== undefined ? !!data.upiQrEnabled : (data.upi_qr_enabled !== undefined ? !!data.upi_qr_enabled : true);
+    const upiId = data.upiId || data.upi_id || '';
+    const qrCodeUrl = data.qrCodeUrl || data.qr_code_url || '';
 
     const standardized = {
       ...data,
@@ -122,7 +134,13 @@ class SettingsService {
       codEnabled,
       cod_enabled: codEnabled,
       codMaxAmount,
-      cod_max_amount: codMaxAmount
+      cod_max_amount: codMaxAmount,
+      upiQrEnabled,
+      upi_qr_enabled: upiQrEnabled,
+      upiId,
+      upi_id: upiId,
+      qrCodeUrl,
+      qr_code_url: qrCodeUrl
     };
     return this.updateSetting('store_integrations', standardized, adminUserId, 'integrations');
   }

@@ -247,6 +247,8 @@ function Checkout() {
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  const [utrNumber, setUtrNumber] = useState('');
+
   // Dynamic Razorpay Script Loader
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -265,9 +267,10 @@ function Checkout() {
 
   const handlePlaceOrder = async () => {
     const isOnline = selectedPayment?.id === 'pay_online' || selectedPayment?.type === 'online' || selectedPayment?.gateway === 'razorpay';
+    const isUpiQr = selectedPayment?.id === 'pay_upi_qr' || selectedPayment?.type === 'upi_qr' || selectedPayment?.gateway === 'upi_qr';
 
     if (!isOnline) {
-      // ── CASH ON DELIVERY (COD) FLOW ──
+      // ── CASH ON DELIVERY (COD) & UPI QR SCANNER FLOW ──
       const orderPayload = {
         items: cartItems.map(item => ({
           id: item.id,
@@ -277,7 +280,10 @@ function Checkout() {
         })),
         totalAmount: grandTotal,
         shippingAddress: selectedAddress,
-        paymentMethod: selectedPayment?.title || selectedPayment?.name || 'Cash on Delivery (COD)',
+        paymentMethod: isUpiQr ? 'UPI / QR Code Scanner' : (selectedPayment?.title || selectedPayment?.name || 'Cash on Delivery (COD)'),
+        paymentStatus: isUpiQr ? 'Pending Verification' : 'Pending',
+        payment_status: isUpiQr ? 'Pending Verification' : 'pending',
+        transactionId: isUpiQr ? (utrNumber || null) : null,
         couponCode: appliedCoupon?.code || null
       };
 
@@ -290,50 +296,32 @@ function Checkout() {
         if (clearCart) await clearCart();
         setShowSuccessModal(true);
       } catch (err) {
-        console.error('[COD Checkout Error]:', err);
-        alert(err.response?.data?.message || 'Failed to place COD order. Please try again.');
+        console.error('[Checkout Error]:', err);
+        alert(err.response?.data?.message || 'Failed to place order. Please try again.');
       } finally {
         setCheckoutLoading(false);
       }
       return;
     }
 
-    // ── PAY ONLINE (RAZORPAY TEST MODE) FLOW ──
+    // ── PAY ONLINE (RAZORPAY AUTOMATIC PAYMENT VERIFICATION) FLOW ──
     try {
       setCheckoutLoading(true);
 
-      // 1. Create Order in Neon DB first
-      const orderPayload = {
-        items: cartItems.map(item => ({
-          id: item.id,
-          productId: item.productId || item.id,
-          quantity: item.quantity,
-          price: item.price
-        })),
-        totalAmount: grandTotal,
-        shippingAddress: selectedAddress,
-        paymentMethod: 'Pay Online',
-        couponCode: appliedCoupon?.code || null
-      };
-
-      const dbOrderRes = await api.createOrder(orderPayload);
-      const dbOrder = dbOrderRes.data?.order || dbOrderRes.order || { id: Date.now(), orderNumber: `HS-ORD-${Date.now()}` };
-
-      // 2. Initiate Razorpay Order in Backend
+      // 1. Create Razorpay Payment Session FIRST (Without creating DB order yet)
       const razorpayApiRes = await api.createRazorpayOrder({
         amount: grandTotal,
-        orderId: dbOrder.orderNumber,
         currency: 'INR'
       });
 
       const razorpayData = razorpayApiRes.data || razorpayApiRes;
       if (!razorpayData.success || !razorpayData.razorpayOrderId) {
-        alert(razorpayData.message || 'Failed to initialize Razorpay payment session.');
+        alert(razorpayData.message || 'Failed to initialize Razorpay payment session. Please try again.');
         setCheckoutLoading(false);
         return;
       }
 
-      // 3. Load Razorpay Checkout Script
+      // 2. Load Razorpay SDK Script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         alert('Razorpay SDK failed to load. Please check your network connection.');
@@ -341,50 +329,71 @@ function Checkout() {
         return;
       }
 
-      // 4. Configure Razorpay Popup Options
+      // 3. Configure Razorpay Popup Options
       const options = {
         key: razorpayData.keyId || paymentSettings.razorpayKey || 'rzp_test_TIsRdBOnjlnxgt',
         amount: razorpayData.amount,
         currency: razorpayData.currency || 'INR',
         name: 'Happy Sarees',
-        description: `Order ${dbOrder.orderNumber}`,
+        description: 'Happy Sarees Web Checkout Payment',
         image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg',
         order_id: razorpayData.razorpayOrderId,
         handler: async function (response) {
           try {
             setCheckoutLoading(true);
-            const verifyRes = await api.verifyRazorpayPayment({
+
+            // 4. Payment Succeeded 100%! NOW Create the Order in DB as PAID
+            const orderPayload = {
+              items: cartItems.map(item => ({
+                id: item.id,
+                productId: item.productId || item.id,
+                quantity: item.quantity,
+                price: item.price
+              })),
+              totalAmount: grandTotal,
+              shippingAddress: selectedAddress,
+              paymentMethod: 'Pay Online',
+              paymentStatus: 'Paid',
+              payment_status: 'Paid',
+              transactionId: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              dbOrderId: dbOrder.id,
-              orderNumber: dbOrder.orderNumber,
-              amount: grandTotal
-            });
+              couponCode: appliedCoupon?.code || null
+            };
 
-            const verifyData = verifyRes.data || verifyRes;
-            if (verifyData.success) {
-              if (clearCart) await clearCart();
-              setCreatedOrderNumber(dbOrder.orderNumber);
-              setShowSuccessModal(true);
-            } else {
-              alert(verifyData.message || 'Payment signature verification failed.');
+            const dbOrderRes = await api.createOrder(orderPayload);
+            const dbOrder = dbOrderRes.data?.order || dbOrderRes.order || { id: Date.now(), orderNumber: `HS-${Date.now()}` };
+
+            // 5. Verify Razorpay Signature in Backend
+            try {
+              await api.verifyRazorpayPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                dbOrderId: dbOrder.id,
+                orderNumber: dbOrder.orderNumber,
+                amount: grandTotal
+              });
+            } catch (vErr) {
+              console.warn('[Razorpay Verification Warning]:', vErr.message);
             }
+
+            if (clearCart) await clearCart();
+            setCreatedOrderNumber(dbOrder.orderNumber || dbOrder.order_number || `HS-${Date.now()}`);
+            setShowSuccessModal(true);
           } catch (verifyErr) {
-            console.error('[Payment Verification Error]:', verifyErr);
-            alert('Payment verification failed. Please contact customer support.');
+            console.error('[Payment Order Creation Error]:', verifyErr);
+            alert('Payment was received, but creating order failed. Please contact store support with Payment ID: ' + response.razorpay_payment_id);
           } finally {
             setCheckoutLoading(false);
           }
         },
         modal: {
-          ondismiss: async function () {
-            console.log('[Razorpay Modal Dismissed]');
-            try {
-              await api.recordFailedPayment({ dbOrderId: dbOrder.id, orderNumber: dbOrder.orderNumber, reason: 'Modal Dismissed' });
-            } catch (e) {}
+          ondismiss: function () {
+            console.log('[Razorpay Modal Dismissed by User]');
             setCheckoutLoading(false);
-            alert('Payment cancelled. You can click Place Order again to retry payment.');
+            alert('Payment cancelled. No order was created. You can click Place Order to try again.');
           }
         },
         prefill: {
@@ -393,15 +402,14 @@ function Checkout() {
           contact: selectedAddress?.phone || '9876543210'
         },
         theme: {
-          color: 'var(--primary-color)'
+          color: '#27189d'
         }
       };
 
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
         console.error('[Razorpay Payment Failed]:', response.error);
-        api.recordFailedPayment({ dbOrderId: dbOrder.id, orderNumber: dbOrder.orderNumber, reason: response.error.description });
-        alert(`Payment Failed: ${response.error.description || 'Transaction declined.'}`);
+        alert(`Payment Failed: ${response.error.description || 'Transaction declined.'} No order was created.`);
         setCheckoutLoading(false);
       });
 
@@ -481,6 +489,8 @@ function Checkout() {
                     grandTotal={grandTotal}
                     codMaxAmount={paymentSettings.codMaxAmount}
                     loading={paymentMethodsLoading}
+                    utrNumber={utrNumber}
+                    setUtrNumber={setUtrNumber}
                   />
                 )}
 

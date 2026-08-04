@@ -389,7 +389,10 @@ router.get('/payment-methods', async (req, res) => {
       razorpayEnabled: true,
       razorpayKey: 'rzp_live_XXXXXXXXXXXXXX',
       codEnabled: true,
-      codMaxAmount: 5000
+      codMaxAmount: 5000,
+      upiQrEnabled: true,
+      upiId: '',
+      qrCodeUrl: ''
     };
 
     settingsRes.rows.forEach(r => {
@@ -409,6 +412,15 @@ router.get('/payment-methods', async (req, res) => {
 
         const codMax = val.codMaxAmount !== undefined ? val.codMaxAmount : val.cod_max_amount;
         if (codMax !== undefined) config.codMaxAmount = Number(codMax) || 5000;
+
+        const upiQrEnable = val.upiQrEnabled !== undefined ? val.upiQrEnabled : val.upi_qr_enabled;
+        if (upiQrEnable !== undefined) config.upiQrEnabled = !!upiQrEnable;
+
+        const upiIdVal = val.upiId || val.upi_id;
+        if (upiIdVal) config.upiId = upiIdVal;
+
+        const qrUrl = val.qrCodeUrl || val.qr_code_url;
+        if (qrUrl) config.qrCodeUrl = qrUrl;
       }
     });
 
@@ -420,7 +432,13 @@ router.get('/payment-methods', async (req, res) => {
       codEnabled: config.codEnabled,
       cod_enabled: config.codEnabled,
       codMaxAmount: config.codMaxAmount,
-      cod_max_amount: config.codMaxAmount
+      cod_max_amount: config.codMaxAmount,
+      upiQrEnabled: config.upiQrEnabled,
+      upi_qr_enabled: config.upiQrEnabled,
+      upiId: config.upiId,
+      upi_id: config.upiId,
+      qrCodeUrl: config.qrCodeUrl,
+      qr_code_url: config.qrCodeUrl
     };
 
     const paymentMethods = [];
@@ -436,6 +454,23 @@ router.get('/payment-methods', async (req, res) => {
         description: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.',
         desc: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.',
         icons: ['UPI', 'Cards', 'Net Banking', 'Wallets'],
+        is_enabled: true
+      });
+    }
+
+    if (config.upiQrEnabled) {
+      paymentMethods.push({
+        id: 'pay_upi_qr',
+        key: 'pay_upi_qr',
+        name: 'UPI / QR Code Scanner',
+        title: 'UPI / QR Code Scanner',
+        type: 'upi_qr',
+        gateway: 'upi_qr',
+        upiId: config.upiId,
+        qrCodeUrl: config.qrCodeUrl,
+        description: 'Scan QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to pay instantly.',
+        desc: 'Scan QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to pay instantly.',
+        icons: ['GPay', 'PhonePe', 'Paytm', 'BHIM'],
         is_enabled: true
       });
     }
@@ -467,9 +502,10 @@ router.get('/payment-methods', async (req, res) => {
     console.warn('Fetch Public Payment Methods Notice:', error.message);
     const defaultMethods = [
       { id: 'pay_online', key: 'pay_online', name: 'Pay Online', title: 'Pay Online', type: 'online', gateway: 'razorpay', description: 'Secure online payment powered by Razorpay. Supports UPI, Cards, Net Banking and Wallets.', is_enabled: true },
+      { id: 'pay_upi_qr', key: 'pay_upi_qr', name: 'UPI / QR Code Scanner', title: 'UPI / QR Code Scanner', type: 'upi_qr', gateway: 'upi_qr', upiId: '', qrCodeUrl: '', description: 'Scan QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to pay instantly.', is_enabled: true },
       { id: 'pay_cod', key: 'pay_cod', name: 'Cash on Delivery (COD)', title: 'Cash on Delivery (COD)', type: 'cod', gateway: 'cod', description: 'Pay in cash or UPI when your saree arrives at your doorstep.', is_enabled: true }
     ];
-    res.json({ success: true, paymentSettings: { razorpayEnabled: true, codEnabled: true, codMaxAmount: 5000 }, paymentMethods: defaultMethods, methods: defaultMethods });
+    res.json({ success: true, paymentSettings: { razorpayEnabled: true, codEnabled: true, codMaxAmount: 5000, upiQrEnabled: true, upiId: '', qrCodeUrl: '' }, paymentMethods: defaultMethods, methods: defaultMethods });
   }
 });
 

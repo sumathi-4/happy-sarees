@@ -1,5 +1,5 @@
-import React from 'react';
-import { FiLock, FiCreditCard, FiDollarSign, FiCheck, FiShield, FiAlertTriangle } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiLock, FiCreditCard, FiDollarSign, FiCheck, FiShield, FiAlertTriangle, FiMaximize, FiCopy } from 'react-icons/fi';
 import styles from './PaymentStep.module.css';
 
 function PaymentStep({
@@ -10,8 +10,12 @@ function PaymentStep({
   onPrevStep,
   grandTotal = 0,
   codMaxAmount = 5000,
-  loading = false
+  loading = false,
+  utrNumber = '',
+  setUtrNumber = () => {}
 }) {
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
   const handleNextClick = () => {
     if (!selectedPaymentId || methods.length === 0) {
       alert('Please select a payment method to continue.');
@@ -22,7 +26,26 @@ function PaymentStep({
       alert('Please select a valid payment method to continue.');
       return;
     }
+    const isUpiQr = currentSelected.id === 'pay_upi_qr' || currentSelected.type === 'upi_qr';
+    if (isUpiQr) {
+      const cleanUtr = (utrNumber || '').trim();
+      if (!cleanUtr) {
+        alert('Please enter your 12-digit UPI Transaction Ref / UTR No. after paying to confirm your order.');
+        return;
+      }
+      if (!/^\d{12}$/.test(cleanUtr)) {
+        alert('Invalid UTR Number format. Please enter a valid 12-digit numeric UTR / Reference number from your UPI app (e.g. 329817263910).');
+        return;
+      }
+    }
     onNextStep();
+  };
+
+  const copyToClipboard = (text) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2500);
   };
 
   return (
@@ -55,9 +78,12 @@ function PaymentStep({
             const isSelected = selectedPaymentId === method.id;
             const isCod = method.id === 'pay_cod' || method.type === 'cod';
             const isOnline = method.id === 'pay_online' || method.type === 'online';
+            const isUpiQr = method.id === 'pay_upi_qr' || method.type === 'upi_qr';
 
             const maxAllowedCod = Number(method.maxAmount || method.cod_max_amount || codMaxAmount || 5000);
             const isCodExceeded = isCod && grandTotal > maxAllowedCod;
+
+            const qrDisplayUrl = method.qrCodeUrl || '';
 
             return (
               <div key={method.id} className={styles.methodWrapper}>
@@ -83,6 +109,8 @@ function PaymentStep({
                     <div className={styles.iconBox}>
                       {isOnline ? (
                         <FiCreditCard className={styles.payIcon} />
+                      ) : isUpiQr ? (
+                        <FiMaximize className={styles.payIcon} />
                       ) : (
                         <FiDollarSign className={styles.payIcon} />
                       )}
@@ -106,7 +134,7 @@ function PaymentStep({
                   </div>
                 </div>
 
-                {/* Information Box when selected */}
+                {/* Razorpay Online Payment Box */}
                 {isSelected && !isCodExceeded && isOnline && (
                   <div className={styles.detailsPanel}>
                     <div className={styles.infoNoticeBox}>
@@ -138,6 +166,84 @@ function PaymentStep({
                       }}
                     >
                       <FiLock /> Proceed to Review & Pay (₹{grandTotal.toLocaleString()}) →
+                    </button>
+                  </div>
+                )}
+
+                {/* UPI QR Scanner Payment Box */}
+                {isSelected && !isCodExceeded && isUpiQr && (
+                  <div className={styles.detailsPanel} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#27189d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Scan QR Code & Pay via Google Pay / PhonePe / Paytm / BHIM
+                      </span>
+                      {qrDisplayUrl ? (
+                        <div style={{ margin: '12px auto', width: '190px', height: '190px', background: '#ffffff', padding: '10px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                          <img
+                            src={qrDisplayUrl}
+                            alt="UPI QR Scanner"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ margin: '12px auto', maxWidth: '360px', padding: '16px', background: '#ffffff', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                          <FiMaximize style={{ fontSize: '28px', color: '#94a3b8', marginBottom: '6px' }} />
+                          <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontWeight: 500 }}>
+                            Please upload a QR Scanner Image in Admin Settings → Integrations.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {method.upiId ? (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffffff', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '20px', marginTop: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{method.upiId}</span>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(method.upiId)}
+                            style={{ background: '#27189d', color: '#fff', border: 'none', borderRadius: '14px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <FiCopy style={{ fontSize: '11px' }} />
+                            {copiedUpi ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: '6px' }}>
+                        Payment Transaction Ref / UTR No. <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter 12-digit UTR No. (e.g. 329817263910)"
+                        value={utrNumber}
+                        onChange={(e) => setUtrNumber(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', outline: 'none' }}
+                      />
+                      <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: '4px' }}>
+                        Please enter the 12-digit UTR / Reference number from GPay/PhonePe after paying.
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={handleNextClick}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#27189d',
+                        color: 'var(--bg-white)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <FiLock /> Continue to Order Review (₹{grandTotal.toLocaleString()}) →
                     </button>
                   </div>
                 )}
