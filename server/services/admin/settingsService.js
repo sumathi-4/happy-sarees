@@ -53,6 +53,7 @@ class SettingsService {
     const codMaxAmount = Number(data.codMaxAmount !== undefined ? data.codMaxAmount : (data.cod_max_amount !== undefined ? data.cod_max_amount : 5000)) || 5000;
     const upiQrEnabled = data.upiQrEnabled !== undefined ? !!data.upiQrEnabled : (data.upi_qr_enabled !== undefined ? !!data.upi_qr_enabled : true);
     const upiId = data.upiId || data.upi_id || '';
+    const upiPayeeName = data.upiPayeeName || data.upi_payee_name || 'Happy Sarees';
     const qrCodeUrl = data.qrCodeUrl || data.qr_code_url || '';
 
     const standardized = {
@@ -71,6 +72,8 @@ class SettingsService {
       upi_qr_enabled: upiQrEnabled,
       upiId,
       upi_id: upiId,
+      upiPayeeName,
+      upi_payee_name: upiPayeeName,
       qrCodeUrl,
       qr_code_url: qrCodeUrl
     };

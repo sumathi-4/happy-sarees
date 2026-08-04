@@ -392,6 +392,7 @@ router.get('/payment-methods', async (req, res) => {
       codMaxAmount: 5000,
       upiQrEnabled: true,
       upiId: '',
+      upiPayeeName: 'Happy Sarees',
       qrCodeUrl: ''
     };
 
@@ -419,6 +420,9 @@ router.get('/payment-methods', async (req, res) => {
         const upiIdVal = val.upiId || val.upi_id;
         if (upiIdVal) config.upiId = upiIdVal;
 
+        const payeeNameVal = val.upiPayeeName || val.upi_payee_name;
+        if (payeeNameVal) config.upiPayeeName = payeeNameVal;
+
         const qrUrl = val.qrCodeUrl || val.qr_code_url;
         if (qrUrl) config.qrCodeUrl = qrUrl;
       }
@@ -437,6 +441,8 @@ router.get('/payment-methods', async (req, res) => {
       upi_qr_enabled: config.upiQrEnabled,
       upiId: config.upiId,
       upi_id: config.upiId,
+      upiPayeeName: config.upiPayeeName,
+      upi_payee_name: config.upiPayeeName,
       qrCodeUrl: config.qrCodeUrl,
       qr_code_url: config.qrCodeUrl
     };
@@ -467,6 +473,7 @@ router.get('/payment-methods', async (req, res) => {
         type: 'upi_qr',
         gateway: 'upi_qr',
         upiId: config.upiId,
+        upiPayeeName: config.upiPayeeName,
         qrCodeUrl: config.qrCodeUrl,
         description: 'Scan QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to pay instantly.',
         desc: 'Scan QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to pay instantly.',

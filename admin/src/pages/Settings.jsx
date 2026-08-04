@@ -377,6 +377,7 @@ function Settings() {
     codMaxAmount: 5000,
     upiQrEnabled: true,
     upiId: '',
+    upiPayeeName: 'Happy Sarees',
     qrCodeUrl: '',
     smtpHost: 'smtp.mailgun.org',
     smtpPort: 587,
@@ -428,6 +429,8 @@ function Settings() {
                 Object.assign(merged, parsed);
                 if (parsed.upi_id !== undefined) merged.upiId = parsed.upi_id;
                 if (parsed.upiId !== undefined) merged.upiId = parsed.upiId;
+                if (parsed.upi_payee_name !== undefined) merged.upiPayeeName = parsed.upi_payee_name;
+                if (parsed.upiPayeeName !== undefined) merged.upiPayeeName = parsed.upiPayeeName;
                 if (parsed.qr_code_url !== undefined) merged.qrCodeUrl = parsed.qr_code_url;
                 if (parsed.qrCodeUrl !== undefined) merged.qrCodeUrl = parsed.qrCodeUrl;
                 if (parsed.upi_qr_enabled !== undefined) merged.upiQrEnabled = parsed.upi_qr_enabled;
@@ -942,81 +945,23 @@ function Settings() {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
-                  <Field label="UPI ID / VPA (Optional)">
+                  <Field label="UPI ID / VPA (Store Merchant UPI)">
                     <input
                       className={styles.input}
                       type="text"
                       value={settings.upiId || ''}
                       onChange={e => handleChange('upiId', e.target.value)}
-                      placeholder="e.g. storename@upi"
+                      placeholder="e.g. yourstore@upi"
                     />
                   </Field>
-
-                  <Field label="UPI QR Code Image (Cloudinary Upload)">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {settings.qrCodeUrl ? (
-                        <div style={{ position: 'relative', width: '160px', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '8px', background: '#ffffff', textAlign: 'center' }}>
-                          <img
-                            src={settings.qrCodeUrl}
-                            alt="UPI QR Scanner"
-                            style={{ width: '100%', height: '160px', objectFit: 'contain', borderRadius: '8px' }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleChange('qrCodeUrl', '')}
-                            style={{
-                              position: 'absolute',
-                              top: '-8px',
-                              right: '-8px',
-                              background: '#ef4444',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '50%',
-                              width: '24px',
-                              height: '24px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '12px',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
-                            }}
-                            title="Remove QR Code Image"
-                          >
-                            <FiX />
-                          </button>
-                          <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'block', marginTop: '4px' }}>
-                            ✓ Cloudinary Hosted
-                          </span>
-                        </div>
-                      ) : (
-                        <div style={{ border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '16px', textAlign: 'center', background: '#f8fafc' }}>
-                          <FiUpload style={{ fontSize: '24px', color: '#64748b', marginBottom: '6px' }} />
-                          <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#475569', fontWeight: 500 }}>
-                            Upload QR Code Scanner Image
-                          </p>
-                          <label style={{
-                            display: 'inline-block',
-                            background: '#27189d',
-                            color: '#ffffff',
-                            padding: '6px 14px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: isUploadingQr ? 'wait' : 'pointer'
-                          }}>
-                            {isUploadingQr ? 'Uploading to Cloudinary...' : 'Choose QR Image'}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              style={{ display: 'none' }}
-                              onChange={handleQrImageUpload}
-                              disabled={isUploadingQr}
-                            />
-                          </label>
-                        </div>
-                      )}
-                    </div>
+                  <Field label="UPI Payee / Business Display Name">
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={settings.upiPayeeName || ''}
+                      onChange={e => handleChange('upiPayeeName', e.target.value)}
+                      placeholder="e.g. Happy Sarees"
+                    />
                   </Field>
                 </div>
               </div>

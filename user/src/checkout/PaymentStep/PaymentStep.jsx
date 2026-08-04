@@ -83,7 +83,14 @@ function PaymentStep({
             const maxAllowedCod = Number(method.maxAmount || method.cod_max_amount || codMaxAmount || 5000);
             const isCodExceeded = isCod && grandTotal > maxAllowedCod;
 
-            const qrDisplayUrl = method.qrCodeUrl || '';
+            const payeeName = method.upiPayeeName || method.payeeName || 'Happy Sarees';
+            const upiString = method.upiId
+              ? `upi://pay?pa=${encodeURIComponent(method.upiId)}&pn=${encodeURIComponent(payeeName)}&cu=INR&am=${grandTotal}`
+              : '';
+
+            const qrDisplayUrl = upiString
+              ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiString)}`
+              : (method.qrCodeUrl || '');
 
             return (
               <div key={method.id} className={styles.methodWrapper}>
@@ -174,11 +181,11 @@ function PaymentStep({
                 {isSelected && !isCodExceeded && isUpiQr && (
                   <div className={styles.detailsPanel} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#27189d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Scan QR Code & Pay via Google Pay / PhonePe / Paytm / BHIM
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#27189d', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
+                        SCAN QR CODE & PAY VIA GOOGLE PAY / PHONEPE / PAYTM / BHIM
                       </span>
                       {qrDisplayUrl ? (
-                        <div style={{ margin: '12px auto', width: '190px', height: '190px', background: '#ffffff', padding: '10px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                        <div style={{ margin: '12px auto', width: '200px', height: '200px', background: '#ffffff', padding: '10px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
                           <img
                             src={qrDisplayUrl}
                             alt="UPI QR Scanner"
@@ -189,22 +196,42 @@ function PaymentStep({
                         <div style={{ margin: '12px auto', maxWidth: '360px', padding: '16px', background: '#ffffff', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
                           <FiMaximize style={{ fontSize: '28px', color: '#94a3b8', marginBottom: '6px' }} />
                           <p style={{ fontSize: '12px', color: '#64748b', margin: 0, fontWeight: 500 }}>
-                            Please upload a QR Scanner Image in Admin Settings → Integrations.
+                            Please enter UPI ID in Admin Settings → Integrations to automatically generate payment QR code.
                           </p>
                         </div>
                       )}
-                      
+
+                      {/* Pre-filled Amount Badge */}
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#ecfdf5',
+                        color: '#059669',
+                        border: '1px solid #a7f3d0',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        marginTop: '8px',
+                        marginBottom: '8px'
+                      }}>
+                        ✓ Amount Pre-filled: ₹{grandTotal.toLocaleString('en-IN')}
+                      </div>
+
                       {method.upiId ? (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffffff', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '20px', marginTop: '8px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{method.upiId}</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(method.upiId)}
-                            style={{ background: '#27189d', color: '#fff', border: 'none', borderRadius: '14px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          >
-                            <FiCopy style={{ fontSize: '11px' }} />
-                            {copiedUpi ? 'Copied!' : 'Copy'}
-                          </button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffffff', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '20px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{method.upiId}</span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(method.upiId)}
+                              style={{ background: '#27189d', color: '#fff', border: 'none', borderRadius: '14px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <FiCopy style={{ fontSize: '11px' }} />
+                              {copiedUpi ? 'Copied!' : 'Copy'}
+                            </button>
+                          </div>
                         </div>
                       ) : null}
                     </div>
