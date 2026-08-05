@@ -17,5 +17,7 @@ export const PATHS = {
   NEW_ARRIVALS: '/new-arrivals',
   SALE: '/sale',
   SEARCH: '/search',
+  VIDEOS: '/videos',
+  SAREE_CROWN: '/saree-crown',
 };
 

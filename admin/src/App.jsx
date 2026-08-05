@@ -18,6 +18,7 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import ProfileSettings from './pages/ProfileSettings';
 import RatingsReviewsManagement from './pages/RatingsReviewsManagement';
+import SareeCrownManagement from './pages/SareeCrownManagement';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 const router = createBrowserRouter([
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
           {
             path: '/coupons',
             element: <Coupons />,
+          },
+          {
+            path: '/campaigns/saree-crown',
+            element: <SareeCrownManagement />,
           },
           {
             path: '/reports',

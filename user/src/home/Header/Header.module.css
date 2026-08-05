@@ -106,6 +106,36 @@
   transform: rotate(180deg);
 }
 
+/* ── Saree Crown nav link — subtle gold styling ─────────── */
+.crownNavLink {
+  color: var(--gold-color) !important;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  position: relative;
+}
+
+.crownNavLink:hover {
+  color: var(--gold-hover) !important;
+  text-shadow: 0 0 12px rgba(197, 160, 89, 0.45);
+}
+
+.crownNavLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-color), transparent);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.crownNavLink:hover::after {
+  opacity: 1;
+}
+
 /* Mega Menu container base — MEESHO STYLE: FULL WIDTH & TOUCHED DIRECTLY TO NAVBAR */
 .megaMenuContainer {
   position: absolute;

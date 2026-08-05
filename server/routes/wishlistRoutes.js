@@ -19,12 +19,12 @@ router.get('/', authenticateToken, async (req, res) => {
 
     // Fetch primary images for wishlisted products
     const imagesRes = await db.query(
-      `SELECT product_id, image_url, image_data, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`
+      `SELECT product_id, image_url, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`
     );
     const imagesMap = {};
     imagesRes.rows.forEach(img => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_data || img.image_url);
+      imagesMap[img.product_id].push(img.image_url);
     });
 
     const items = result.rows.map(row => {

@@ -138,14 +138,15 @@ function ProductForm() {
             image: coverImage
           }));
 
-          if (match.videoData || match.video_data) {
+          const vurl = match.videoUrl || match.video_url || '';
+          const vdata = match.videoData || match.video_data || '';
+          if (vdata) {
             setVideoMode('upload');
-          } else if (match.videoUrl || match.video_url) {
-            const vurl = match.videoUrl || match.video_url;
-            if (vurl.includes('cloudinary.com')) {
-              setVideoMode('upload');
-            } else {
+          } else if (vurl) {
+            if (vurl.includes('youtube') || vurl.includes('youtu.be') || vurl.includes('vimeo')) {
               setVideoMode('url');
+            } else {
+              setVideoMode('upload');
             }
           }
         }
@@ -295,6 +296,7 @@ function ProductForm() {
     const fileExtension = file.name.split('.').pop().toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
       setUploadError('Unsupported format. Allowed formats: MP4, WEBM, MOV');
+      setFormData(prev => ({ ...prev, videoUrl: '', videoData: '' }));
       e.target.value = '';
       return;
     }
@@ -303,6 +305,7 @@ function ProductForm() {
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       setUploadError('File too large. Maximum size is 50MB.');
+      setFormData(prev => ({ ...prev, videoUrl: '', videoData: '' }));
       e.target.value = '';
       return;
     }
@@ -340,7 +343,9 @@ function ProductForm() {
             setFormData(prev => ({
               ...prev,
               videoUrl: response.url,
-              videoData: '' // Clear base64 placeholder
+              video_url: response.url,
+              videoData: '',
+              video_data: ''
             }));
             setToastMessage("Video uploaded successfully to Cloudinary!");
             setTimeout(() => setToastMessage(null), 3000);
@@ -371,7 +376,7 @@ function ProductForm() {
   };
 
   const handleRemoveVideo = async () => {
-    const videoUrlToRemove = formData.videoUrl;
+    const videoUrlToRemove = formData.videoUrl || formData.video_url;
     if (!videoUrlToRemove) return;
 
     try {
@@ -391,13 +396,16 @@ function ProductForm() {
         },
         body: JSON.stringify({ videoUrl: videoUrlToRemove })
       });
+
       const data = await res.json();
       
       if (data.success) {
         setFormData(prev => ({
           ...prev,
           videoUrl: '',
-          videoData: ''
+          video_url: '',
+          videoData: '',
+          video_data: ''
         }));
         setUploadProgress(0);
         setToastMessage("Video removed successfully from Cloudinary.");
@@ -413,25 +421,7 @@ function ProductForm() {
     }
   };
 
-  const handleTestInvalidUpload = () => {
-    // Create a mock File object with an invalid format (.txt)
-    const file = new File(['mock content'], 'test_file.txt', { type: 'text/plain' });
-    const mockEvent = { target: { files: [file] } };
-    handleVideoUpload(mockEvent);
-  };
 
-  const handleTestValidUpload = async () => {
-    try {
-      setToastMessage("Downloading test video for mock upload...");
-      const res = await fetch('/test_video.mp4');
-      const blob = await res.blob();
-      const file = new File([blob], 'test_video.mp4', { type: 'video/mp4' });
-      const mockEvent = { target: { files: [file] } };
-      handleVideoUpload(mockEvent);
-    } catch (err) {
-      setUploadError(`Mock test failed: ${err.message}`);
-    }
-  };
 
   const handleDeleteGalleryImage = (idx) => {
     setFormData(prev => ({
@@ -493,14 +483,7 @@ function ProductForm() {
       image: formData.image,
       galleryImages: formData.galleryImages,
       images: formData.galleryImages,
-      // Only send videoData when it's a real Base64 payload (not empty)
-      // videoUrl holds the Cloudinary URL from multipart upload
-      videoUrl: formData.videoUrl || '',
-      video_url: formData.videoUrl || '',
-      ...(formData.videoData && formData.videoData.trim() !== '' ? {
-        videoData: formData.videoData,
-        video_data: formData.videoData,
-      } : {})
+      videoUrl: formData.videoUrl || ''
     };
 
     if (isEditMode) {
@@ -993,25 +976,7 @@ function ProductForm() {
                           disabled={isUploading}
                           style={{ border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', width: '100%', cursor: isUploading ? 'not-allowed' : 'pointer' }}
                         />
-                        {/* Automated Testing Helper Buttons */}
-                        <div style={{ marginTop: '8px', display: 'flex', gap: '10px' }}>
-                          <button
-                            id="run-test-invalid-upload"
-                            type="button"
-                            onClick={handleTestInvalidUpload}
-                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer', background: '#f5f5f5' }}
-                          >
-                            [Test: Invalid File]
-                          </button>
-                          <button
-                            id="run-test-upload"
-                            type="button"
-                            onClick={handleTestValidUpload}
-                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer', background: '#f5f5f5' }}
-                          >
-                            [Test: Valid Video]
-                          </button>
-                        </div>
+
                         {isUploading && (
                           <div style={{ marginTop: '12px', width: '100%' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
@@ -1028,7 +993,7 @@ function ProductForm() {
                             ⚠ {uploadError}
                           </div>
                         )}
-                        {formData.videoUrl && formData.videoUrl.includes('cloudinary.com') && (
+                        {Boolean(formData.videoUrl || formData.video_url || formData.videoData || formData.video_data) && (
                           <div style={{ marginTop: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <span style={{ fontSize: '12px', color: 'var(--success-color)', fontWeight: 600 }}>✓ Video File Attached</span>
@@ -1050,7 +1015,11 @@ function ProductForm() {
                               </button>
                             </div>
                             <div style={{ marginTop: '8px' }}>
-                              <video src={formData.videoUrl} controls style={{ maxWidth: '300px', borderRadius: '6px' }} />
+                              <video 
+                                src={formData.videoUrl || formData.video_url || formData.videoData || formData.video_data} 
+                                controls 
+                                style={{ maxWidth: '360px', borderRadius: '6px', backgroundColor: '#000000' }} 
+                              />
                             </div>
                           </div>
                         )}

@@ -14,6 +14,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const sareeCrownRoutes = require('./routes/sareeCrownRoutes');
 
 const notificationRoutes = require('./routes/notificationRoutes');
 
@@ -32,6 +33,7 @@ const adminNotificationRoutes = require('./routes/admin/adminNotificationRoutes'
 const adminUploadRoutes       = require('./routes/admin/adminUploadRoutes');
 const adminEmailLogsRoutes    = require('./routes/admin/adminEmailLogsRoutes');
 const adminReviewRoutes       = require('./routes/admin/adminReviewRoutes');
+const adminSareeCrownRoutes   = require('./routes/admin/adminSareeCrownRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -90,6 +92,7 @@ app.use('/api/cms',       cmsRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
 app.use('/api/payment',   paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/saree-crown', sareeCrownRoutes);
 
 // Public Store Settings Route (for Customer Website & Footer/Header)
 app.get('/api/settings', async (req, res, next) => {
@@ -124,6 +127,7 @@ app.use('/api/admin/notifications', adminNotificationRoutes);
 app.use('/api/admin/upload',        adminUploadRoutes);
 app.use('/api/admin/email-logs',    adminEmailLogsRoutes);
 app.use('/api/admin/reviews',       adminReviewRoutes);
+app.use('/api/admin/saree-crown',   adminSareeCrownRoutes);
 
 // Global Production Error Handling Middleware
 app.use((err, req, res, next) => {

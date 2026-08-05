@@ -51,7 +51,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     const productIds = result.rows.map(r => r.id);
     const imagesRes = await db.query(
-      `SELECT product_id, image_url, image_data, is_primary 
+      `SELECT product_id, image_url, is_primary 
        FROM product_images 
        WHERE product_id = ANY($1)
        ORDER BY is_primary DESC, display_order ASC`,
@@ -61,7 +61,7 @@ router.get('/', authMiddleware, async (req, res) => {
     const imagesMap = {};
     imagesRes.rows.forEach(img => {
       if (!imagesMap[img.product_id]) imagesMap[img.product_id] = [];
-      imagesMap[img.product_id].push(img.image_data || img.image_url);
+      imagesMap[img.product_id].push(img.image_url);
     });
 
     const products = result.rows.map(row => formatProductRow(row, imagesMap));

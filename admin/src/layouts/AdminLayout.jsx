@@ -24,6 +24,7 @@ function AdminLayout() {
   const { notifications, setNotifications } = useAdminData();
 
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
+  const [isCampaignsExpanded, setIsCampaignsExpanded] = useState(true);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   const handleLogout = () => {
@@ -38,6 +39,7 @@ function AdminLayout() {
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
+    { label: 'Campaigns', path: '/campaigns', icon: <FiAward />, hasDropdown: true },
     { label: 'Reports', path: '/reports', icon: <FiBarChart2 /> },
     { label: 'Settings', path: '/settings', icon: <FiSettings />, hasDropdown: true }
   ];
@@ -51,6 +53,8 @@ function AdminLayout() {
     if (path.includes('orders')) return ['Home', 'Orders'];
     if (path.includes('customers')) return ['Home', 'Customers'];
     if (path.includes('coupons')) return ['Home', 'Coupons'];
+    if (path.includes('campaigns/saree-crown')) return ['Home', 'Campaigns', 'Saree Crown'];
+    if (path.includes('campaigns')) return ['Home', 'Campaigns'];
     if (path.includes('reports')) return ['Home', 'Reports'];
     if (path.includes('settings')) return ['Home', 'Settings'];
     return ['Home', 'Admin'];
@@ -66,6 +70,8 @@ function AdminLayout() {
     if (path.includes('orders')) return 'Orders Overview';
     if (path.includes('customers')) return 'Customers Directory';
     if (path.includes('coupons')) return 'Coupons & Offers';
+    if (path.includes('campaigns/saree-crown')) return '👑 Saree Crown';
+    if (path.includes('campaigns')) return 'Campaigns';
     if (path.includes('reports')) return 'Sales Reports';
     if (path.includes('settings/profile')) return 'Profile Settings';
     if (path.includes('settings')) return 'Store Settings';
@@ -174,6 +180,43 @@ function AdminLayout() {
                           onClick={() => setIsMobileOpen(false)}
                         >
                           <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Ratings & Reviews
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
+            if (item.label === 'Campaigns') {
+              const isActive = location.pathname.startsWith('/campaigns');
+              return (
+                <li key={i}>
+                  <div 
+                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
+                    onClick={() => setIsCampaignsExpanded(!isCampaignsExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.menuItemLink}>
+                      <span className={styles.menuIcon}>{item.icon}</span>
+                      {(!isSidebarCollapsed || isMobileOpen) && (
+                        <span className={styles.menuItemText}>{item.label}</span>
+                      )}
+                    </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      isCampaignsExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />
+                    )}
+                  </div>
+                  {isCampaignsExpanded && (!isSidebarCollapsed || isMobileOpen) && (
+                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li>
+                        <Link 
+                          to="/campaigns/saree-crown" 
+                          className={`${styles.menuItem} ${location.pathname === '/campaigns/saree-crown' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> 👑 Saree Crown
                         </Link>
                       </li>
                     </ul>

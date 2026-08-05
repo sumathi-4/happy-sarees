@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const cmsService = require('../services/admin/cmsService');
+const jwt = require('jsonwebtoken');
 
 // 1. Get Live Public Announcement Bar
 router.get('/announcement-bar', async (req, res) => {
@@ -258,6 +259,97 @@ router.post('/validate-coupon', async (req, res) => {
 
     const cleanCode = code.trim().toUpperCase();
     const amount = Number(orderAmount);
+
+    if (cleanCode === 'SAREECROWN') {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      let userId = null;
+
+      if (token) {
+        try {
+          const verified = jwt.verify(token, process.env.JWT_SECRET || 'happysarees_secret_key_2026');
+          userId = verified.id || verified.userId;
+        } catch (err) {
+          // Token decode failed
+        }
+      }
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Please log in to apply this coupon.' });
+      }
+
+      // 1. Fetch active Saree Crown campaign
+      const campaignRes = await db.query(
+        `SELECT * FROM saree_crown_campaign WHERE enabled = true ORDER BY id DESC LIMIT 1`
+      );
+      const campaign = campaignRes.rows[0];
+      if (!campaign || !campaign.winner_revealed || !campaign.winner_product_id) {
+        return res.status(400).json({ success: false, message: 'No active Saree Crown reward is available.' });
+      }
+
+      // 2. Check if user voted in this campaign
+      const voteCheck = await db.query(
+        `SELECT 1 FROM saree_crown_votes WHERE campaign_id = $1 AND user_id = $2 LIMIT 1`,
+        [campaign.id, userId]
+      );
+      if (voteCheck.rowCount === 0) {
+        return res.status(403).json({ success: false, message: 'Only customers who voted in this Saree Crown campaign are eligible for the reward.' });
+      }
+
+      // 3. Check if already used
+      const usageCheck = await db.query(
+        `SELECT 1 FROM coupon_usage cu 
+         JOIN coupons c ON c.id = cu.coupon_id 
+         WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 LIMIT 1`,
+        [userId]
+      );
+      if (usageCheck.rowCount > 0) {
+        return res.status(400).json({ success: false, message: 'You have already redeemed your Saree Crown reward.' });
+      }
+
+      // 4. Check if winning product is in user's cart
+      const cartCheck = await db.query(
+        `SELECT 1 FROM cart_items WHERE user_id = $1 AND product_id = $2 LIMIT 1`,
+        [userId, campaign.winner_product_id]
+      );
+      if (cartCheck.rowCount === 0) {
+        const prodRes = await db.query(`SELECT name FROM products WHERE id = $1`, [campaign.winner_product_id]);
+        const prodName = prodRes.rows[0]?.name || 'the winning saree';
+        return res.status(400).json({ success: false, message: `The winning Saree Crown product ("${prodName}") must be in your cart to use this coupon.` });
+      }
+
+      // Fetch the winning product's price for calculation of FREE reward if needed
+      const winnerRes = await db.query(`SELECT price FROM products WHERE id = $1`, [campaign.winner_product_id]);
+      const winnerProduct = winnerRes.rows[0];
+      const winningPrice = winnerProduct ? Number(winnerProduct.price) : 0;
+
+      const rewardType = campaign.reward_type;
+      const rewardValue = campaign.reward_value;
+
+      let discountAmount = 0;
+      if (rewardType === 'percentage') {
+        discountAmount = (winningPrice * Number(rewardValue)) / 100;
+      } else {
+        discountAmount = winningPrice;
+      }
+
+      const couponDb = await db.query(`SELECT id FROM coupons WHERE UPPER(code) = 'SAREECROWN' LIMIT 1`);
+      const couponId = couponDb.rows[0]?.id || 99999;
+
+      return res.json({
+        success: true,
+        valid: true,
+        code: 'SAREECROWN',
+        discountAmount: Math.round(discountAmount),
+        coupon: {
+          id: couponId,
+          code: 'SAREECROWN',
+          discountType: 'Flat',
+          discountValue: Math.round(discountAmount),
+          discountAmount: Math.round(discountAmount)
+        }
+      });
+    }
 
     const result = await db.query(
       `SELECT *, COALESCE(min_order, min_order_amount, 0) as min_order, COALESCE(max_discount, max_discount_amount) as max_discount 

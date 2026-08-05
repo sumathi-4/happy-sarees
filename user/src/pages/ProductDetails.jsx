@@ -128,40 +128,50 @@ function ProductDetails() {
         <ProductTabs product={product} />
 
         {/* Product Video Feature (Uploaded Video File or YouTube/Vimeo Embed) */}
-        {(product.videoData || product.videoUrl || product.video) && (
+        {Boolean(product.videoUrl || product.video_url) && (
           <div style={{ marginTop: '32px', padding: '24px', background: 'var(--bg-white)', borderRadius: '12px', boxShadow: '0 2px 12px rgba(43, 18, 32, 0.04)' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'var(--text-color)' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               🎥 Product Draping Video
             </h3>
-            {product.videoData ? (
-              <video 
-                src={product.videoData} 
-                controls 
-                style={{ width: '100%', maxHeight: '480px', borderRadius: '8px', backgroundColor: '#000000' }} 
-              />
-            ) : product.videoUrl?.includes('youtube') || product.videoUrl?.includes('youtu.be') ? (
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
-                <iframe 
-                  src={`https://www.youtube.com/embed/${(product.videoUrl.match(/(?:v=|\/)([a-zA-Z0-9_-]{11})/) || [])[1] || ''}`}
-                  title="Product Video"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                  allowFullScreen
+            {(() => {
+              const videoSrc = product.videoUrl || product.video_url || '';
+              if (!videoSrc) return null;
+
+              if (videoSrc.includes('youtube') || videoSrc.includes('youtu.be')) {
+                const embedId = (videoSrc.match(/(?:v=|\/)([a-zA-Z0-9_-]{11})/) || [])[1] || '';
+                return (
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${embedId}`}
+                      title="Product Video"
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              }
+              if (videoSrc.includes('vimeo')) {
+                const embedId = (videoSrc.match(/vimeo\.com\/(\d+)/) || [])[1] || '';
+                return (
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
+                    <iframe 
+                      src={`https://player.vimeo.com/video/${embedId}`}
+                      title="Product Video"
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              }
+              return (
+                <video 
+                  src={videoSrc} 
+                  controls 
+                  preload="metadata"
+                  style={{ width: '100%', maxHeight: '480px', borderRadius: '8px', backgroundColor: '#000000', objectFit: 'contain' }} 
                 />
-              </div>
-            ) : product.videoUrl?.includes('vimeo') ? (
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
-                <iframe 
-                  src={`https://player.vimeo.com/video/${(product.videoUrl.match(/vimeo\.com\/(\d+)/) || [])[1] || ''}`}
-                  title="Product Video"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <video controls style={{ width: '100%', maxHeight: '480px', borderRadius: '8px' }}>
-                <source src={product.videoUrl || product.video} />
-              </video>
-            )}
+              );
+            })()}
           </div>
         )}
 

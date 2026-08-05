@@ -82,7 +82,7 @@ function OrderSummary({ items = [], appliedCoupon = null, onApplyCoupon }) {
 
       {/* Proceed to Checkout CTA */}
       <button
-        onClick={() => navigate('/checkout')}
+        onClick={() => navigate('/checkout', { state: { appliedCoupon } })}
         className={styles.checkoutBtn}
       >
         Proceed to Checkout <FiChevronRight />

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
@@ -14,12 +14,37 @@ import styles from './Cart.module.css';
 
 function Cart({ isProfileView = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const [availableOffers, setAvailableOffers] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const cartItems = cart || [];
   const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleApplyCoupon = useCallback(async (coupon) => {
+    if (!coupon) {
+      setAppliedCoupon(null);
+      return;
+    }
+
+    const code = typeof coupon === 'string' ? coupon : coupon.code;
+
+    try {
+      const response = await api.validateCoupon(code, sellingTotal);
+      if (response.success && response.valid) {
+        setAppliedCoupon({
+          ...response.coupon,
+          discountPercent: response.coupon.discountType === 'Percentage' ? response.coupon.discountValue : null,
+          discountAmount: response.coupon.discountType === 'Flat' ? response.coupon.discountValue : 0
+        });
+      } else {
+        alert(response.message || 'Invalid coupon code.');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to validate coupon.');
+    }
+  }, [sellingTotal]);
 
   useEffect(() => {
     let isMounted = true;
@@ -35,6 +60,16 @@ function Cart({ isProfileView = false }) {
     return () => { isMounted = false; };
   }, []);
 
+  // Auto apply coupon if redirected from Claim Reward
+  useEffect(() => {
+    if (location.state?.autoApplyCoupon && cartItems.length > 0) {
+      const couponCode = location.state.autoApplyCoupon;
+      // Clear navigation state so it doesn't trigger repeatedly
+      navigate(location.pathname, { replace: true, state: {} });
+      handleApplyCoupon(couponCode);
+    }
+  }, [location.state, cartItems.length, navigate, location.pathname, handleApplyCoupon]);
+
   const handleUpdateQuantity = (id, newQty) => {
     updateQuantity(id, newQty);
   };
@@ -45,19 +80,6 @@ function Cart({ isProfileView = false }) {
 
   const handleMoveToWishlist = (item) => {
     removeFromCart(item.id);
-  };
-
-  const handleApplyCoupon = (coupon) => {
-    if (!coupon) {
-      setAppliedCoupon(null);
-      return;
-    }
-    const minOrder = Number(coupon.min_order_amount || 0);
-    if (minOrder > 0 && sellingTotal < minOrder) {
-      alert(`This coupon requires a minimum order of ₹${minOrder.toLocaleString()}`);
-      return;
-    }
-    setAppliedCoupon(coupon);
   };
 
   return (

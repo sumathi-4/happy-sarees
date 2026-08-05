@@ -27,7 +27,55 @@ router.post('/', optionalAuth, async (req, res) => {
     const { items, totalAmount, shippingAddress, paymentMethod, couponCode } = req.body;
 
     if (!items || !items.length || !totalAmount) {
+      client.release();
       return res.status(400).json({ success: false, message: 'Cart items and total amount are required.' });
+    }
+
+    if (couponCode && couponCode.trim().toUpperCase() === 'SAREECROWN') {
+      const userId = req.user?.id || req.user?.userId;
+      if (!userId) {
+        client.release();
+        return res.status(401).json({ success: false, message: 'Please log in to apply this coupon.' });
+      }
+
+      // 1. Fetch active Saree Crown campaign
+      const campaignRes = await client.query(
+        `SELECT * FROM saree_crown_campaign WHERE enabled = true ORDER BY id DESC LIMIT 1`
+      );
+      const campaign = campaignRes.rows[0];
+      if (!campaign || !campaign.winner_revealed || !campaign.winner_product_id) {
+        client.release();
+        return res.status(400).json({ success: false, message: 'No active Saree Crown reward is available.' });
+      }
+
+      // 2. Check if user voted in this campaign
+      const voteCheck = await client.query(
+        `SELECT 1 FROM saree_crown_votes WHERE campaign_id = $1 AND user_id = $2 LIMIT 1`,
+        [campaign.id, userId]
+      );
+      if (voteCheck.rowCount === 0) {
+        client.release();
+        return res.status(403).json({ success: false, message: 'Only customers who voted in this Saree Crown campaign are eligible for the reward.' });
+      }
+
+      // 3. Check if already used
+      const usageCheck = await client.query(
+        `SELECT 1 FROM coupon_usage cu 
+         JOIN coupons c ON c.id = cu.coupon_id 
+         WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 LIMIT 1`,
+        [userId]
+      );
+      if (usageCheck.rowCount > 0) {
+        client.release();
+        return res.status(400).json({ success: false, message: 'You have already redeemed your Saree Crown reward.' });
+      }
+
+      // 4. Check if winning product is in items
+      const hasWinnerProduct = items.some(item => Number(item.productId || item.id) === campaign.winner_product_id);
+      if (!hasWinnerProduct) {
+        client.release();
+        return res.status(400).json({ success: false, message: 'The winning Saree Crown product must be in your checkout list to redeem this reward.' });
+      }
     }
 
     await client.query('BEGIN');

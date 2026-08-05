@@ -195,6 +195,14 @@ export const reviewsApi = {
   deleteReview: (id)         => api.delete(`/reviews/${id}`),
 };
 
+// ── Saree Crown Campaign ───────────────────────────────────
+export const sareeCrownApi = {
+  get:  ()     => api.get('/saree-crown'),
+  save: (data) => api.put('/saree-crown', data),
+  stopVoting: () => api.post('/saree-crown/stop-voting'),
+  revealWinner: () => api.post('/saree-crown/reveal-winner'),
+};
+
 /**
  * Convert a File object to base64 data URL
  * @param {File} file

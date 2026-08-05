@@ -53,6 +53,9 @@ function formatProductRow(row, imagesMap = {}) {
     is_new_arrival: Boolean(row.is_new_arrival),
     rating: (row.review_count && Number(row.review_count) > 0) ? (row.rating !== null && row.rating !== undefined ? Number(row.rating) : 0) : 0,
     videoUrl: row.video_url || null,
+    video_url: row.video_url || null,
+    videoData: row.video_data || null,
+    video_data: row.video_data || null,
     video: row.video_url || null
   };
 }

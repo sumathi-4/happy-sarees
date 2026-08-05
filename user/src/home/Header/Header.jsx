@@ -21,6 +21,7 @@ function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [crownEnabled, setCrownEnabled] = useState(false);
   const navigate = useNavigate();
 
   // Dynamic Navigation Data connected to Neon Cloud PostgreSQL DB / Master Data
@@ -70,6 +71,21 @@ function Header() {
     return () => { isMounted = false; };
   }, []);
 
+  // Fetch Saree Crown campaign status (lightweight, public endpoint)
+  useEffect(() => {
+    let isMounted = true;
+    api.getSareeCrownCampaign()
+      .then((data) => {
+        if (isMounted && data.enabled) {
+          setCrownEnabled(true);
+        }
+      })
+      .catch(() => {
+        // Silently ignore — Crown simply won't appear
+      });
+    return () => { isMounted = false; };
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 40) {
@@ -116,13 +132,15 @@ function Header() {
 
   // Nav items configuration matching user requirement:
   // Home, Sarees (NO DROPDOWN), Occasions ▼, Fabrics ▼, New Arrivals, Sale
+  // 👑 Saree Crown — appended only when campaign is enabled
   const navMenuItems = [
-    { label: 'Home', path: PATHS.HOME, hasDropdown: false },
-    { label: 'Sarees', path: PATHS.SHOP, hasDropdown: false }, // NO DROPDOWN -> Opens Shop page with all sarees
-    { label: 'Occasions', path: PATHS.SHOP, hasDropdown: true, dropdownType: 'occasions' },
-    { label: 'Fabrics', path: PATHS.SHOP, hasDropdown: true, dropdownType: 'fabrics' },
-    { label: 'New Arrivals', path: PATHS.NEW_ARRIVALS, hasDropdown: false },
-    { label: 'Sale', path: PATHS.SALE, hasDropdown: false }
+    { label: 'Home',        path: PATHS.HOME,         hasDropdown: false },
+    { label: 'Sarees',      path: PATHS.SHOP,         hasDropdown: false },
+    { label: 'Occasions',   path: PATHS.SHOP,         hasDropdown: true, dropdownType: 'occasions' },
+    { label: 'Fabrics',     path: PATHS.SHOP,         hasDropdown: true, dropdownType: 'fabrics' },
+    { label: 'New Arrivals',path: PATHS.NEW_ARRIVALS, hasDropdown: false },
+    { label: 'Sale',        path: PATHS.SALE,         hasDropdown: false },
+    ...(crownEnabled ? [{ label: '👑 Crown', path: PATHS.SAREE_CROWN, hasDropdown: false, isCrown: true }] : []),
   ];
 
   return (
@@ -144,7 +162,7 @@ function Header() {
                     key={index}
                     className={`${styles.navItem} ${menu.hasDropdown ? styles.hasMega : ''}`}
                   >
-                    <Link to={menu.path} className={styles.navLink}>
+                  <Link to={menu.path} className={`${styles.navLink} ${menu.isCrown ? styles.crownNavLink : ''}`}>
                       {menu.label}
                       {menu.hasDropdown && <span className={styles.arrow}>▼</span>}
                     </Link>
@@ -249,7 +267,7 @@ function Header() {
                 <li key={index} className={styles.mobileNavItem}>
                   <Link
                     to={menu.path}
-                    className={styles.mobileNavLink}
+                    className={`${styles.mobileNavLink} ${menu.isCrown ? styles.crownNavLink : ''}`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {menu.label}

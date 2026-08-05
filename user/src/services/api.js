@@ -121,7 +121,12 @@ export const api = {
   getRazorpayKey: () => axiosInstance.get('/payment/razorpay-key'),
   createRazorpayOrder: (payload) => axiosInstance.post('/payment/create-razorpay-order', payload),
   verifyRazorpayPayment: (payload) => axiosInstance.post('/payment/verify-signature', payload),
-  recordFailedPayment: (payload) => axiosInstance.post('/payment/record-failed-payment', payload)
+  recordFailedPayment: (payload) => axiosInstance.post('/payment/record-failed-payment', payload),
+
+  // Saree Crown Campaign APIs
+  getSareeCrownCampaign: () => axiosInstance.get('/saree-crown'),
+  castSareeCrownVote: (productId) => axiosInstance.post('/saree-crown/vote', { productId }),
+  getMySareeCrownVote: () => axiosInstance.get('/saree-crown/my-vote'),
 };
 
 export default api;

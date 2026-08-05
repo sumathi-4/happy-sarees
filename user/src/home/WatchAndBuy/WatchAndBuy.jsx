@@ -86,37 +86,31 @@ function WatchAndBuy() {
           </div>
         </div>
 
-        {/* Carousel Container */}
+        {/* 10 Videos Carousel Wrapper with Nav Buttons */}
         <div className={styles.carouselWrapper}>
-          {/* Left Arrow */}
+          {/* Previous Arrow */}
           <button 
             className={`${styles.navBtn} ${styles.navBtnLeft}`} 
             onClick={() => handleScroll('left')}
-            aria-label="Scroll Left"
+            aria-label="Previous Videos"
           >
             <FiChevronLeft />
           </button>
 
           {/* Horizontal Track */}
           <div className={styles.carouselTrack} ref={carouselRef}>
-            {products.map((product) => {
+            {products.slice(0, 10).map((product) => {
               const videoSrc = product.videoUrl || product.video_url || product.video;
-              const isHovered = hoveredId === product.id;
 
               return (
                 <div 
                   key={product.id} 
                   className={styles.cardItem}
-                  onMouseEnter={() => handleMouseEnter(product.id)}
-                  onMouseLeave={() => handleMouseLeave(product.id)}
+                  onClick={() => handleProductClick(product.id)}
                 >
                   {/* Portrait Video Frame */}
-                  <div 
-                    className={styles.videoFrame}
-                    onClick={() => handleProductClick(product.id)}
-                  >
+                  <div className={styles.videoFrame}>
                     <video
-                      ref={(el) => (videoRefs.current[product.id] = el)}
                       src={videoSrc}
                       poster={product.image}
                       autoPlay
@@ -125,23 +119,11 @@ function WatchAndBuy() {
                       playsInline
                       className={styles.videoElement}
                     />
-
-                    {/* Dark Gradient Overlay on Hover */}
-                    <div className={`${styles.overlay} ${isHovered ? styles.overlayActive : ''}`} />
-
-                    {/* Translucent Play Button Overlay on Hover */}
-                    <div className={`${styles.playBtnWrapper} ${isHovered ? styles.playBtnActive : ''}`}>
-                      <div className={styles.playBtnCircle}>
-                        <FiPlay className={styles.playIcon} />
-                      </div>
-                    </div>
+                    <div className={styles.overlay} />
                   </div>
 
-                  {/* Product Title Only Below Card */}
-                  <h3 
-                    className={styles.productName}
-                    onClick={() => handleProductClick(product.id)}
-                  >
+                  {/* Product Title Below Card */}
+                  <h3 className={styles.productName}>
                     {product.name}
                   </h3>
                 </div>
@@ -149,13 +131,23 @@ function WatchAndBuy() {
             })}
           </div>
 
-          {/* Right Arrow */}
+          {/* Next Arrow */}
           <button 
             className={`${styles.navBtn} ${styles.navBtnRight}`} 
             onClick={() => handleScroll('right')}
-            aria-label="Scroll Right"
+            aria-label="Next Videos"
           >
             <FiChevronRight />
+          </button>
+        </div>
+
+        {/* View All Draping Videos Button */}
+        <div className={styles.viewAllWrapper}>
+          <button 
+            onClick={() => navigate('/videos')} 
+            className={styles.viewAllBtn}
+          >
+            View All Draping Videos &rarr;
           </button>
         </div>
       </div>

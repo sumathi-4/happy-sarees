@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import Home from '../pages/Home';
 import Shop from '../pages/Shop';
 import ProductDetails from '../pages/ProductDetails';
+import VideosPage from '../pages/VideosPage';
 import Wishlist from '../pages/Wishlist';
 import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
@@ -18,6 +19,7 @@ import About from '../pages/About';
 import Contact from '../pages/Contact';
 import SearchResults from '../pages/SearchResults';
 import NotFound from '../pages/NotFound';
+import SareeCrown from '../pages/SareeCrown';
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: PATHS.PRODUCT_DETAILS,
         element: <ProductDetails />,
+      },
+      {
+        path: PATHS.VIDEOS,
+        element: <VideosPage />,
       },
       {
         path: PATHS.WISHLIST,
@@ -100,6 +106,10 @@ const router = createBrowserRouter([
       {
         path: PATHS.SEARCH,
         element: <SearchResults />,
+      },
+      {
+        path: PATHS.SAREE_CROWN,
+        element: <SareeCrown />,
       },
       {
         path: '*',

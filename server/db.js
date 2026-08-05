@@ -11,6 +11,11 @@ const pool = new Pool({
 
 pool.on('connect', () => {
   console.log('⚡ Connected to Neon PostgreSQL database!');
+  pool.query(`
+    INSERT INTO coupons (code, name, type, value, is_active, created_by)
+    VALUES ('SAREECROWN', 'Saree Crown Participation Reward', 'percentage', 20.00, true, 1)
+    ON CONFLICT (code) DO NOTHING
+  `).catch(err => console.error('[SAREECROWN coupon init error]', err.message));
 });
 
 pool.on('error', (err) => {

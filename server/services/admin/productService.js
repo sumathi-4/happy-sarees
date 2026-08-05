@@ -138,9 +138,6 @@ class ProductService {
         images:       imagesMap[r.id] || [],
         galleryImages: imagesMap[r.id] || [],
         videoUrl:     r.video_url || null,
-        videoData:    r.video_data || null,
-        video_url:    r.video_url || null,
-        video_data:   r.video_data || null,
         customMasterData: customData,
         custom_master_data: customData,
         createdAt:    r.created_at,
@@ -245,9 +242,6 @@ class ProductService {
       images: imgUrls,
       galleryImages: imgUrls,
       videoUrl: p.video_url || null,
-      videoData: p.video_data || null,
-      video_url: p.video_url || null,
-      video_data: p.video_data || null,
       seo: seoData,
     };
   }
@@ -295,13 +289,9 @@ class ProductService {
 
     const { uploadToCloudinary } = require('../cloudinaryService');
 
-    let videoUrlToSave = null;
-    // Prefer non-empty videoData (Base64), then fall through to videoUrl (Cloudinary URL from multipart upload)
-    const rawVideoData = (data.videoData && String(data.videoData).trim() !== '') ? data.videoData : null;
-    const rawVideoUrl  = data.videoUrl || data.video_url || null;
-    const rawVideoInput = rawVideoData || rawVideoUrl;
-    if (rawVideoInput && String(rawVideoInput).trim() !== '') {
-      videoUrlToSave = await uploadToCloudinary(rawVideoInput, 'happy_sarees/videos');
+    let videoUrlToSave = (data.videoUrl && String(data.videoUrl).trim() !== '') ? String(data.videoUrl).trim() : (data.video_url || null);
+    if (videoUrlToSave && videoUrlToSave.startsWith('data:video/')) {
+      videoUrlToSave = await uploadToCloudinary(videoUrlToSave, 'happy_sarees/videos');
     }
 
     const res = await db.query(
@@ -311,9 +301,9 @@ class ProductService {
         blouse_included, blouse_size, height, width, weight, wash_care,
         sku, in_stock, stock_count, is_best_seller, is_new_arrival,
         featured_on_homepage, is_trending, status, rating, review_count,
-        video_url, video_data, custom_master_data
+        video_url, custom_master_data
        ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31
        ) RETURNING id`,
       [
         data.name, slug, data.categoryId || null,
@@ -329,7 +319,7 @@ class ProductService {
         data.isTrending ?? data.trendingProduct ?? false,
         (data.status ? data.status.toLowerCase() : 'published'),
         data.rating || 0, data.reviewCount || 0,
-        videoUrlToSave, null,
+        videoUrlToSave,
         JSON.stringify(customMasterData)
       ]
     );
@@ -386,28 +376,20 @@ class ProductService {
     const { uploadToCloudinary } = require('../cloudinaryService');
 
     let videoUrlToSave = existing.video_url || null;
-    // Prefer non-empty videoData (Base64). Fall through to videoUrl (Cloudinary URL from multipart upload).
-    // An empty string videoData must NOT wipe out a valid Cloudinary videoUrl.
-    const rawVideoData = (data.videoData !== undefined && data.videoData !== null && String(data.videoData).trim() !== '')
-      ? data.videoData
-      : null;
-    const rawVideoUrl  = (data.videoUrl !== undefined && data.videoUrl !== null && String(data.videoUrl).trim() !== '')
-      ? data.videoUrl
-      : (data.video_url !== undefined && data.video_url !== null && String(data.video_url).trim() !== '' ? data.video_url : undefined);
 
-    if (rawVideoData) {
-      // Legacy Base64 path — upload via uploadToCloudinary
-      videoUrlToSave = await uploadToCloudinary(rawVideoData, 'happy_sarees/videos');
-    } else if (rawVideoUrl !== undefined) {
-      // New multipart path — videoUrl is already a Cloudinary HTTPS URL (or explicit empty = remove)
-      if (rawVideoUrl && String(rawVideoUrl).startsWith('http')) {
-        videoUrlToSave = rawVideoUrl;
+    if (data.videoUrl !== undefined || data.video_url !== undefined) {
+      const inputUrl = data.videoUrl !== undefined ? data.videoUrl : data.video_url;
+      if (inputUrl && String(inputUrl).trim() !== '') {
+        const trimmed = String(inputUrl).trim();
+        if (trimmed.startsWith('data:video/')) {
+          videoUrlToSave = await uploadToCloudinary(trimmed, 'happy_sarees/videos');
+        } else {
+          videoUrlToSave = trimmed;
+        }
       } else {
-        // Explicit empty string passed = admin removed the video
         videoUrlToSave = null;
       }
     }
-    // If neither videoData nor videoUrl was sent, keep existing.video_url (no change)
 
     const descToSave = data.description !== undefined && data.description !== null && data.description !== ''
       ? data.description 
@@ -446,9 +428,9 @@ class ProductService {
         fabric=$7, color=$8, weave=$9, border=$10, pallu=$11, occasion=$12,
         blouse_included=$13, blouse_size=$14, height=$15, width=$16, weight=$17, wash_care=$18,
         sku=$19, in_stock=$20, stock_count=$21, is_best_seller=$22, is_new_arrival=$23,
-        featured_on_homepage=$24, is_trending=$25, status=$26, video_url=$27, video_data=$28,
-        custom_master_data=$29, updated_at=NOW()
-       WHERE id=$30 AND deleted_at IS NULL
+        featured_on_homepage=$24, is_trending=$25, status=$26, video_url=$27,
+        custom_master_data=$28, updated_at=NOW()
+       WHERE id=$29 AND deleted_at IS NULL
        RETURNING id`,
       [
         data.name ?? existing.name,
@@ -478,7 +460,6 @@ class ProductService {
         data.isTrending ?? data.trendingProduct ?? existing.is_trending ?? false,
         data.status ?? existing.status,
         videoUrlToSave,
-        null,
         JSON.stringify(customMasterData),
         id,
       ]

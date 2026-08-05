@@ -1,0 +1,220 @@
+.pageWrapper {
+  width: 100%;
+  min-height: 80vh;
+  background-color: var(--bg-soft-pink);
+  padding-bottom: 5rem;
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.breadcrumbBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(43, 18, 32, 0.08);
+  margin-bottom: 2rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.crumbLink {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.crumbLink:hover {
+  color: var(--primary-color);
+}
+
+.separator {
+  color: var(--text-muted);
+}
+
+.activeCrumb {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid rgba(43, 18, 32, 0.15);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  background: var(--primary-color);
+  color: var(--bg-white);
+  border-color: var(--primary-color);
+}
+
+/* Hero Section */
+.heroSection {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.heroTagline {
+  display: block;
+  font-family: var(--font-script);
+  font-size: clamp(1.8rem, 2.4vw, 2.4rem);
+  font-weight: 700;
+  color: var(--gold-color);
+  margin-bottom: 4px;
+}
+
+/* Pink Title matching Image 2 */
+.heroTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.5vw, 38px);
+  font-weight: 800;
+  background: linear-gradient(135deg, #ce145a 0%, #9c1664 50%, #6b1464 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+
+.heroSubtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Video Grid (4 Columns - Matching Image 3 layout) */
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.videoCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.videoBox {
+  width: 100%;
+  height: 420px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #000000;
+  box-shadow: 0 10px 28px rgba(43, 18, 32, 0.1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.videoCard:hover .videoBox {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(209, 27, 105, 0.2);
+}
+
+.videoElement {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+}
+
+.productName {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+  margin-top: 1rem;
+  line-height: 1.4;
+  transition: color 250ms ease;
+}
+
+.videoCard:hover .productName {
+  color: var(--primary-color);
+}
+
+/* Loading & Empty States */
+.loadingWrapper, .emptyState {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(209, 27, 105, 0.2);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.shopBtn {
+  margin-top: 16px;
+  background: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+  .videoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .videoBox {
+    height: 380px;
+  }
+}
+
+@media (max-width: 580px) {
+  .videoGrid {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .videoBox {
+    height: 400px;
+  }
+}
