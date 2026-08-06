@@ -51,9 +51,21 @@ router.get('/razorpay-key', async (req, res) => {
 // 2. Create Razorpay Order
 router.post('/create-razorpay-order', async (req, res) => {
   try {
-    const { amount, currency = 'INR', orderId, notes } = req.body;
+    const { amount, currency = 'INR', orderId, notes, items, shippingMethodId, couponCode, userId } = req.body;
 
-    if (!amount || amount <= 0) {
+    let finalAmount = amount;
+    if (items && items.length > 0) {
+      const { calculateOrderTotals } = require('../utils/orderCalculator');
+      const totals = await calculateOrderTotals({
+        items,
+        shippingMethodId,
+        couponCode,
+        userId: userId || null
+      });
+      finalAmount = totals.finalTotal;
+    }
+
+    if (!finalAmount || finalAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Valid payment amount is required.' });
     }
 
@@ -64,7 +76,7 @@ router.post('/create-razorpay-order', async (req, res) => {
       key_secret: keySecret
     });
 
-    const amountInPaise = Math.round(Number(amount) * 100);
+    const amountInPaise = Math.round(Number(finalAmount) * 100);
 
     const rzpOrder = await instance.orders.create({
       amount: amountInPaise,

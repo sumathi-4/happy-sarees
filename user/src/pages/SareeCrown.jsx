@@ -64,6 +64,7 @@ function SareeCrown() {
   // ── Derived status computed in real-time (timezone-independent) ──
   const currentStatus = useMemo(() => {
     if (!campaign || !campaign.enabled) return 'disabled';
+    if (campaign.votingStopped) return 'ended';
     const start = campaign.votingStart ? new Date(campaign.votingStart) : null;
     const end   = campaign.votingEnd   ? new Date(campaign.votingEnd)   : null;
 
@@ -84,7 +85,8 @@ function SareeCrown() {
       const now   = new Date();
       let initStatus = 'disabled';
       if (data.enabled) {
-        if (start && now < start) initStatus = 'not_started';
+        if (data.votingStopped) initStatus = 'ended';
+        else if (start && now < start) initStatus = 'not_started';
         else if (end && now > end) initStatus = 'ended';
         else initStatus = 'active';
       }
@@ -567,7 +569,7 @@ function LockedRewardSection({ votedProduct }) {
 
 function WinnerRevealSection({ campaign, navigate }) {
   const winner = campaign.winnerProduct;
-  const { cart, addToCart } = useCart();
+  const { refetchCart } = useCart();
   const [claiming, setClaiming] = useState(false);
 
   if (!winner) return null;
@@ -581,16 +583,12 @@ function WinnerRevealSection({ campaign, navigate }) {
     }
     setClaiming(true);
     try {
-      const currentCart = cart || [];
-      const isAlreadyInCart = currentCart.some(
-        item => Number(item.id || item.productId) === Number(winner.id)
-      );
-      if (!isAlreadyInCart) {
-        await addToCart(winner, 1);
-      }
+      await api.claimSareeCrownReward();
+      await refetchCart();
       navigate('/cart', { state: { autoApplyCoupon: 'SAREECROWN' } });
     } catch (err) {
       console.error('Failed to claim Saree Crown reward:', err);
+      alert(err.message || 'Failed to claim reward.');
     } finally {
       setClaiming(false);
     }

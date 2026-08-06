@@ -178,7 +178,16 @@ class OrderService {
           orderDate: r.created_at ? new Date(r.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-',
           createdAt: r.created_at,
           razorpayOrderId: r.razorpay_order_id,
-          razorpayPaymentId: r.razorpay_payment_id
+          razorpayPaymentId: r.razorpay_payment_id,
+          subtotal: r.subtotal !== null && r.subtotal !== undefined ? Number(r.subtotal) : null,
+          discount: r.discount !== null && r.discount !== undefined ? Number(r.discount) : null,
+          gst: r.gst_amount !== null && r.gst_amount !== undefined ? Number(r.gst_amount) : null,
+          gstRate: r.gst_rate !== null && r.gst_rate !== undefined ? Number(r.gst_rate) : null,
+          shipping: r.shipping_amount !== null && r.shipping_amount !== undefined ? Number(r.shipping_amount) : null,
+          taxInclusivityMode: r.tax_inclusivity_mode !== null && r.tax_inclusivity_mode !== undefined ? r.tax_inclusivity_mode : null,
+          shippingDiscount: r.shipping_discount !== null && r.shipping_discount !== undefined ? Number(r.shipping_discount) : null,
+          freeShippingStatus: r.free_shipping_status !== null && r.free_shipping_status !== undefined ? r.free_shipping_status : null,
+          finalTotal: r.final_total !== null && r.final_total !== undefined ? Number(r.final_total) : null
         };
       }),
       total: Number(countRes.rows[0].count),
@@ -254,6 +263,15 @@ class OrderService {
         createdBy: t.created_by_name || 'System',
         date:      t.created_at,
       })),
+      subtotal:       o.subtotal !== null && o.subtotal !== undefined ? Number(o.subtotal) : null,
+      discount:       o.discount !== null && o.discount !== undefined ? Number(o.discount) : null,
+      gst:            o.gst_amount !== null && o.gst_amount !== undefined ? Number(o.gst_amount) : null,
+      gstRate:        o.gst_rate !== null && o.gst_rate !== undefined ? Number(o.gst_rate) : null,
+      shipping:       o.shipping_amount !== null && o.shipping_amount !== undefined ? Number(o.shipping_amount) : null,
+      taxInclusivityMode: o.tax_inclusivity_mode !== null && o.tax_inclusivity_mode !== undefined ? o.tax_inclusivity_mode : null,
+      shippingDiscount: o.shipping_discount !== null && o.shipping_discount !== undefined ? Number(o.shipping_discount) : null,
+      freeShippingStatus: o.free_shipping_status !== null && o.free_shipping_status !== undefined ? o.free_shipping_status : null,
+      finalTotal:     o.final_total !== null && o.final_total !== undefined ? Number(o.final_total) : null,
     };
   }
 

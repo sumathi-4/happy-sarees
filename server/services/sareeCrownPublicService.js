@@ -88,8 +88,8 @@ class SareeCrownPublicService {
           const usageCheck = await db.query(
             `SELECT 1 FROM coupon_usage cu 
              JOIN coupons c ON c.id = cu.coupon_id 
-             WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 LIMIT 1`,
-            [userId]
+             WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 AND cu.campaign_id = $2 LIMIT 1`,
+            [userId, campaign.id]
           );
           alreadyRedeemed = usageCheck.rowCount > 0;
         }
@@ -117,6 +117,7 @@ class SareeCrownPublicService {
       campaignId:   campaign.id,
       votingStart:  campaign.voting_start,
       votingEnd:    campaign.voting_end,
+      votingStopped: campaign.voting_stopped,
       products:     productsRes.rows,
       winnerRevealed,
       winnerProduct,
@@ -208,6 +209,50 @@ class SareeCrownPublicService {
       productId:  res.rows[0].product_id,
       votedAt:    res.rows[0].voted_at,
     };
+  }
+
+  // ── Claim Reward (Backend verified claim flow) ────────────────
+  async claimReward(userId) {
+    const campaign = await this._getActiveCampaign();
+    if (!campaign) {
+      throw { status: 400, message: 'No active Saree Crown campaign right now.' };
+    }
+    if (!campaign.winner_revealed || !campaign.winner_product_id) {
+      throw { status: 400, message: 'Winner is not revealed yet.' };
+    }
+
+    // 1. Check user voted in this campaign
+    const voteCheck = await db.query(
+      `SELECT 1 FROM saree_crown_votes WHERE campaign_id = $1 AND user_id = $2 LIMIT 1`,
+      [campaign.id, userId]
+    );
+    if (voteCheck.rowCount === 0) {
+      throw { status: 403, message: 'Only customers who voted in this Saree Crown campaign are eligible.' };
+    }
+
+    // 2. Check user has not redeemed the reward yet
+    const usageCheck = await db.query(
+      `SELECT 1 FROM coupon_usage cu 
+       JOIN coupons c ON c.id = cu.coupon_id 
+       WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 AND cu.campaign_id = $2 LIMIT 1`,
+      [userId, campaign.id]
+    );
+    if (usageCheck.rowCount > 0) {
+      throw { status: 400, message: 'You have already claimed your Crown Reward.' };
+    }
+
+    // 3. Clear normal instance and insert marked Saree Crown cart item
+    await db.query(
+      `DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2`,
+      [userId, campaign.winner_product_id]
+    );
+    await db.query(
+      `INSERT INTO cart_items (user_id, product_id, quantity, is_saree_crown)
+       VALUES ($1, $2, 1, true)`,
+       [userId, campaign.winner_product_id]
+    );
+
+    return { success: true, message: 'Reward product successfully added to your cart as a Saree Crown reward claim.' };
   }
 }
 

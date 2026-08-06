@@ -24,7 +24,8 @@ export function ToastProvider({ children }) {
     success: (msg, dur) => addToast(msg, 'success', dur),
     error: (msg, dur) => addToast(msg, 'error', dur),
     info: (msg, dur) => addToast(msg, 'info', dur),
-    warning: (msg, dur) => addToast(msg, 'warning', dur)
+    warning: (msg, dur) => addToast(msg, 'warning', dur),
+    showToast: (msg, type, dur) => addToast(msg, type, dur)
   };
 
   return (
@@ -58,7 +59,8 @@ export function useToast() {
       success: () => {},
       error: () => {},
       info: () => {},
-      warning: () => {}
+      warning: () => {},
+      showToast: () => {}
     };
   }
   return context;

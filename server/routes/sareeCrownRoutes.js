@@ -76,4 +76,22 @@ router.post('/vote', authenticateToken, async (req, res, next) => {
   }
 });
 
+// ── POST /api/saree-crown/claim ─────────────────────────────
+// Authenticated — performs reward claim flow and adds winner product to cart
+router.post('/claim', authenticateToken, async (req, res, next) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'User identity not found in token.' });
+    }
+    const result = await service.claimReward(userId);
+    res.json(result);
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+});
+
 module.exports = router;

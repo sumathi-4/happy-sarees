@@ -14,7 +14,9 @@ pool.on('connect', () => {
   pool.query(`
     INSERT INTO coupons (code, name, type, value, is_active, created_by)
     VALUES ('SAREECROWN', 'Saree Crown Participation Reward', 'percentage', 20.00, true, 1)
-    ON CONFLICT (code) DO NOTHING
+    ON CONFLICT (code) DO NOTHING;
+    ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS is_saree_crown BOOLEAN DEFAULT FALSE;
+    ALTER TABLE coupon_usage ADD COLUMN IF NOT EXISTS campaign_id INTEGER REFERENCES saree_crown_campaign(id) ON DELETE SET NULL;
   `).catch(err => console.error('[SAREECROWN coupon init error]', err.message));
 });
 

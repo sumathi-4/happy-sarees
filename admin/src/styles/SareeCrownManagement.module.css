@@ -916,3 +916,89 @@
   border-top: 1px solid var(--border-color);
   background: #fafafa;
 }
+
+/* ── Multi-Campaign List Dashboard ── */
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tableCard {
+  background: var(--bg-white);
+  border-radius: var(--radius-large);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.campaignTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.campaignTable th {
+  background-color: #fafafc;
+  color: var(--text-light);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.campaignTable td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13.5px;
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.campaignTable tbody tr:hover {
+  background-color: #fafafd;
+}
+
+.campaignNameCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.campaignDateRange {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.rewardBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background-color: rgba(209, 27, 105, 0.05);
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.emptyStateIcon {
+  font-size: 48px;
+  color: var(--border-color);
+  margin-bottom: 16px;
+}

@@ -93,6 +93,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) {
               onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
               className={styles.qtyBtn}
               aria-label="Decrease quantity"
+              disabled={item.is_saree_crown}
             >
               -
             </button>
@@ -101,6 +102,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) {
               onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
               className={styles.qtyBtn}
               aria-label="Increase quantity"
+              disabled={item.is_saree_crown}
             >
               +
             </button>

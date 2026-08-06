@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiAward, FiToggleLeft, FiToggleRight, FiCalendar, FiGift,
   FiPercent, FiSearch, FiX, FiCheck, FiAlertCircle, FiLoader,
-  FiSave, FiPackage, FiInfo, FiRefreshCw
+  FiSave, FiPackage, FiInfo, FiRefreshCw, FiArrowLeft, FiPlus
 } from 'react-icons/fi';
 import { sareeCrownApi, productsApi } from '../api/adminApi';
 import styles from '../styles/SareeCrownManagement.module.css';
@@ -129,13 +129,28 @@ function ProductPickerModal({ selected, onConfirm, onClose }) {
 
 // ─── Main Page ───────────────────────────────────────────────
 export default function SareeCrownManagement() {
-  // Campaign state
+  const [view, setView] = useState('list'); // 'list', 'create', 'edit'
+  const [currentCampaignId, setCurrentCampaignId] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [toast, setToast]       = useState({ message: '', type: 'success' });
 
+  const hasOngoingCampaign = useCallback((list) => {
+    const now = new Date();
+    return list.some(c => {
+      if (!c.enabled) return false;
+      if (c.winner_revealed) return false;
+      if (c.voting_stopped) return false;
+      const end = c.voting_end ? new Date(c.voting_end) : null;
+      if (end && now > end) return false;
+      return true;
+    });
+  }, []);
+
   // Form state
+  const [name, setName]               = useState('');
   const [enabled, setEnabled]         = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [votingStart, setVotingStart] = useState('');
@@ -151,31 +166,60 @@ export default function SareeCrownManagement() {
     setTimeout(() => setToast({ message: '', type: 'success' }), 3500);
   }, []);
 
-  const loadCampaignData = useCallback(async (showSuccessToast = false) => {
+  const loadCampaigns = useCallback(async (showSuccessToast = false) => {
+    setLoading(true);
     try {
-      const data = await sareeCrownApi.get();
+      const data = await sareeCrownApi.list();
+      setCampaigns(data.campaigns || []);
+      if (showSuccessToast) {
+        showToast('Campaigns list refreshed successfully.', 'success');
+      }
+    } catch (err) {
+      showToast('Failed to load campaigns list.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  const loadSingleCampaign = useCallback(async (id) => {
+    setLoading(true);
+    try {
+      const data = await sareeCrownApi.get(id);
       const c = data.campaign;
       setCampaign(c);
+      setName(c.name || '');
       setEnabled(c.enabled || false);
       setSelectedProducts(c.products || []);
       setVotingStart(c.voting_start ? toDatetimeLocal(c.voting_start) : '');
       setVotingEnd(c.voting_end   ? toDatetimeLocal(c.voting_end)   : '');
       setRewardType(c.reward_type || 'free');
       setRewardValue(c.reward_value ? String(c.reward_value) : '');
-      if (showSuccessToast) {
-        showToast('Campaign data refreshed successfully.', 'success');
-      }
     } catch (err) {
-      showToast('Failed to load campaign data.', 'error');
+      showToast('Failed to load campaign details.', 'error');
+      setView('list');
     } finally {
       setLoading(false);
     }
   }, [showToast]);
 
-  // ── Load campaign ──
+  // Load appropriate view details
   useEffect(() => {
-    loadCampaignData();
-  }, [loadCampaignData]);
+    if (view === 'list') {
+      loadCampaigns();
+    } else if (view === 'edit' && currentCampaignId) {
+      loadSingleCampaign(currentCampaignId);
+    } else if (view === 'create') {
+      setName('');
+      setEnabled(false);
+      setSelectedProducts([]);
+      setVotingStart('');
+      setVotingEnd('');
+      setRewardType('free');
+      setRewardValue('');
+      setCampaign(null);
+      setLoading(false);
+    }
+  }, [view, currentCampaignId, loadCampaigns, loadSingleCampaign]);
 
   function toDatetimeLocal(iso) {
     if (!iso) return '';
@@ -209,15 +253,18 @@ export default function SareeCrownManagement() {
       return `${year}-${month}-${day}T${hour}:${minute}`;
     } catch (err) {
       console.error('[toDatetimeLocal timezone error]', err.message);
-      // Fallback
       const d = new Date(iso);
       const pad = n => String(n).padStart(2, '0');
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
   }
 
-  // ── Save ──
+  // ── Save/Create Campaign ──
   async function handleSave() {
+    if (!name.trim()) {
+      showToast('Please enter a campaign name.', 'error');
+      return;
+    }
     if (selectedProducts.length < 3 || selectedProducts.length > 5) {
       showToast('Please select 3–5 products.', 'error');
       return;
@@ -229,17 +276,26 @@ export default function SareeCrownManagement() {
 
     setSaving(true);
     try {
-      const result = await sareeCrownApi.save({
+      const payload = {
+        name: name.trim(),
         enabled,
         productIds: selectedProducts.map(p => p.product_id ?? p.id),
         votingStart: votingStart || null,
         votingEnd:   votingEnd   || null,
         rewardType,
         rewardValue: rewardType === 'percentage' ? Number(rewardValue) : null,
-      });
-      setCampaign(result.campaign);
-      setSelectedProducts(result.campaign.products || []);
-      showToast('Campaign saved successfully!', 'success');
+      };
+
+      if (view === 'create') {
+        await sareeCrownApi.create(payload);
+        showToast('Campaign created successfully.', 'success');
+      } else {
+        await sareeCrownApi.save(currentCampaignId, payload);
+        showToast('Campaign saved successfully.', 'success');
+      }
+      
+      setView('list');
+      setCurrentCampaignId(null);
     } catch (e) {
       showToast(e.message || 'Save failed.', 'error');
     } finally {
@@ -287,7 +343,7 @@ export default function SareeCrownManagement() {
     }
     setSaving(true);
     try {
-      const data = await sareeCrownApi.stopVoting();
+      const data = await sareeCrownApi.stopVoting(currentCampaignId);
       setCampaign(data.campaign);
       setSelectedProducts(data.campaign.products || []);
       showToast('Voting stopped successfully.', 'success');
@@ -304,7 +360,7 @@ export default function SareeCrownManagement() {
     }
     setSaving(true);
     try {
-      const data = await sareeCrownApi.revealWinner();
+      const data = await sareeCrownApi.revealWinner(currentCampaignId);
       setCampaign(data.campaign);
       setSelectedProducts(data.campaign.products || []);
       showToast('Winner revealed successfully!', 'success');
@@ -315,17 +371,174 @@ export default function SareeCrownManagement() {
     }
   }
 
+  // ── Campaign Status Calculation for Dashboard ──
+  function getCampaignStatusText(c) {
+    if (!c.enabled) return '⚫ Inactive';
+    if (c.winner_revealed) return '🏆 Winner Revealed';
+    if (c.voting_stopped) return '⏹ Voting Stopped';
+
+    const now = new Date();
+    const start = c.voting_start ? new Date(c.voting_start) : null;
+    const end = c.voting_end ? new Date(c.voting_end) : null;
+
+    if (start && now < start) return '⏳ Scheduled';
+    if (end && now > end) return '⏹ Ended';
+    return '🟢 Active';
+  }
+
+  function getCampaignStatusClass(c) {
+    if (!c.enabled) return styles.statusBadgeInactive;
+    if (c.winner_revealed) return styles.statusBadgeRevealed;
+    if (c.voting_stopped) return styles.statusBadgeStopped;
+
+    const now = new Date();
+    const start = c.voting_start ? new Date(c.voting_start) : null;
+    const end = c.voting_end ? new Date(c.voting_end) : null;
+
+    if (start && now < start) return styles.statusBadgeInactive;
+    if (end && now > end) return styles.statusBadgeStopped;
+    return styles.statusBadgeActive;
+  }
+
   if (loading) {
     return (
       <div className={styles.loadingPage}>
         <FiLoader className={styles.spinner} />
-        <span>Loading campaign…</span>
+        <span>Loading…</span>
       </div>
     );
   }
 
   const selCount = selectedProducts.length;
 
+  // ── RENDER LIST VIEW ──────────────────────────────────────────
+  if (view === 'list') {
+    return (
+      <div className={styles.wrapper}>
+        <Toast message={toast.message} type={toast.type} />
+
+        <div className={styles.pageHeader}>
+          <div className={styles.titleGroup}>
+            <h1 className={styles.pageTitle}>👑 Saree Crown Campaigns</h1>
+            <p className={styles.pageSubtitle}>Create and manage your Saree Crown campaigns.</p>
+          </div>
+          <div className={styles.headerActions}>
+            <button
+              className={styles.btnSecondary}
+              onClick={() => loadCampaigns(true)}
+              disabled={saving}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <FiRefreshCw /> Refresh
+            </button>
+            <button
+              className={styles.btnPrimary}
+              onClick={() => setView('create')}
+              disabled={hasOngoingCampaign(campaigns)}
+            >
+              <FiPlus /> Create Campaign
+            </button>
+          </div>
+        </div>
+
+        {hasOngoingCampaign(campaigns) && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            border: '1px solid #ffeeba',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            fontSize: '0.95rem',
+            fontWeight: '500'
+          }}>
+            <FiAlertCircle style={{ color: '#856404', flexShrink: 0 }} />
+            <span>Complete or deactivate the current campaign before creating a new one.</span>
+          </div>
+        )}
+
+        {campaigns.length === 0 ? (
+          <div className={styles.tableCard}>
+            <div className={styles.emptyState}>
+              <FiAward className={styles.emptyStateIcon} />
+              <h3>No Campaigns Found</h3>
+              <p style={{ marginBottom: '20px' }}>Start by creating your first Saree Crown campaign.</p>
+              <button
+                className={styles.btnPrimary}
+                onClick={() => setView('create')}
+                disabled={hasOngoingCampaign(campaigns)}
+              >
+                <FiPlus /> Create Campaign
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.tableCard}>
+            <table className={styles.campaignTable}>
+              <thead>
+                <tr>
+                  <th>Campaign Name</th>
+                  <th>Voting Period</th>
+                  <th>Status</th>
+                  <th>Votes</th>
+                  <th>Reward</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map(c => {
+                  const startStr = c.voting_start ? new Date(c.voting_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                  const endStr = c.voting_end ? new Date(c.voting_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                  return (
+                    <tr key={c.id}>
+                      <td>
+                        <div className={styles.campaignNameCell}>
+                          <span>👑 {c.name || `Campaign #${c.id}`}</span>
+                        </div>
+                      </td>
+                      <td className={styles.campaignDateRange}>
+                        {startStr} – {endStr}
+                      </td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${getCampaignStatusClass(c)}`}>
+                          {getCampaignStatusText(c)}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: '700' }}>
+                        {c.total_votes || 0} votes
+                      </td>
+                      <td>
+                        <span className={styles.rewardBadge}>
+                          {c.reward_type === 'free' ? 'FREE' : `${Number(c.reward_value || 0)}% OFF`}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className={styles.btnSecondary}
+                          style={{ padding: '6px 12px', fontSize: '12px' }}
+                          onClick={() => {
+                            setCurrentCampaignId(c.id);
+                            setView('edit');
+                          }}
+                        >
+                          Manage
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── RENDER FORM / DETAILS VIEW (CREATE & MANAGE) ─────────────────
   return (
     <div className={styles.wrapper}>
       <Toast message={toast.message} type={toast.type} />
@@ -333,18 +546,24 @@ export default function SareeCrownManagement() {
       {/* ── Header ── */}
       <div className={styles.pageHeader}>
         <div className={styles.titleGroup}>
-          <h1 className={styles.pageTitle}>👑 Saree Crown</h1>
-          <p className={styles.pageSubtitle}>Configure the interactive Saree Crown voting campaign.</p>
-        </div>
-        <div className={styles.headerActions}>
           <button
             className={styles.btnSecondary}
-            onClick={() => loadCampaignData(true)}
-            disabled={saving}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => {
+              setView('list');
+              setCurrentCampaignId(null);
+            }}
+            style={{ marginBottom: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}
           >
-            <FiRefreshCw className={saving ? styles.spinnerInline : ''} /> Refresh
+            <FiArrowLeft /> Back to Campaigns
           </button>
+          <h1 className={styles.pageTitle}>
+            {view === 'create' ? '👑 Create Campaign' : `👑 ${name}`}
+          </h1>
+          <p className={styles.pageSubtitle}>
+            {view === 'create' ? 'Configure a new Saree Crown voting campaign.' : 'Manage details, view voting results, and control states.'}
+          </p>
+        </div>
+        <div className={styles.headerActions} style={{ alignSelf: 'flex-end' }}>
           <button
             className={styles.btnPrimary}
             onClick={handleSave}
@@ -359,35 +578,49 @@ export default function SareeCrownManagement() {
         {/* ── LEFT COLUMN ── */}
         <div className={styles.leftCol}>
 
-          {/* Enable / Disable */}
+          {/* Campaign Info */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
-              <span className={styles.cardIcon}>⚡</span>
+              <span className={styles.cardIcon}>📝</span>
               <div>
-                <h3 className={styles.cardTitle}>Campaign Status</h3>
-                <p className={styles.cardSubtitle}>Enable or disable the Crown campaign for customers.</p>
+                <h3 className={styles.cardTitle}>Campaign Details</h3>
+                <p className={styles.cardSubtitle}>Provide campaign title and status.</p>
               </div>
             </div>
-            <div className={styles.toggleRow}>
-              <div className={styles.toggleInfo}>
-                <span className={`${styles.statusBadge} ${enabled ? styles.statusBadgeActive : styles.statusBadgeInactive}`}>
-                  {enabled ? '🟢 Active' : '⚫ Inactive'}
-                </span>
-                <span className={styles.toggleLabel}>
-                  {enabled ? 'Campaign is visible to customers' : 'Campaign is hidden from customers'}
-                </span>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Campaign Name</label>
+                <input
+                  type="text"
+                  className={styles.dateInput}
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                  placeholder="e.g. Wedding Week Crown"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                />
               </div>
-              <button
-                className={`${styles.toggleBtn} ${enabled ? styles.toggleBtnOn : styles.toggleBtnOff}`}
-                onClick={() => setEnabled(v => !v)}
-              >
-                {enabled ? <FiToggleRight /> : <FiToggleLeft />}
-              </button>
+
+              <div className={styles.toggleRow} style={{ marginTop: '8px', padding: 0, border: 'none' }}>
+                <div className={styles.toggleInfo}>
+                  <span className={`${styles.statusBadge} ${enabled ? styles.statusBadgeActive : styles.statusBadgeInactive}`}>
+                    {enabled ? '🟢 Enabled' : '⚫ Disabled'}
+                  </span>
+                  <span className={styles.toggleLabel} style={{ marginLeft: '10px' }}>
+                    {enabled ? 'Campaign is visible to customers' : 'Campaign is hidden from customers'}
+                  </span>
+                </div>
+                <button
+                  className={`${styles.toggleBtn} ${enabled ? styles.toggleBtnOn : styles.toggleBtnOff}`}
+                  onClick={() => setEnabled(v => !v)}
+                >
+                  {enabled ? <FiToggleRight /> : <FiToggleLeft />}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Saree Crown Operations (Step 4) */}
-          {campaign && campaign.enabled && (
+          {/* Saree Crown Operations (Only for Edit Mode) */}
+          {view === 'edit' && campaign && (
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <span className={styles.cardIcon}>👑</span>
@@ -464,7 +697,6 @@ export default function SareeCrownManagement() {
               </div>
             </div>
           )}
-
 
           {/* Voting Window */}
           <div className={styles.card}>
@@ -601,9 +833,9 @@ export default function SareeCrownManagement() {
                         <div className={styles.selectedInfo}>
                           <span className={styles.selectedName}>{p.name}</span>
                           <span className={styles.selectedPrice}>₹{Number(p.price || 0).toLocaleString()}</span>
-                          {campaign && (
+                          {view === 'edit' && campaign && (
                             <span style={{ display: 'block', fontSize: '12px', color: 'var(--primary-color)', fontWeight: '700', marginTop: '6px' }}>
-                              🗳️ {p.vote_count || 0} vote{p.vote_count === 1 ? '' : 's'}
+                              Public Votes: <strong>{p.vote_count || 0}</strong>
                             </span>
                           )}
                         </div>

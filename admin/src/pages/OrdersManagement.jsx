@@ -1108,10 +1108,21 @@ function OrdersManagement() {
                       </div>
                       {/* Invoice math summary */}
                       <div className={styles.totalsSummaryBox}>
-                        <div className={styles.totalSumRow}><span>Subtotal</span><span>₹{activeOrder.subtotal || activeTotalAmount}</span></div>
-                        <div className={styles.totalSumRow}><span>Discount</span><span>-₹{activeOrder.discount || 0}</span></div>
-                        <div className={styles.totalSumRow}><span>Shipping</span><span>₹{activeOrder.shipping || 0}</span></div>
-                        <div className={styles.totalSumRow}><span>GST (5%)</span><span>₹{activeOrder.gst || 0}</span></div>
+                        {activeOrder.subtotal === null || activeOrder.subtotal === undefined ? (
+                          <div style={{ padding: '10px 0', fontSize: '12.5px', color: '#888888', fontStyle: 'italic', textAlign: 'center' }}>
+                            Breakdown unavailable (Historical Order)
+                          </div>
+                        ) : (
+                          <>
+                            <div className={styles.totalSumRow}><span>Subtotal</span><span>₹{activeOrder.subtotal}</span></div>
+                            <div className={styles.totalSumRow}><span>Discount</span><span>-₹{activeOrder.discount}</span></div>
+                            <div className={styles.totalSumRow}><span>Shipping</span><span>{activeOrder.shipping === 0 ? 'FREE' : `₹${activeOrder.shipping}`}</span></div>
+                            <div className={styles.totalSumRow}>
+                              <span>GST ({activeOrder.gstRate}%){activeOrder.taxInclusivityMode?.toLowerCase().includes('inclusive') ? ' (Included)' : ''}</span>
+                              <span>₹{activeOrder.gst}</span>
+                            </div>
+                          </>
+                        )}
                         <div className={`${styles.totalSumRow} ${styles.totalGrandRow}`}><span>Grand Total</span><span>₹{activeTotalAmount}</span></div>
                       </div>
                     </div>
@@ -1243,9 +1254,21 @@ function OrdersManagement() {
                           * Tax Invoice generated electronically. No signature required.
                         </div>
                         <div className={styles.invoiceMathBlock}>
-                          <div><span>Subtotal</span><span>₹{activeOrder.subtotal || activeTotalAmount}</span></div>
-                          <div><span>GST (5%)</span><span>₹{activeOrder.gst || 0}</span></div>
-                          <div><span>Shipping</span><span>₹{activeOrder.shipping || 0}</span></div>
+                          {activeOrder.subtotal === null || activeOrder.subtotal === undefined ? (
+                            <div style={{ padding: '8px 0', fontSize: '11px', color: '#888888', fontStyle: 'italic', textAlign: 'right' }}>
+                              Breakdown unavailable
+                            </div>
+                          ) : (
+                            <>
+                              <div><span>Subtotal</span><span>₹{activeOrder.subtotal}</span></div>
+                              {Number(activeOrder.discount) > 0 && <div><span>Discount</span><span>-₹{activeOrder.discount}</span></div>}
+                              <div>
+                                <span>GST ({activeOrder.gstRate}%){activeOrder.taxInclusivityMode?.toLowerCase().includes('inclusive') ? ' (Included)' : ''}</span>
+                                <span>₹{activeOrder.gst}</span>
+                              </div>
+                              <div><span>Shipping</span><span>{activeOrder.shipping === 0 ? 'FREE' : `₹${activeOrder.shipping}`}</span></div>
+                            </>
+                          )}
                           <div style={{ borderTop: '1px solid #ddd', paddingTop: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-color)' }}>
                             <span>Grand Total</span><span>₹{activeTotalAmount}</span>
                           </div>

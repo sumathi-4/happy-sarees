@@ -65,6 +65,7 @@ export const api = {
 
   // Orders APIs
   createOrder: (orderData) => axiosInstance.post('/orders', orderData),
+  calculateOrderTotals: (orderData) => axiosInstance.post('/orders/calculate', orderData),
   getMyOrders: () => axiosInstance.get('/orders/my-orders'),
   cancelOrder: (orderId) => axiosInstance.put(`/orders/${orderId}/cancel`),
   returnOrder: (orderId, reason) => axiosInstance.post(`/orders/${orderId}/return`, { reason }),
@@ -127,6 +128,7 @@ export const api = {
   getSareeCrownCampaign: () => axiosInstance.get('/saree-crown'),
   castSareeCrownVote: (productId) => axiosInstance.post('/saree-crown/vote', { productId }),
   getMySareeCrownVote: () => axiosInstance.get('/saree-crown/my-vote'),
+  claimSareeCrownReward: () => axiosInstance.post('/saree-crown/claim'),
 };
 
 export default api;

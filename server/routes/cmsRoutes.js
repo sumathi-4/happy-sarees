@@ -300,22 +300,22 @@ router.post('/validate-coupon', async (req, res) => {
       const usageCheck = await db.query(
         `SELECT 1 FROM coupon_usage cu 
          JOIN coupons c ON c.id = cu.coupon_id 
-         WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 LIMIT 1`,
-        [userId]
+         WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 AND cu.campaign_id = $2 LIMIT 1`,
+        [userId, campaign.id]
       );
       if (usageCheck.rowCount > 0) {
         return res.status(400).json({ success: false, message: 'You have already redeemed your Saree Crown reward.' });
       }
 
-      // 4. Check if winning product is in user's cart
+      // 4. Check if winning product is in user's cart as a Saree Crown reward claim
       const cartCheck = await db.query(
-        `SELECT 1 FROM cart_items WHERE user_id = $1 AND product_id = $2 LIMIT 1`,
+        `SELECT 1 FROM cart_items WHERE user_id = $1 AND product_id = $2 AND is_saree_crown = true LIMIT 1`,
         [userId, campaign.winner_product_id]
       );
       if (cartCheck.rowCount === 0) {
         const prodRes = await db.query(`SELECT name FROM products WHERE id = $1`, [campaign.winner_product_id]);
         const prodName = prodRes.rows[0]?.name || 'the winning saree';
-        return res.status(400).json({ success: false, message: `The winning Saree Crown product ("${prodName}") must be in your cart to use this coupon.` });
+        return res.status(400).json({ success: false, message: `The winning Saree Crown product ("${prodName}") must be claimed via "Claim Reward" to use this coupon.` });
       }
 
       // Fetch the winning product's price for calculation of FREE reward if needed

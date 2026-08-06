@@ -197,10 +197,12 @@ export const reviewsApi = {
 
 // ── Saree Crown Campaign ───────────────────────────────────
 export const sareeCrownApi = {
-  get:  ()     => api.get('/saree-crown'),
-  save: (data) => api.put('/saree-crown', data),
-  stopVoting: () => api.post('/saree-crown/stop-voting'),
-  revealWinner: () => api.post('/saree-crown/reveal-winner'),
+  list:         ()          => api.get('/saree-crown'),
+  get:          (id)        => api.get(`/saree-crown/${id}`),
+  create:       (data)      => api.post('/saree-crown', data),
+  save:         (id, data)  => api.put(`/saree-crown/${id}`, data),
+  stopVoting:   (id)        => api.post(`/saree-crown/${id}/stop-voting`),
+  revealWinner: (id)        => api.post(`/saree-crown/${id}/reveal-winner`),
 };
 
 /**

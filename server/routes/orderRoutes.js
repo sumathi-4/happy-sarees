@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db');
 const authenticateToken = require('../middleware/auth');
 const emailService = require('../services/emailService');
+const { calculateOrderTotals } = require('../utils/orderCalculator');
 
 const jwt = require('jsonwebtoken');
 
@@ -20,62 +21,54 @@ function optionalAuth(req, res, next) {
   next();
 }
 
-// 1. Create New Order
+// 1. Calculate Order Totals Preview (Checkout Preview)
+router.post('/calculate', optionalAuth, async (req, res) => {
+  try {
+    const { items, shippingMethodId, couponCode } = req.body;
+    if (!items || !items.length) {
+      return res.status(400).json({ success: false, message: 'Cart items are required for calculation.' });
+    }
+
+    const userId = req.user?.id || req.user?.userId || null;
+    const totals = await calculateOrderTotals({
+      items,
+      shippingMethodId,
+      couponCode,
+      userId
+    });
+
+    res.json({ success: true, ...totals });
+  } catch (err) {
+    console.error('Calculate Order Totals Error:', err);
+    res.status(400).json({ success: false, message: err.message || 'Failed to calculate order totals.' });
+  }
+});
+
+// 2. Create New Order
 router.post('/', optionalAuth, async (req, res) => {
   const client = await db.pool.connect();
   try {
-    const { items, totalAmount, shippingAddress, paymentMethod, couponCode } = req.body;
+    const { items, shippingAddress, paymentMethod, couponCode, shippingMethodId } = req.body;
 
-    if (!items || !items.length || !totalAmount) {
+    if (!items || !items.length) {
       client.release();
-      return res.status(400).json({ success: false, message: 'Cart items and total amount are required.' });
+      return res.status(400).json({ success: false, message: 'Cart items are required.' });
     }
 
-    if (couponCode && couponCode.trim().toUpperCase() === 'SAREECROWN') {
-      const userId = req.user?.id || req.user?.userId;
-      if (!userId) {
-        client.release();
-        return res.status(401).json({ success: false, message: 'Please log in to apply this coupon.' });
-      }
+    const userId = req.user?.id || req.user?.userId || null;
 
-      // 1. Fetch active Saree Crown campaign
-      const campaignRes = await client.query(
-        `SELECT * FROM saree_crown_campaign WHERE enabled = true ORDER BY id DESC LIMIT 1`
-      );
-      const campaign = campaignRes.rows[0];
-      if (!campaign || !campaign.winner_revealed || !campaign.winner_product_id) {
-        client.release();
-        return res.status(400).json({ success: false, message: 'No active Saree Crown reward is available.' });
-      }
-
-      // 2. Check if user voted in this campaign
-      const voteCheck = await client.query(
-        `SELECT 1 FROM saree_crown_votes WHERE campaign_id = $1 AND user_id = $2 LIMIT 1`,
-        [campaign.id, userId]
-      );
-      if (voteCheck.rowCount === 0) {
-        client.release();
-        return res.status(403).json({ success: false, message: 'Only customers who voted in this Saree Crown campaign are eligible for the reward.' });
-      }
-
-      // 3. Check if already used
-      const usageCheck = await client.query(
-        `SELECT 1 FROM coupon_usage cu 
-         JOIN coupons c ON c.id = cu.coupon_id 
-         WHERE UPPER(c.code) = 'SAREECROWN' AND cu.user_id = $1 LIMIT 1`,
-        [userId]
-      );
-      if (usageCheck.rowCount > 0) {
-        client.release();
-        return res.status(400).json({ success: false, message: 'You have already redeemed your Saree Crown reward.' });
-      }
-
-      // 4. Check if winning product is in items
-      const hasWinnerProduct = items.some(item => Number(item.productId || item.id) === campaign.winner_product_id);
-      if (!hasWinnerProduct) {
-        client.release();
-        return res.status(400).json({ success: false, message: 'The winning Saree Crown product must be in your checkout list to redeem this reward.' });
-      }
+    // Recalculate totals authoritatively server-side
+    let totals;
+    try {
+      totals = await calculateOrderTotals({
+        items,
+        shippingMethodId,
+        couponCode,
+        userId
+      });
+    } catch (calcErr) {
+      client.release();
+      return res.status(400).json({ success: false, message: calcErr.message || 'Error calculating order totals.' });
     }
 
     await client.query('BEGIN');
@@ -86,27 +79,48 @@ router.post('/', optionalAuth, async (req, res) => {
 
     const orderNumber = `HS-ORD-${Date.now()}`;
     const orderRes = await client.query(
-      `INSERT INTO orders (user_id, order_number, total_amount, payment_method, payment_status, order_status, shipping_address)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      `INSERT INTO orders (
+         user_id, order_number, total_amount, payment_method, payment_status, order_status, shipping_address,
+         subtotal, discount, gst_rate, gst_amount, tax_inclusivity_mode, shipping_amount, shipping_discount, free_shipping_status, final_total
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
       [
-        req.user?.id || null,
+        userId,
         orderNumber,
-        totalAmount,
+        totals.finalTotal,
         paymentMethod || (isOnline ? 'Pay Online' : 'COD'),
         initialPaymentStatus,
         initialOrderStatus,
-        JSON.stringify(shippingAddress || {})
+        JSON.stringify(shippingAddress || {}),
+        totals.subtotal,
+        totals.discount,
+        totals.gstRate,
+        totals.gstAmount,
+        totals.taxInclusivityMode,
+        totals.shippingAmount,
+        (totals.shippingAmount === 0 && totals.freeShippingStatus === 'FREE') ? 99 : 0, // dynamic shipping discount fallback
+        totals.freeShippingStatus,
+        totals.finalTotal
       ]
     );
 
     const order = orderRes.rows[0];
 
-    // Insert order items
+    // Insert order items using actual prices from DB
+    const productIds = items.map(item => Number(item.productId || item.id));
+    const productsRes = await client.query(`SELECT id, price FROM products WHERE id = ANY($1)`, [productIds]);
+    const priceMap = {};
+    productsRes.rows.forEach(p => {
+      priceMap[p.id] = Number(p.price);
+    });
+
     for (const item of items) {
+      const productId = Number(item.productId || item.id);
+      const dbPrice = priceMap[productId] !== undefined ? priceMap[productId] : Number(item.price || 0);
       await client.query(
         `INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
          VALUES ($1, $2, $3, $4)`,
-        [order.id, item.productId || item.id, item.quantity, item.price]
+        [order.id, productId, item.quantity, dbPrice]
       );
     }
 
@@ -125,20 +139,30 @@ router.post('/', optionalAuth, async (req, res) => {
          RETURNING id`,
         [couponCode]
       );
-      if (couponRes.rows.length > 0 && req.user?.id) {
+      if (couponRes.rows.length > 0 && userId) {
         const couponId = couponRes.rows[0].id;
+        let campaignId = null;
+        if (couponCode.toUpperCase() === 'SAREECROWN') {
+          // Fetch the active revealed campaign
+          const campaignRes = await client.query(
+            `SELECT id FROM saree_crown_campaign WHERE enabled = true AND winner_revealed = true ORDER BY id DESC LIMIT 1`
+          );
+          if (campaignRes.rows.length > 0) {
+            campaignId = campaignRes.rows[0].id;
+          }
+        }
         await client.query(
-          `INSERT INTO coupon_usage (coupon_id, user_id, order_id)
-           VALUES ($1, $2, $3)`,
-          [couponId, req.user.id, order.id]
+          `INSERT INTO coupon_usage (coupon_id, user_id, order_id, campaign_id)
+           VALUES ($1, $2, $3, $4)`,
+          [couponId, userId, order.id, campaignId]
         );
       }
     }
 
     // Clear purchaser's cart items ONLY for Cash on Delivery orders.
     // Pay Online orders clear cart in /verify-signature ONLY after payment succeeds!
-    if (!isOnline && req.user?.id) {
-      await client.query('DELETE FROM cart_items WHERE user_id = $1', [req.user.id]);
+    if (!isOnline && userId) {
+      await client.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
     }
 
     await client.query('COMMIT');
@@ -284,7 +308,16 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
         createdAt: o.created_at,
         created_at: o.created_at,
         items: rawItems,
-        timeline: orderTimeline
+        timeline: orderTimeline,
+        subtotal: o.subtotal !== null && o.subtotal !== undefined ? Number(o.subtotal) : null,
+        discount: o.discount !== null && o.discount !== undefined ? Number(o.discount) : null,
+        gst: o.gst_amount !== null && o.gst_amount !== undefined ? Number(o.gst_amount) : null,
+        gstRate: o.gst_rate !== null && o.gst_rate !== undefined ? Number(o.gst_rate) : null,
+        shipping: o.shipping_amount !== null && o.shipping_amount !== undefined ? Number(o.shipping_amount) : null,
+        taxInclusivityMode: o.tax_inclusivity_mode !== null && o.tax_inclusivity_mode !== undefined ? o.tax_inclusivity_mode : null,
+        shippingDiscount: o.shipping_discount !== null && o.shipping_discount !== undefined ? Number(o.shipping_discount) : null,
+        freeShippingStatus: o.free_shipping_status !== null && o.free_shipping_status !== undefined ? o.free_shipping_status : null,
+        finalTotal: o.final_total !== null && o.final_total !== undefined ? Number(o.final_total) : null
       };
     });
 

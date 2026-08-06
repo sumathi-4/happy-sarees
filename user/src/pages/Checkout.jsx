@@ -225,11 +225,45 @@ function Checkout() {
   const selectedDelivery = deliveryMethods.find(d => d.id === selectedDeliveryId) || deliveryMethods[0];
   const selectedPayment = paymentMethods.find(p => p.id === selectedPaymentId) || paymentMethods[0];
 
+  const [calculatedTotals, setCalculatedTotals] = useState(null);
+  const [totalsLoading, setTotalsLoading] = useState(false);
+
+  // Fetch dynamic calculations from backend
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+    let isMounted = true;
+    setTotalsLoading(true);
+    api.calculateOrderTotals({
+      items: cartItems.map(item => ({
+        id: item.id,
+        productId: item.productId || item.id,
+        quantity: item.quantity,
+        price: item.price,
+        is_saree_crown: item.is_saree_crown || false
+      })),
+      shippingMethodId: selectedDeliveryId || null,
+      couponCode: appliedCoupon?.code || null
+    })
+    .then(data => {
+      if (isMounted && data.success) {
+        setCalculatedTotals(data);
+      }
+    })
+    .catch(err => {
+      console.warn('[Checkout] Failed to fetch server totals:', err.message);
+    })
+    .finally(() => {
+      if (isMounted) setTotalsLoading(false);
+    });
+
+    return () => { isMounted = false; };
+  }, [cartItems, selectedDeliveryId, appliedCoupon]);
+
   // Dynamic price calculation including free shipping logic
   const cartSubtotal = cartItems.reduce((sum, item) => sum + (item.originalPrice || item.price) * item.quantity, 0);
   const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
-  const discount = Math.max(0, (cartSubtotal - sellingTotal) + couponDiscount);
+  const clientDiscount = Math.max(0, (cartSubtotal - sellingTotal) + couponDiscount);
 
   const freeShippingActive = shippingRules.enable_free_shipping !== false && shippingRules.enableFreeShipping !== false;
   const minOrderAmount = Number(shippingRules.free_shipping_min_amount || shippingRules.minFreeShippingOrder || 2999);
@@ -239,11 +273,18 @@ function Checkout() {
     if (!selectedDelivery) return 0;
     return Number(selectedDelivery.shipping_charge !== undefined ? selectedDelivery.shipping_charge : (selectedDelivery.price !== undefined ? selectedDelivery.price : 0));
   };
-  const deliveryPrice = (qualifiesForFreeShipping && selectedDelivery?.free_shipping_eligible)
+  const clientDeliveryPrice = (qualifiesForFreeShipping && selectedDelivery?.free_shipping_eligible)
     ? 0
     : getRawDeliveryCharge();
 
-  const grandTotal = Math.max(0, cartSubtotal - discount + deliveryPrice);
+  // Authoritative overrides
+  const subtotal = calculatedTotals ? calculatedTotals.subtotal : cartSubtotal;
+  const discount = calculatedTotals ? calculatedTotals.discount : clientDiscount;
+  const deliveryPrice = calculatedTotals ? calculatedTotals.shippingAmount : clientDeliveryPrice;
+  const grandTotal = calculatedTotals ? calculatedTotals.finalTotal : Math.max(0, cartSubtotal - discount + deliveryPrice);
+  const gstAmount = calculatedTotals ? calculatedTotals.gstAmount : 0;
+  const gstRate = calculatedTotals ? calculatedTotals.gstRate : 0;
+  const taxInclusivityMode = calculatedTotals ? calculatedTotals.taxInclusivityMode : 'Tax Inclusive (Prices include GST)';
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
@@ -276,7 +317,8 @@ function Checkout() {
           id: item.id,
           productId: item.productId || item.id,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          is_saree_crown: item.is_saree_crown || false
         })),
         totalAmount: grandTotal,
         shippingAddress: selectedAddress,
@@ -284,7 +326,8 @@ function Checkout() {
         paymentStatus: isUpiQr ? 'Pending Verification' : 'Pending',
         payment_status: isUpiQr ? 'Pending Verification' : 'pending',
         transactionId: isUpiQr ? (utrNumber || null) : null,
-        couponCode: appliedCoupon?.code || null
+        couponCode: appliedCoupon?.code || null,
+        shippingMethodId: selectedDelivery?.id || null
       };
 
       try {
@@ -311,7 +354,16 @@ function Checkout() {
       // 1. Create Razorpay Payment Session FIRST (Without creating DB order yet)
       const razorpayApiRes = await api.createRazorpayOrder({
         amount: grandTotal,
-        currency: 'INR'
+        currency: 'INR',
+        items: cartItems.map(item => ({
+          id: item.id,
+          productId: item.productId || item.id,
+          quantity: item.quantity,
+          price: item.price,
+          is_saree_crown: item.is_saree_crown || false
+        })),
+        shippingMethodId: selectedDelivery?.id || null,
+        couponCode: appliedCoupon?.code || null
       });
 
       const razorpayData = razorpayApiRes.data || razorpayApiRes;
@@ -348,7 +400,8 @@ function Checkout() {
                 id: item.id,
                 productId: item.productId || item.id,
                 quantity: item.quantity,
-                price: item.price
+                price: item.price,
+                is_saree_crown: item.is_saree_crown || false
               })),
               totalAmount: grandTotal,
               shippingAddress: selectedAddress,
@@ -359,7 +412,8 @@ function Checkout() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              couponCode: appliedCoupon?.code || null
+              couponCode: appliedCoupon?.code || null,
+              shippingMethodId: selectedDelivery?.id || null
             };
 
             const dbOrderRes = await api.createOrder(orderPayload);
@@ -512,8 +566,13 @@ function Checkout() {
               <div className={styles.rightCol}>
                 <CheckoutSummary
                   cartItems={cartItems}
-                  deliveryPrice={deliveryPrice}
-                  discountAmount={couponDiscount}
+                  subtotal={subtotal}
+                  discount={discount}
+                  gstAmount={gstAmount}
+                  gstRate={gstRate}
+                  shippingAmount={deliveryPrice}
+                  grandTotal={grandTotal}
+                  taxInclusivityMode={taxInclusivityMode}
                 />
               </div>
             </div>

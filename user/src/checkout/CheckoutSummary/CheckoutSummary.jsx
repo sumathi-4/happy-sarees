@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiRefreshCw, FiShield, FiTruck } from 'react-icons/fi';
 import styles from './CheckoutSummary.module.css';
 
-function CheckoutSummary({ cartItems = [], deliveryPrice = 0, discountAmount = 0 }) {
+function CheckoutSummary({
+  cartItems = [],
+  subtotal = 0,
+  discount = 0,
+  gstAmount = 0,
+  gstRate = 0,
+  shippingAmount = 0,
+  grandTotal = 0,
+  taxInclusivityMode = 'Tax Inclusive'
+}) {
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.originalPrice || item.price) * item.quantity,
-    0
-  );
-  const sellingTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discount = Math.max(0, (subtotal - sellingTotal) + Number(discountAmount || 0));
-  const grandTotal = Math.max(0, subtotal - discount + Number(deliveryPrice || 0));
 
   return (
     <div className={styles.stickyColumn}>
@@ -23,7 +25,7 @@ function CheckoutSummary({ cartItems = [], deliveryPrice = 0, discountAmount = 0
             <Link to="/cart" className={styles.editCartLink}>Edit Cart</Link>
           </div>
         </div>
-
+ 
         {/* Mini Product List */}
         <div className={styles.miniList}>
           {cartItems.map((item) => (
@@ -37,29 +39,37 @@ function CheckoutSummary({ cartItems = [], deliveryPrice = 0, discountAmount = 0
             </div>
           ))}
         </div>
-
+ 
         <div className={styles.divider}></div>
-
+ 
         {/* Price Breakdown */}
         <div className={styles.breakdownTable}>
           <div className={styles.row}>
             <span className={styles.label}>Subtotal</span>
             <span className={styles.val}>₹{subtotal.toLocaleString()}</span>
           </div>
-          <div className={styles.row}>
-            <span className={styles.label}>Discount (-)</span>
-            <span className={`${styles.val} ${styles.discountVal}`}>- ₹{discount.toLocaleString()}</span>
-          </div>
+          {discount > 0 && (
+            <div className={styles.row}>
+              <span className={styles.label}>Discount (-)</span>
+              <span className={`${styles.val} ${styles.discountVal}`}>- ₹{discount.toLocaleString()}</span>
+            </div>
+          )}
+          {gstRate > 0 && (
+            <div className={styles.row}>
+              <span className={styles.label}>GST ({gstRate}%){taxInclusivityMode?.toLowerCase().includes('inclusive') ? ' (Included)' : ''}</span>
+              <span className={styles.val}>₹{gstAmount.toLocaleString()}</span>
+            </div>
+          )}
           <div className={styles.row}>
             <span className={styles.label}>Shipping</span>
-            <span className={`${styles.val} ${styles.freeVal}`}>
-              {deliveryPrice === 0 ? 'FREE' : `+ ₹${deliveryPrice}`}
+            <span className={`${styles.val} ${shippingAmount === 0 ? styles.freeVal : ''}`}>
+              {shippingAmount === 0 ? 'FREE' : `+ ₹${shippingAmount.toLocaleString()}`}
             </span>
           </div>
         </div>
-
+ 
         <div className={styles.divider}></div>
-
+ 
         {/* Grand Total */}
         <div className={styles.totalRow}>
           <span className={styles.totalLabel}>Total Amount</span>

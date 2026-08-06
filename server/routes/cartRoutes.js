@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT c.id as cart_id, c.quantity, p.*,
+      `SELECT c.id as cart_id, c.quantity, c.is_saree_crown, p.*,
               (SELECT pi.image_url
                FROM product_images pi
                WHERE pi.product_id = p.id
@@ -29,6 +29,7 @@ router.get('/', authenticateToken, async (req, res) => {
         id: row.id,
         productId: row.id,
         cartId: row.cart_id,
+        is_saree_crown: row.is_saree_crown,
         image: img,
         image_url: img,
         originalPrice: row.original_price ? Number(row.original_price) : null,
@@ -49,6 +50,19 @@ router.post('/', authenticateToken, async (req, res) => {
     const { productId, quantity } = req.body;
     if (!productId) {
       return res.status(400).json({ success: false, message: 'Product ID is required.' });
+    }
+
+    // Lock Saree Crown reward item to quantity 1
+    const check = await db.query(
+      `SELECT is_saree_crown FROM cart_items WHERE user_id = $1 AND product_id = $2`,
+      [req.user.id, productId]
+    );
+    if (check.rowCount > 0 && check.rows[0].is_saree_crown) {
+      await db.query(
+        `UPDATE cart_items SET quantity = 1 WHERE user_id = $1 AND product_id = $2`,
+        [req.user.id, productId]
+      );
+      return res.json({ success: true, message: 'Saree Crown reward item is already in cart. Quantity is locked to 1.' });
     }
 
     const qty = quantity && quantity > 0 ? quantity : 1;
