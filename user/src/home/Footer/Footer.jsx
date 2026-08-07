@@ -5,7 +5,7 @@ import { PATHS } from '../../routes/paths';
 import { useStoreSettings } from '../../context/StoreSettingsContext';
 import styles from './Footer.module.css';
 
-const logoImg = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+const logoImg = '/logo.png';
 
 function Footer() {
   const { storeSettings } = useStoreSettings();

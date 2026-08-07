@@ -8,6 +8,25 @@ const { parsePagination } = require('../../utils/pagination');
 
 class MasterDataService {
 
+  // Resolve typeId from either numeric ID or string slug
+  async resolveTypeId(idOrSlug) {
+    if (idOrSlug === null || idOrSlug === undefined) return null;
+    const isNum = !isNaN(idOrSlug) && !isNaN(parseInt(idOrSlug));
+    if (isNum) {
+      return parseInt(idOrSlug);
+    }
+    const typeRes = await db.query(
+      `SELECT id FROM master_types 
+       WHERE slug = $1 
+          OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') 
+          OR id::text = $1 
+       LIMIT 1`,
+      [String(idOrSlug)]
+    );
+    if (typeRes.rows.length === 0) return null;
+    return typeRes.rows[0].id;
+  }
+
   // ── List All Types ─────────────────────────────────────────
   async getAllTypes() {
     const res = await db.query(
@@ -47,9 +66,10 @@ class MasterDataService {
   }
 
   // ── List Items by Type ID ──────────────────────────────────
-  async getItems(typeId, query = {}) {
+  async getItems(typeIdParam, query = {}) {
+    const typeId = await this.resolveTypeId(typeIdParam);
     const typeRes = await db.query(`SELECT * FROM master_types WHERE id = $1`, [typeId]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: `Master type ID '${typeId}' not found.` };
+    if (typeRes.rows.length === 0) throw { status: 404, message: `Master type ID/slug '${typeIdParam}' not found.` };
 
     const type = typeRes.rows[0];
     const { page, limit, offset } = parsePagination(query, 200);
@@ -106,19 +126,28 @@ class MasterDataService {
   }
 
   // ── Create Item ────────────────────────────────────────────
-  async createItem(typeId, data) {
+  async createItem(typeIdParam, data) {
+    const typeId = await this.resolveTypeId(typeIdParam);
     const typeRes = await db.query(`SELECT id FROM master_types WHERE id = $1`, [typeId]);
-    if (typeRes.rows.length === 0) throw { status: 404, message: `Type ID '${typeId}' not found.` };
+    if (typeRes.rows.length === 0) throw { status: 404, message: `Type ID/slug '${typeIdParam}' not found.` };
 
     const slug = slugify(data.name);
     const isActiveBool = data.isActive ?? true;
 
-    const res = await db.query(
-      `INSERT INTO master_items (type_id, name, slug, description, image_data, color_hex, sort_order, is_active)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-       RETURNING *`,
-      [typeId, data.name, slug, data.description || null, data.imageData || null, data.colorHex || null, data.sortOrder || 0, isActiveBool]
-    );
+    let res;
+    try {
+      res = await db.query(
+        `INSERT INTO master_items (type_id, name, slug, description, image_data, color_hex, sort_order, is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         RETURNING *`,
+        [typeId, data.name, slug, data.description || null, data.imageData || null, data.colorHex || null, data.sortOrder || 0, isActiveBool]
+      );
+    } catch (err) {
+      if (err.code === '23505') {
+        throw { status: 409, message: 'An item with this name already exists under this category.' };
+      }
+      throw err;
+    }
 
     const r = res.rows[0];
     return {
@@ -135,9 +164,13 @@ class MasterDataService {
   }
 
   // ── Update Item ────────────────────────────────────────────
-  async updateItem(typeId, id, data) {
+  async updateItem(typeIdParam, id, data) {
+    const typeId = await this.resolveTypeId(typeIdParam);
     const existing = await db.query(
-      `SELECT * FROM master_items WHERE id = $1 AND type_id = $2`,
+      `SELECT mi.*, mt.slug as type_slug 
+       FROM master_items mi 
+       JOIN master_types mt ON mi.type_id = mt.id
+       WHERE mi.id = $1 AND mi.type_id = $2`,
       [id, typeId]
     );
     if (existing.rows.length === 0) throw { status: 404, message: 'Master item not found.' };
@@ -151,23 +184,59 @@ class MasterDataService {
     const sortOrder = data.sortOrder !== undefined ? data.sortOrder : item.sort_order;
     const isActiveBool = data.isActive !== undefined ? data.isActive : item.is_active;
 
-    const res = await db.query(
-      `UPDATE master_items SET
-        name=$1, slug=$2, description=$3, image_data=$4, color_hex=$5,
-        sort_order=$6, is_active=$7, updated_at=NOW()
-       WHERE id=$8 AND type_id=$9 RETURNING *`,
-      [
-        name,
-        slug,
-        description,
-        imageData,
-        colorHex,
-        sortOrder,
-        isActiveBool,
-        id,
-        typeId
-      ]
-    );
+    let res;
+    try {
+      res = await db.query(
+        `UPDATE master_items SET
+          name=$1, slug=$2, description=$3, image_data=$4, color_hex=$5,
+          sort_order=$6, is_active=$7, updated_at=NOW()
+         WHERE id=$8 AND type_id=$9 RETURNING *`,
+        [
+          name,
+          slug,
+          description,
+          imageData,
+          colorHex,
+          sortOrder,
+          isActiveBool,
+          id,
+          typeId
+        ]
+      );
+    } catch (err) {
+      if (err.code === '23505') {
+        throw { status: 409, message: 'An item with this name already exists under this category.' };
+      }
+      throw err;
+    }
+
+    // If the name changed, propagate this to the products columns
+    if (data.name !== undefined && data.name !== item.name) {
+      const typeSlug = item.type_slug || '';
+      const typeToColumn = {
+        fabrics: 'fabric',
+        occasions: 'occasion',
+        colors: 'color',
+        patterns: 'pattern',
+        weaves: 'weave',
+        borders: 'border',
+        brands: 'brand',
+        brand: 'brand',
+        collections: 'collection'
+      };
+      const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
+      
+      const colCheck = await db.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
+        [col]
+      );
+      if (colCheck.rows.length > 0) {
+        await db.query(
+          `UPDATE products SET ${col} = $1 WHERE LOWER(${col}) = LOWER($2)`,
+          [data.name, item.name]
+        );
+      }
+    }
 
     const r = res.rows[0];
     return {
@@ -183,18 +252,53 @@ class MasterDataService {
     };
   }
 
-  // ── Delete Item ────────────────────────────────────────────
-  async deleteItem(typeId, id) {
+  async deleteItem(typeIdParam, id) {
+    const typeId = await this.resolveTypeId(typeIdParam);
+    const itemQuery = await db.query(
+      `SELECT mi.name as item_name, mt.slug as type_slug
+       FROM master_items mi
+       JOIN master_types mt ON mi.type_id = mt.id
+       WHERE mi.id = $1 AND mi.type_id = $2`,
+      [id, typeId]
+    );
+
     const res = await db.query(
       `DELETE FROM master_items WHERE id = $1 AND type_id = $2 RETURNING id`,
       [id, typeId]
     );
     if (res.rows.length === 0) throw { status: 404, message: 'Item not found.' };
+
+    if (itemQuery.rows.length > 0) {
+      const itemName = itemQuery.rows[0].item_name;
+      const typeSlug = itemQuery.rows[0].type_slug || '';
+      const typeToColumn = {
+        fabrics: 'fabric',
+        occasions: 'occasion',
+        colors: 'color',
+        patterns: 'pattern',
+        weaves: 'weave',
+        borders: 'border',
+        brands: 'brand',
+        brand: 'brand',
+        collections: 'collection'
+      };
+      const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
+      
+      const colCheck = await db.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
+        [col]
+      );
+      if (colCheck.rows.length > 0) {
+        await db.query(`UPDATE products SET ${col} = NULL WHERE LOWER(${col}) = LOWER($1)`, [itemName]);
+      }
+    }
+
     return true;
   }
 
   // ── Toggle Status ──────────────────────────────────────────
-  async toggleItem(typeId, id) {
+  async toggleItem(typeIdParam, id) {
+    const typeId = await this.resolveTypeId(typeIdParam);
     const res = await db.query(
       `UPDATE master_items SET is_active = NOT is_active, updated_at = NOW()
        WHERE id = $1 AND type_id = $2
@@ -301,14 +405,37 @@ class MasterDataService {
 
   async deleteType(idOrSlug) {
     const typeRes = await db.query(
-      `SELECT id FROM master_types WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1`,
+      `SELECT id, slug FROM master_types WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1`,
       [idOrSlug]
     );
     if (typeRes.rows.length === 0) throw { status: 404, message: 'Master type not found.' };
     
     const typeId = typeRes.rows[0].id;
+    const typeSlug = typeRes.rows[0].slug || '';
+
     await db.query(`DELETE FROM master_items WHERE type_id = $1`, [typeId]);
     await db.query(`DELETE FROM master_types WHERE id = $1`, [typeId]);
+
+    const typeToColumn = {
+      fabrics: 'fabric',
+      occasions: 'occasion',
+      colors: 'color',
+      patterns: 'pattern',
+      weaves: 'weave',
+      borders: 'border',
+      brands: 'brand',
+      brand: 'brand',
+      collections: 'collection'
+    };
+    const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
+    const colCheck = await db.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
+      [col]
+    );
+    if (colCheck.rows.length > 0) {
+      await db.query(`UPDATE products SET ${col} = NULL`);
+    }
+
     return true;
   }
 

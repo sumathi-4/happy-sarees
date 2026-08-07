@@ -3,12 +3,19 @@
 - [x] Create Independent React Apps:
   - [x] Moved customer storefront codebase into `user/` subdirectory with its own `package.json`, `vite.config.js`, and build directories
   - [x] Audit `master_types` table columns in database
-- [/] Remove `/api/admin/master` duplicate route mapping from backend `server.js`
+- [x] Remove `/api/admin/master` duplicate route mapping from backend `server.js`
 - [x] Configure Routing:
   - [x] Restored `user/src/routes/AppRoutes.jsx` to its clean, customer-only routing configuration
   - [x] Setup `admin/src/App.jsx` with isolated root-level admin routing rules
+- [x] Make storefront filter sidebar (`FilterSidebar.jsx`) fully dynamic:
+  - [x] Fetch active master types from `/api/cms/spec-types` and items from `/api/cms/master-data` in parallel
+  - [x] Filter by `show_in_filters !== false` and sort by `sort_order`
+  - [x] Replace hardcoded JSX accordion blocks for Fabric, Occasion, Color, Pattern with dynamic ones
+  - [x] Handle plural/singular type slugs robustly to prevent duplicate sections
+  - [x] Map filters to correct state setters/keys (`selectedFabrics`, `selectedOccasions`, `selectedColors`, `selectedPatterns`, `dynamicFilters`)
 - [x] Root Orchestration:
   - [x] Created root-level `package.json` with dev/build workspace scripts for `user/`, `admin/`, and `server/`
 - [x] Verification:
+  - [x] Verify compilation and test storefront filter behavior
   - [x] Storefront builds successfully in 1.05s with 0 errors
   - [x] Admin builds successfully in 465ms on port 5175 with 0 errors

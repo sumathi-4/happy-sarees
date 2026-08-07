@@ -5,7 +5,7 @@ import { FiCheckCircle, FiUpload, FiArrowLeft, FiAlertCircle } from 'react-icons
 import { sellerApi } from '../api/sellerApi';
 import styles from '../styles/Register.module.css';
 
-const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+const LOGO_URL = '/logo.png';
 
 function Register() {
   const [step, setStep] = useState(1);

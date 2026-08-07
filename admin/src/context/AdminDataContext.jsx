@@ -1304,7 +1304,9 @@ export function AdminDataProvider({ children }) {
         const data = await res.json();
         throw new Error(data.message || 'Failed to add type');
       }
+      const data = await res.json();
       await refreshMasterData();
+      return data;
     } catch (err) {
       console.log('[AdminDataContext] Add master type error:', err.message);
       throw err;

@@ -4,7 +4,7 @@ import { useSellerAuth } from '../context/SellerAuthContext';
 import { FiClock, FiAlertTriangle, FiXCircle, FiRefreshCw, FiArrowLeft } from 'react-icons/fi';
 import styles from '../styles/Register.module.css';
 
-const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+const LOGO_URL = '/logo.png';
 
 function StatusPage() {
   const { status } = useParams();

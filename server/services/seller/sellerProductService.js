@@ -1,5 +1,6 @@
 const db = require('../../db');
 const { slugify, uniqueSlug } = require('../../utils/slugify');
+const productService = require('../admin/productService');
 
 /**
  * List products belonging to a seller, with status count metadata
@@ -177,6 +178,9 @@ async function createSellerProduct(sellerId, data) {
       [`Product "${data.name}" submitted by seller ID ${sellerId} is pending approval`, productId]
     );
 
+    // Sync product specifications
+    await productService.syncProductSpecifications(productId, data);
+
     await client.query('COMMIT');
     return productId;
   } catch (err) {
@@ -282,6 +286,9 @@ async function updateSellerProduct(sellerId, productId, data) {
         ]
       );
     }
+
+    // Sync product specifications
+    await productService.syncProductSpecifications(productId, data);
 
     await client.query('COMMIT');
     return true;

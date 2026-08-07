@@ -215,11 +215,16 @@ function MasterDataManagement() {
         showInFilters: newTypeShowInFilters,
         showInSpecifications: newTypeShowInSpecs
       });
-      const newType = res?.masterTypes?.find(t => t.slug === slug);
-      if (newType) {
-        setSelectedType(newType.id);
+      const createdType = res?.data?.type || res?.type;
+      if (createdType?.id) {
+        setSelectedType(createdType.id);
       } else {
-        setSelectedType(slug);
+        const matched = masterTypes.find(t => t.slug === slug);
+        if (matched) {
+          setSelectedType(matched.id);
+        } else {
+          setSelectedType(masterTypes[0]?.id || slug);
+        }
       }
       setViewMode('table');
       setShowTypeModal(false);
@@ -256,9 +261,13 @@ function MasterDataManagement() {
       try {
         await deleteMasterType(deleteTypeConfirmKey);
         triggerToast(`Deleted Master Type "${typeLabel}".`);
-        if (selectedType === deleteTypeConfirmKey) {
-          const nextType = masterTypes.find(t => t.slug !== deleteTypeConfirmKey);
-          setSelectedType(nextType ? nextType.slug : 'fabrics');
+        
+        const targetTypeObj = masterTypes.find(t => t.slug === deleteTypeConfirmKey || t.id === deleteTypeConfirmKey);
+        const targetId = targetTypeObj?.id;
+        
+        if (selectedType === targetId || selectedType === deleteTypeConfirmKey) {
+          const nextType = masterTypes.find(t => t.id !== targetId && t.slug !== deleteTypeConfirmKey);
+          setSelectedType(nextType ? nextType.id : (masterTypes[0]?.id || null));
         }
         setDeleteTypeConfirmKey(null);
       } catch (err) {

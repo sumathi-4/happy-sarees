@@ -5,7 +5,7 @@ const productService = require('../services/admin/productService');
 const router = express.Router();
 
 // Helper to format database product row to frontend format
-function formatProductRow(row, imagesMap = {}) {
+function formatProductRow(row, imagesMap = {}, specsMap = {}) {
   const images = imagesMap[row.id] || (row.image_url ? [row.image_url] : ['https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=600&auto=format&fit=crop']);
   const hasPriceDiscount = row.original_price && Number(row.original_price) > Number(row.price);
   const discountPercentage = hasPriceDiscount
@@ -14,6 +14,17 @@ function formatProductRow(row, imagesMap = {}) {
   const discountBadge = discountPercentage > 0
     ? `${discountPercentage}% OFF`
     : null;
+
+  const productSpecs = specsMap[row.id] || {};
+
+  const fabricVal = productSpecs.fabric || productSpecs.fabrics || row.fabric;
+  const colorVal = productSpecs.color || productSpecs.colors || row.color;
+  const occasionVal = productSpecs.occasion || productSpecs.occasions || row.occasion;
+  const patternVal = productSpecs.pattern || productSpecs.patterns || row.pattern;
+  const weaveVal = productSpecs.weave || productSpecs.weaves || row.weave;
+  const borderVal = productSpecs.border || productSpecs.borders || row.border;
+  const brandVal = productSpecs.brand || productSpecs.brands || row.brand || 'Happy Sarees';
+  const collectionVal = productSpecs.collection || productSpecs.collections || row.collection;
 
   return {
     id: row.id,
@@ -32,16 +43,22 @@ function formatProductRow(row, imagesMap = {}) {
     discountBadge,
     image: images[0],
     images: images,
-    fabric: row.fabric,
-    color: row.color,
-    weave: row.weave,
-    border: row.border,
+    
+    // Dynamic specifications mapping
+    fabric: fabricVal,
+    color: colorVal,
+    weave: weaveVal,
+    border: borderVal,
+    occasion: occasionVal,
+    brand: brandVal,
+    collection: collectionVal,
+    pattern: patternVal,
+    
     blouseIncluded: row.blouse_included,
     blouseSize: row.blouse_size,
     height: row.height,
     width: row.width,
     weight: row.weight,
-    occasion: row.occasion,
     sku: row.sku,
     inStock: row.in_stock,
     stockCount: row.stock_count,
@@ -56,8 +73,43 @@ function formatProductRow(row, imagesMap = {}) {
     video_url: row.video_url || null,
     videoData: row.video_data || null,
     video_data: row.video_data || null,
-    video: row.video_url || null
+    video: row.video_url || null,
+    customMasterData: productSpecs,
+    custom_master_data: productSpecs
   };
+}
+
+// Helper to query and build specs mapping for list views
+async function getSpecsMap() {
+  try {
+    const specsRes = await db.query(`
+      SELECT ps.product_id, ps.master_type_id, ps.master_value_id, mt.slug as master_type_slug, mt.name as master_type_name,
+             mi.name as master_value_name, ps.custom_value
+      FROM product_specifications ps
+      JOIN master_types mt ON ps.master_type_id = mt.id
+      LEFT JOIN master_items mi ON ps.master_value_id = mi.id
+      WHERE mt.is_active = true
+    `);
+    
+    const specsMap = {};
+    specsRes.rows.forEach(r => {
+      const prodId = r.product_id;
+      if (!specsMap[prodId]) specsMap[prodId] = {};
+      const valName = r.master_value_name || r.custom_value;
+      if (valName) {
+        specsMap[prodId][r.master_type_id] = valName;
+        specsMap[prodId][r.master_type_slug] = valName;
+        specsMap[prodId][r.master_type_name] = valName;
+        const singular = r.master_type_slug.endsWith('s') ? r.master_type_slug.slice(0, -1) : r.master_type_slug;
+        specsMap[prodId][singular] = valName;
+        specsMap[prodId][singular.replace(/-/g, '_')] = valName;
+      }
+    });
+    return specsMap;
+  } catch (err) {
+    console.error('Error fetching specs map:', err.message);
+    return {};
+  }
 }
 
 // 1. Get All Products (With Filters, Search, & Collection Support)
@@ -135,7 +187,8 @@ router.get('/', async (req, res) => {
       imagesMap[img.product_id].push(img.image_url);
     });
 
-    const formattedProducts = productsRes.rows.map(row => formatProductRow(row, imagesMap));
+    const specsMap = await getSpecsMap();
+    const formattedProducts = productsRes.rows.map(row => formatProductRow(row, imagesMap, specsMap));
 
     res.json({ success: true, count: formattedProducts.length, products: formattedProducts });
   } catch (error) {
@@ -155,7 +208,8 @@ router.get('/bestsellers', async (req, res) => {
       imagesMap[img.product_id].push(img.image_url);
     });
 
-    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
+    const specsMap = await getSpecsMap();
+    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap, specsMap));
     res.json({ success: true, products });
   } catch (error) {
     console.error('Fetch Bestsellers Error:', error);
@@ -187,7 +241,8 @@ router.get('/new-arrivals', async (req, res) => {
       imagesMap[img.product_id].push(img.image_url);
     });
 
-    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
+    const specsMap = await getSpecsMap();
+    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap, specsMap));
     res.json({ success: true, products });
   } catch (error) {
     console.error('Fetch New Arrivals Error:', error);
@@ -216,7 +271,8 @@ router.get('/videos', async (req, res) => {
       imagesMap[img.product_id].push(img.image_url);
     });
 
-    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap));
+    const specsMap = await getSpecsMap();
+    const products = productsRes.rows.map(row => formatProductRow(row, imagesMap, specsMap));
     res.json({ success: true, count: products.length, data: products, products });
   } catch (error) {
     console.error('Fetch Video Products Error:', error);
@@ -224,7 +280,7 @@ router.get('/videos', async (req, res) => {
   }
 });
 
-// 4. Get Single Product by ID or Slug
+// 5. Get Single Product by ID or Slug
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -253,7 +309,8 @@ router.get('/:id', async (req, res) => {
       `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 AND p.deleted_at IS NULL LIMIT 4`,
       [productData.category_id || 1, prodId]
     );
-    const relatedProducts = relatedRes.rows.map(r => formatProductRow(r));
+    const specsMap = await getSpecsMap();
+    const relatedProducts = relatedRes.rows.map(r => formatProductRow(r, {}, specsMap));
 
     productData.relatedProducts = relatedProducts;
 

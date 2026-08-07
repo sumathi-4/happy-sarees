@@ -20,6 +20,8 @@ function ProductForm() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('basic');
   const [categories, setCategories] = useState([]);
+  const [masterTypes, setMasterTypes] = useState([]);
+  const [masterData, setMasterData] = useState({});
   const [images, setImages] = useState([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [loading, setLoading] = useState(isEdit);
@@ -46,6 +48,26 @@ function ProductForm() {
       }
     }
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    async function loadMasterConfig() {
+      try {
+        const [typesRes, dataRes] = await Promise.all([
+          fetch('http://localhost:5001/api/cms/spec-types').then(r => r.json()),
+          fetch('http://localhost:5001/api/cms/master-data').then(r => r.json())
+        ]);
+        if (typesRes.success && Array.isArray(typesRes.types)) {
+          setMasterTypes(typesRes.types);
+        }
+        if (dataRes.success && dataRes.masterData) {
+          setMasterData(dataRes.masterData);
+        }
+      } catch (err) {
+        console.error('Failed to load master data config:', err);
+      }
+    }
+    loadMasterConfig();
   }, []);
 
   useEffect(() => {
@@ -250,64 +272,123 @@ function ProductForm() {
 
           {activeTab === 'attributes' && (
             <div className={styles.grid}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Fabric Weaving <span className={styles.required}>*</span></label>
-                <input
-                  type="text"
-                  placeholder="e.g. Pure Mulberry Silk, Georgette, Linen"
-                  className={errors.fabric ? styles.inputError : ''}
-                  {...register('fabric', { required: 'Fabric is required' })}
-                />
-                {errors.fabric && <span className={styles.errorText}>{errors.fabric.message}</span>}
-              </div>
+              {masterTypes && masterTypes.length > 0 ? (
+                <>
+                  {masterTypes.map((t) => {
+                    const typeKey = t.slug;
+                    const fieldNameMap = {
+                      fabrics: 'fabric',
+                      occasions: 'occasion',
+                      colors: 'color',
+                      patterns: 'pattern',
+                      weaves: 'weave',
+                      borders: 'border',
+                      brands: 'brand',
+                      brand: 'brand',
+                      collections: 'collection'
+                    };
+                    const nameAttr = fieldNameMap[typeKey] || typeKey;
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Saree Main Color <span className={styles.required}>*</span></label>
-                <input
-                  type="text"
-                  placeholder="e.g. Crimson Red, Mustard Gold"
-                  className={errors.color ? styles.inputError : ''}
-                  {...register('color', { required: 'Color is required' })}
-                />
-                {errors.color && <span className={styles.errorText}>{errors.color.message}</span>}
-              </div>
+                    const clean = String(typeKey).toLowerCase().trim();
+                    const plural = clean.endsWith('s') ? clean : clean + 's';
+                    const singular = clean.endsWith('s') ? clean.slice(0, -1) : clean;
+                    const items = masterData[plural] || masterData[singular] || [];
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Weave Type</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Jacquard, Brocade, Jamdani"
-                  {...register('weave')}
-                />
-              </div>
+                    const isRequired = ['fabric', 'color', 'occasion'].includes(nameAttr);
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Border Styling</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Temple Border, Zari Border"
-                  {...register('border')}
-                />
-              </div>
+                    return (
+                      <div className={styles.formGroup} key={t.id}>
+                        <label className={styles.label}>
+                          {t.name} {isRequired && <span className={styles.required}>*</span>}
+                        </label>
+                        <select
+                          className={errors[nameAttr] ? styles.inputError : ''}
+                          {...register(nameAttr, isRequired ? { required: `${t.name} is required` } : {})}
+                        >
+                          <option value="">Select {t.name}</option>
+                          {items.map((item, idx) => {
+                            const val = typeof item === 'string' ? item : item.name;
+                            return (
+                              <option key={idx} value={val}>{val}</option>
+                            );
+                          })}
+                        </select>
+                        {errors[nameAttr] && <span className={styles.errorText}>{errors[nameAttr].message}</span>}
+                      </div>
+                    );
+                  })}
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Pallu Design</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Floral Zari Work, Tassels"
+                      {...register('pallu')}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Fabric Weaving <span className={styles.required}>*</span></label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Pure Mulberry Silk, Georgette, Linen"
+                      className={errors.fabric ? styles.inputError : ''}
+                      {...register('fabric', { required: 'Fabric is required' })}
+                    />
+                    {errors.fabric && <span className={styles.errorText}>{errors.fabric.message}</span>}
+                  </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Pallu Design</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Floral Zari Work, Tassels"
-                  {...register('pallu')}
-                />
-              </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Saree Main Color <span className={styles.required}>*</span></label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Crimson Red, Mustard Gold"
+                      className={errors.color ? styles.inputError : ''}
+                      {...register('color', { required: 'Color is required' })}
+                    />
+                    {errors.color && <span className={styles.errorText}>{errors.color.message}</span>}
+                  </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Occasion Suitability</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Bridal, Festive, Cocktail Party"
-                  {...register('occasion')}
-                />
-              </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Weave Type</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Jacquard, Brocade, Jamdani"
+                      {...register('weave')}
+                    />
+                  </div>
 
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Border Styling</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Temple Border, Zari Border"
+                      {...register('border')}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Pallu Design</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Floral Zari Work, Tassels"
+                      {...register('pallu')}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Occasion Suitability</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Bridal, Festive, Cocktail Party"
+                      {...register('occasion')}
+                    />
+                  </div>
+                </>
+              )}
+              
               <div className={styles.formGroup} style={{ justifyContent: 'center' }}>
                 <label className={styles.checkboxLabel}>
                   <input

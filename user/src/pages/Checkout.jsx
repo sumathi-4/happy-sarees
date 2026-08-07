@@ -388,7 +388,7 @@ function Checkout() {
         currency: razorpayData.currency || 'INR',
         name: 'Happy Sarees',
         description: 'Happy Sarees Web Checkout Payment',
-        image: 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg',
+        image: window.location.origin + '/logo.png',
         order_id: razorpayData.razorpayOrderId,
         handler: async function (response) {
           try {

@@ -94,7 +94,14 @@ graph TD
 
 ## 6. Build Verification
 
-Both applications compile cleanly for production using Vite:
+- Ran `npm run build:all` to compile all applications successfully without errors.
+- **Unique Constraint Validation**:
+  - Caught PostgreSQL unique constraint violation error code `23505` on `master_items_type_id_slug_key` inside `createItem` and `updateItem` methods of `masterDataService.js`, responding with a clean `409 Conflict` error and user-friendly validation warning instead of causing an unhandled server crash.
+- **Dynamic Storefront Filters**:
+  - Refactored storefront [`FilterSidebar.jsx`](file:///c:/Users/ELCOT/OneDrive/Desktop/job%20tasks/happy%20sarees/user/src/shop/FilterSidebar/FilterSidebar.jsx) to query and render master types dynamically from the database.
+  - Aligned rendering layout with active filter display checkboxes ("Display in Website Filters") and ordered accordions by database `sort_order`.
+  - Implemented robust singular/plural slug resolution to prevent any duplicate rendering of filter sections.
+  - Successfully verified building all client portals without compilation errors.
 
 ```bash
 # Storefront Build

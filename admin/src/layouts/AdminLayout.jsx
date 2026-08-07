@@ -9,7 +9,7 @@ import { useAdminAuth } from '../context/AdminAuthContext';
 import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/AdminLayout.module.css';
 
-const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+const LOGO_URL = '/logo.png';
 
 function AdminLayout() {
   const { adminUser, adminLogout } = useAdminAuth();

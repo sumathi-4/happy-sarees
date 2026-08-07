@@ -14,7 +14,7 @@ function ProductForm() {
   const { id } = useParams();
   const isEditMode = !!id;
 
-  const { products, addProduct, updateProduct, masterData } = useAdminData();
+  const { products, addProduct, updateProduct, masterData, masterTypes, masterItems, refreshMasterData } = useAdminData();
 
   // Active Tab state (7 Steps)
   const [activeTab, setActiveTab] = useState('basic');
@@ -171,6 +171,12 @@ function ProductForm() {
 
     return () => { isMounted = false; };
   }, [id, isEditMode, products]);
+
+  useEffect(() => {
+    if ((!masterTypes || masterTypes.length === 0) && refreshMasterData) {
+      refreshMasterData();
+    }
+  }, [masterTypes, refreshMasterData]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -666,9 +672,10 @@ function ProductForm() {
                     All dropdown options are loaded dynamically from Master Data.
                   </p>
                   <div className={styles.formGrid}>
-                    {Object.keys(masterData || {}).map((typeKey) => {
-                      const typeLabel = typeKey.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                      const items = masterData[typeKey] || [];
+                    {(masterTypes || []).filter(t => t.isActive).map((t) => {
+                      const typeKey = t.slug;
+                      const typeLabel = t.name;
+                      const items = (masterItems || []).filter(item => item.typeId === t.id && item.isActive);
                       // Map standard singular names for backend compatibility
                       const fieldNameMap = {
                         fabrics: 'fabric',
@@ -678,13 +685,14 @@ function ProductForm() {
                         weaves: 'weave',
                         borders: 'border',
                         brands: 'brand',
+                        brand: 'brand',
                         collections: 'collection'
                       };
                       const nameAttr = fieldNameMap[typeKey] || typeKey;
                       const selectedVal = formData[nameAttr] || formData[typeKey] || formData.customMasterData?.[typeKey] || '';
 
                       return (
-                        <div className={styles.formGroupHalf} key={typeKey}>
+                        <div className={styles.formGroupHalf} key={t.id}>
                           <label>{typeLabel}</label>
                           <select 
                             name={nameAttr} 

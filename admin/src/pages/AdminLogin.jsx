@@ -4,7 +4,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import styles from '../styles/AdminLogin.module.css';
 
-const LOGO_URL = 'https://res.cloudinary.com/emp49xie/image/upload/v1785477003/happy_sarees/site_assets/xl7zr2ufo60tl9ebgm2h.jpg';
+const LOGO_URL = '/logo.png';
 
 function AdminLogin() {
   const { adminLogin } = useAdminAuth();
