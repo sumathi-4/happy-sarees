@@ -7,6 +7,8 @@ const sellerOrderController = require('../../controllers/seller/sellerOrderContr
 const sellerDashboardController = require('../../controllers/seller/sellerDashboardController');
 const sellerProfileController = require('../../controllers/seller/sellerProfileController');
 const sellerNotificationController = require('../../controllers/seller/sellerNotificationController');
+const sellerMasterDataController = require('../../controllers/seller/sellerMasterDataController');
+const sellerPayoutController = require('../../controllers/seller/sellerPayoutController');
 
 const { sellerAuth, requireApprovedSeller } = require('../../middleware/sellerAuth');
 
@@ -48,5 +50,12 @@ router.get('/analytics/payouts', sellerAuth, requireApprovedSeller, sellerDashbo
 router.get('/profile', sellerAuth, requireApprovedSeller, sellerProfileController.getProfile);
 router.put('/profile', sellerAuth, requireApprovedSeller, sellerProfileController.updateProfile);
 router.put('/settings/password', sellerAuth, requireApprovedSeller, sellerProfileController.updatePassword);
+
+// ── Master Data Requests (Approved Sellers only) ───────────
+router.get('/master-data-requests', sellerAuth, requireApprovedSeller, sellerMasterDataController.getMyRequests);
+router.post('/master-data-requests', sellerAuth, requireApprovedSeller, sellerMasterDataController.submitRequest);
+
+// ── Payouts (Approved Sellers only) ───────────────────────
+router.get('/payouts', sellerAuth, requireApprovedSeller, sellerPayoutController.getMyPayouts);
 
 module.exports = router;

@@ -23,6 +23,8 @@ import PlaceholderPage from './pages/PlaceholderPage';
 import SellerRequests from './pages/SellerRequests';
 import SellerManagement from './pages/SellerManagement';
 import ProductApprovals from './pages/ProductApprovals';
+import SellerMasterDataRequests from './pages/SellerMasterDataRequests';
+import PayoutsManagement from './pages/PayoutsManagement';
 
 const router = createBrowserRouter([
   {
@@ -86,6 +88,14 @@ const router = createBrowserRouter([
           {
             path: '/sellers/product-approvals',
             element: <ProductApprovals />,
+          },
+          {
+            path: '/sellers/master-data-requests',
+            element: <SellerMasterDataRequests />,
+          },
+          {
+            path: '/payouts',
+            element: <PayoutsManagement />,
           },
           {
             path: '/coupons',

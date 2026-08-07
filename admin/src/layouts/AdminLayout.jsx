@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   FiMenu, FiSearch, FiBell, FiChevronDown, FiChevronUp, FiChevronRight, FiLayout, 
   FiPackage, FiHome, FiShoppingBag, FiUsers, FiPercent, FiBarChart2, 
-  FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX, FiBriefcase 
+  FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX, FiBriefcase, FiDollarSign
 } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useAdminData } from '../context/AdminDataContext';
@@ -65,6 +65,7 @@ function AdminLayout() {
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
     { label: 'Sellers', path: '/sellers', icon: <FiBriefcase />, hasDropdown: true },
+    { label: 'Payouts', path: '/payouts', icon: <FiDollarSign /> },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
     { label: 'Campaigns', path: '/campaigns', icon: <FiAward />, hasDropdown: true },
     { label: 'Reports', path: '/reports', icon: <FiBarChart2 /> },
@@ -82,6 +83,8 @@ function AdminLayout() {
     if (path.includes('sellers/requests')) return ['Home', 'Sellers', 'Verification Requests'];
     if (path.includes('sellers/registry')) return ['Home', 'Sellers', 'Registry Roster'];
     if (path.includes('sellers/product-approvals')) return ['Home', 'Sellers', 'Product Approvals'];
+    if (path.includes('sellers/master-data-requests')) return ['Home', 'Sellers', 'Data Requests'];
+    if (path.includes('payouts')) return ['Home', 'Payouts'];
     if (path.includes('coupons')) return ['Home', 'Coupons'];
     if (path.includes('campaigns/saree-crown')) return ['Home', 'Campaigns', 'Saree Crown'];
     if (path.includes('campaigns')) return ['Home', 'Campaigns'];
@@ -102,6 +105,8 @@ function AdminLayout() {
     if (path.includes('sellers/requests')) return 'Seller Approvals';
     if (path.includes('sellers/registry')) return 'Seller Registry';
     if (path.includes('sellers/product-approvals')) return 'Product Approvals';
+    if (path.includes('sellers/master-data-requests')) return 'Seller Data Requests';
+    if (path.includes('payouts')) return 'Payouts Management';
     if (path.includes('coupons')) return 'Coupons & Offers';
     if (path.includes('campaigns/saree-crown')) return '👑 Saree Crown';
     if (path.includes('campaigns')) return 'Campaigns';
@@ -322,6 +327,16 @@ function AdminLayout() {
                           {pendingProductsCount > 0 && (
                             <span style={{ backgroundColor: 'var(--primary-color)', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px' }}>{pendingProductsCount}</span>
                           )}
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/sellers/master-data-requests" 
+                          className={`${styles.menuItem} ${location.pathname === '/sellers/master-data-requests' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Data Requests
                         </Link>
                       </li>
                     </ul>

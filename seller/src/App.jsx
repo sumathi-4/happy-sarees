@@ -15,6 +15,8 @@ import Analytics from './pages/Analytics';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import MasterDataRequests from './pages/MasterDataRequests';
+import Payouts from './pages/Payouts';
 
 const router = createBrowserRouter([
   // Public Paths
@@ -77,6 +79,14 @@ const router = createBrowserRouter([
           {
             path: '/settings',
             element: <Settings />,
+          },
+          {
+            path: '/master-data-requests',
+            element: <MasterDataRequests />,
+          },
+          {
+            path: '/payouts',
+            element: <Payouts />,
           }
         ]
       }

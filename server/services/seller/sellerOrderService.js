@@ -143,6 +143,34 @@ async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = 
 
   await db.query(query, params);
 
+  // ── Order Status Rollup ──────────────────────────────────────
+  // Re-fetch the order_id for this item, then aggregate all items in that order
+  const orderRef = await db.query(`SELECT order_id FROM order_items WHERE id = $1`, [itemId]);
+  if (orderRef.rows.length > 0) {
+    const orderId = orderRef.rows[0].order_id;
+    const allItemsRes = await db.query(
+      `SELECT fulfillment_status FROM order_items WHERE order_id = $1`,
+      [orderId]
+    );
+    const statuses = allItemsRes.rows.map(r => r.fulfillment_status);
+    let rollupStatus;
+    if (statuses.every(s => s === 'Cancelled')) {
+      rollupStatus = 'cancelled';
+    } else if (statuses.every(s => s === 'Delivered' || s === 'Cancelled')) {
+      rollupStatus = 'delivered';
+    } else if (statuses.some(s => s === 'Shipped')) {
+      rollupStatus = 'shipped';
+    } else if (statuses.some(s => s === 'Processing')) {
+      rollupStatus = 'processing';
+    } else {
+      rollupStatus = 'pending';
+    }
+    await db.query(
+      `UPDATE orders SET order_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [orderId, rollupStatus]
+    );
+  }
+
   // Notify seller
   await db.query(
     `INSERT INTO seller_notifications (seller_id, type, title, message)

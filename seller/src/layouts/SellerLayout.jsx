@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   FiMenu, FiBell, FiChevronDown, FiChevronUp, FiLayout, 
   FiPackage, FiShoppingBag, FiBarChart2, FiSettings, 
-  FiLogOut, FiUser, FiX, FiCheckCircle 
+  FiLogOut, FiUser, FiX, FiCheckCircle, FiDollarSign, FiDatabase
 } from 'react-icons/fi';
 import { useSellerAuth } from '../context/SellerAuthContext';
 import { sellerApi } from '../api/sellerApi';
@@ -53,6 +53,8 @@ function SellerLayout() {
     { label: 'Products', path: '/products', icon: <FiPackage /> },
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Analytics', path: '/analytics', icon: <FiBarChart2 /> },
+    { label: 'Payouts', path: '/payouts', icon: <FiDollarSign /> },
+    { label: 'Data Requests', path: '/master-data-requests', icon: <FiDatabase /> },
     { label: 'Notifications', path: '/notifications', icon: <FiBell />, badgeCount: unreadCount },
     { label: 'Profile', path: '/profile', icon: <FiUser /> },
     { label: 'Settings', path: '/settings', icon: <FiSettings /> }
@@ -64,6 +66,8 @@ function SellerLayout() {
     if (path.includes('products')) return ['Home', 'Products'];
     if (path.includes('orders')) return ['Home', 'Orders'];
     if (path.includes('analytics')) return ['Home', 'Analytics'];
+    if (path.includes('payouts')) return ['Home', 'Payouts'];
+    if (path.includes('master-data-requests')) return ['Home', 'Data Requests'];
     if (path.includes('notifications')) return ['Home', 'Notifications'];
     if (path.includes('profile')) return ['Home', 'Profile'];
     if (path.includes('settings')) return ['Home', 'Settings'];
@@ -78,6 +82,8 @@ function SellerLayout() {
     if (path.includes('products')) return 'Saree Products Roster';
     if (path.includes('orders')) return 'Orders Fulfilment';
     if (path.includes('analytics')) return 'Performance Analytics';
+    if (path.includes('payouts')) return 'Payout History';
+    if (path.includes('master-data-requests')) return 'Master Data Requests';
     if (path.includes('notifications')) return 'Notifications Inbox';
     if (path.includes('profile')) return 'Business Profile';
     if (path.includes('settings')) return 'Security Settings';

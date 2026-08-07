@@ -108,19 +108,22 @@ router.post('/', optionalAuth, async (req, res) => {
 
     // Insert order items using actual prices from DB
     const productIds = items.map(item => Number(item.productId || item.id));
-    const productsRes = await client.query(`SELECT id, price FROM products WHERE id = ANY($1)`, [productIds]);
+    const productsRes = await client.query(`SELECT id, price, seller_id FROM products WHERE id = ANY($1)`, [productIds]);
     const priceMap = {};
+    const sellerMap = {};
     productsRes.rows.forEach(p => {
       priceMap[p.id] = Number(p.price);
+      sellerMap[p.id] = p.seller_id;
     });
 
     for (const item of items) {
       const productId = Number(item.productId || item.id);
       const dbPrice = priceMap[productId] !== undefined ? priceMap[productId] : Number(item.price || 0);
+      const sellerId = sellerMap[productId] !== undefined ? sellerMap[productId] : null;
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
-         VALUES ($1, $2, $3, $4)`,
-        [order.id, productId, item.quantity, dbPrice]
+        `INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, seller_id)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [order.id, productId, item.quantity, dbPrice, sellerId]
       );
     }
 
@@ -227,12 +230,18 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
                     'price', oi.price_at_purchase,
                     'productName', COALESCE(p.name, 'Silk Saree'),
                     'fabric', COALESCE(p.fabric, 'Silk'),
-                    'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg')
+                    'image', COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC LIMIT 1), 'https://res.cloudinary.com/emp49xie/image/upload/v1785477001/happy_sarees/site_assets/kftflffhvk46rayps0tp.jpg'),
+                    'fulfillmentStatus', oi.fulfillment_status,
+                    'trackingNumber', oi.tracking_number,
+                    'shippedAt', oi.shipped_at,
+                    'sellerId', oi.seller_id,
+                    'sellerStoreName', s.store_name
                   )
                 ) as items
          FROM orders o
          LEFT JOIN order_items oi ON o.id = oi.order_id
          LEFT JOIN products p ON oi.product_id = p.id
+         LEFT JOIN sellers s ON oi.seller_id = s.id
          WHERE o.user_id = $1 AND (LOWER(o.payment_method) NOT LIKE '%online%' OR LOWER(o.payment_status) = 'paid')
          GROUP BY o.id
          ORDER BY o.created_at DESC`,

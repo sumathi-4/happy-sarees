@@ -39,6 +39,8 @@ const adminSareeCrownRoutes   = require('./routes/admin/adminSareeCrownRoutes');
 const sellerRoutes            = require('./routes/seller/sellerRoutes');
 const adminVendorRoutes       = require('./routes/admin/vendorRoutes');
 const adminProductApprovalRoutes = require('./routes/admin/productApprovalRoutes');
+const adminSellerMasterDataRoutes = require('./routes/admin/adminSellerMasterDataRoutes');
+const adminPayoutRoutes       = require('./routes/admin/adminPayoutRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -136,6 +138,8 @@ app.use('/api/admin/reviews',       adminReviewRoutes);
 app.use('/api/admin/saree-crown',   adminSareeCrownRoutes);
 app.use('/api/admin/sellers',       adminVendorRoutes);
 app.use('/api/admin/product-approvals', adminProductApprovalRoutes);
+app.use('/api/admin/seller-master-data-requests', adminSellerMasterDataRoutes);
+app.use('/api/admin/payouts',       adminPayoutRoutes);
 
 // Global Production Error Handling Middleware
 app.use((err, req, res, next) => {

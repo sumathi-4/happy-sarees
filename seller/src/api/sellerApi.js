@@ -82,4 +82,11 @@ export const sellerApi = {
   getProfile: () => request.get('/profile'),
   updateProfile: (data) => request.put('/profile', data),
   updatePassword: (currentPassword, newPassword) => request.put('/settings/password', { currentPassword, newPassword }),
+
+  // Master Data Requests
+  getMasterDataRequests: () => request.get('/master-data-requests'),
+  submitMasterDataRequest: (data) => request.post('/master-data-requests', data),
+
+  // Payouts
+  getPayouts: () => request.get('/payouts'),
 };
