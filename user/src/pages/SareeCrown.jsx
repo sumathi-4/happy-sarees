@@ -434,16 +434,21 @@ function SareeCrown() {
           
           <div className={`${styles.curtainIntroCenter} ${entrancePhase >= 2 ? styles.curtainIntroCenterOut : ''}`}>
             <div className={`${styles.curtainCrown} ${entrancePhase >= 1 ? styles.curtainCrownVisible : ''}`}>
-              <svg width="100" height="80" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.watermarkCrownSvg}>
-                <path d="M10 65 L18 28 L38 48 L50 18 L62 48 L82 28 L90 65 Z" stroke="rgba(212, 175, 55, 0.4)" strokeWidth="2.5" fill="rgba(212, 175, 55, 0.08)" strokeLinejoin="round" />
-                <circle cx="18" cy="24" r="3.5" fill="rgba(212, 175, 55, 0.45)" />
-                <circle cx="50" cy="14" r="4.5" fill="rgba(212, 175, 55, 0.55)" />
-                <circle cx="82" cy="24" r="3.5" fill="rgba(212, 175, 55, 0.45)" />
-                <circle cx="38" cy="44" r="2.5" fill="rgba(212, 175, 55, 0.4)" />
-                <circle cx="62" cy="44" r="2.5" fill="rgba(212, 175, 55, 0.4)" />
-                <path d="M15 70 H85 V74 H15 Z" fill="rgba(212, 175, 55, 0.4)" />
+              <svg width="130" height="104" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.watermarkCrownSvg}>
+                <path d="M10 65 L18 28 L38 48 L50 18 L62 48 L82 28 L90 65 Z" stroke="#e6c875" strokeWidth="4" fill="rgba(230, 200, 117, 0.3)" strokeLinejoin="round" />
+                <circle cx="18" cy="24" r="4.5" fill="#fbe6ad" />
+                <circle cx="50" cy="14" r="5.5" fill="#fbe6ad" />
+                <circle cx="82" cy="24" r="4.5" fill="#fbe6ad" />
+                <circle cx="38" cy="44" r="3.5" fill="#e6c875" />
+                <circle cx="62" cy="44" r="3.5" fill="#e6c875" />
+                <path d="M15 70 H85 V74 H15 Z" fill="#e6c875" />
               </svg>
             </div>
+            
+            <h2 className={styles.revealTitleText}>THE CROWN WINNER IS...</h2>
+            <div className={styles.revealDecoLine} />
+            <div className={styles.revealCountNum}>1</div>
+
             <div className={`${styles.curtainGlowRing} ${entrancePhase >= 1 ? styles.curtainGlowRingVisible : ''}`} />
             <div className={`${styles.curtainLightSweep} ${entrancePhase >= 1 ? styles.curtainLightSweepVisible : ''}`} />
             <div className={styles.curtainIntroParticles}>
@@ -466,16 +471,21 @@ function SareeCrown() {
           
           <div className={`${styles.curtainIntroCenter} ${transitionPhase === 2 ? styles.curtainIntroCenterOut : ''}`}>
             <div className={styles.curtainCrown} style={{ opacity: 1, transform: 'scale(1)' }}>
-              <svg width="100" height="80" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.watermarkCrownSvg}>
-                <path d="M10 65 L18 28 L38 48 L50 18 L62 48 L82 28 L90 65 Z" stroke="rgba(212, 175, 55, 0.4)" strokeWidth="2.5" fill="rgba(212, 175, 55, 0.08)" strokeLinejoin="round" />
-                <circle cx="18" cy="24" r="3.5" fill="rgba(212, 175, 55, 0.45)" />
-                <circle cx="50" cy="14" r="4.5" fill="rgba(212, 175, 55, 0.55)" />
-                <circle cx="82" cy="24" r="3.5" fill="rgba(212, 175, 55, 0.45)" />
-                <circle cx="38" cy="44" r="2.5" fill="rgba(212, 175, 55, 0.4)" />
-                <circle cx="62" cy="44" r="2.5" fill="rgba(212, 175, 55, 0.4)" />
-                <path d="M15 70 H85 V74 H15 Z" fill="rgba(212, 175, 55, 0.4)" />
+              <svg width="130" height="104" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.watermarkCrownSvg}>
+                <path d="M10 65 L18 28 L38 48 L50 18 L62 48 L82 28 L90 65 Z" stroke="#e6c875" strokeWidth="4" fill="rgba(230, 200, 117, 0.3)" strokeLinejoin="round" />
+                <circle cx="18" cy="24" r="4.5" fill="#fbe6ad" />
+                <circle cx="50" cy="14" r="5.5" fill="#fbe6ad" />
+                <circle cx="82" cy="24" r="4.5" fill="#fbe6ad" />
+                <circle cx="38" cy="44" r="3.5" fill="#e6c875" />
+                <circle cx="62" cy="44" r="3.5" fill="#e6c875" />
+                <path d="M15 70 H85 V74 H15 Z" fill="#e6c875" />
               </svg>
             </div>
+
+            <h2 className={styles.revealTitleText}>THE CROWN WINNER IS...</h2>
+            <div className={styles.revealDecoLine} />
+            <div className={styles.revealCountNum}>1</div>
+
             <div className={styles.curtainGlowRing} style={{ opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }} />
             <div className={styles.curtainLightSweep} style={{ opacity: 1, transform: 'translateX(-50%) scaleX(1)' }} />
           </div>
@@ -1059,6 +1069,37 @@ function WinnerRevealSection({ campaign, navigate, revealPhase }) {
 
   return (
     <div className={styles.winnerSection}>
+
+      {/* Cinematic Winner Countdown & Crown Overlay (Phases 1 to 6) */}
+      {revealPhase > 0 && revealPhase < 7 && (
+        <div className={styles.revealOverlay}>
+          <div className={`${styles.curtainPanel} ${styles.curtainLeft}`} />
+          <div className={`${styles.curtainPanel} ${styles.curtainRight}`} />
+
+          <div className={styles.revealOverlayContent}>
+            <div className={styles.revealCrownWrap}>
+              <svg width="130" height="104" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.revealCrownSvg}>
+                <path d="M10 65 L18 28 L38 48 L50 18 L62 48 L82 28 L90 65 Z" stroke="#e6c875" strokeWidth="3.5" fill="rgba(230, 200, 117, 0.25)" strokeLinejoin="round" />
+                <circle cx="18" cy="24" r="4" fill="#fbe6ad" />
+                <circle cx="50" cy="14" r="5" fill="#fbe6ad" />
+                <circle cx="82" cy="24" r="4" fill="#fbe6ad" />
+                <circle cx="38" cy="44" r="3" fill="#e6c875" />
+                <circle cx="62" cy="44" r="3" fill="#e6c875" />
+                <path d="M15 70 H85 V74 H15 Z" fill="#e6c875" />
+              </svg>
+            </div>
+
+            <h2 className={styles.revealTitleText}>THE CROWN WINNER IS...</h2>
+            <div className={styles.revealDecoLine} />
+
+            {revealPhase >= 4 && revealPhase <= 6 && (
+              <div className={styles.revealCountNum} key={revealPhase}>
+                {revealPhase === 4 ? '3' : revealPhase === 5 ? '2' : '1'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Whole-page colorful winner celebration confetti rain */}
       <div className={styles.fullPageCelebrationLayer} aria-hidden="true">
