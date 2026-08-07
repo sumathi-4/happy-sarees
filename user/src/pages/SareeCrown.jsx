@@ -487,8 +487,8 @@ function SareeCrown() {
         {/* Breadcrumb */}
         <Breadcrumb />
 
-        {/* Cinematic Hero & Countdown (Only shown before starting vote ceremony) */}
-        {!voteStarted && (
+        {/* Cinematic Hero & Countdown (Only shown before starting vote ceremony and when user has not voted) */}
+        {!voteStarted && !hasVoted && (
           <>
             <HeroSection entrancePhase={entrancePhase} />
 
@@ -891,8 +891,22 @@ function LockedCountdownBlock({ value, label }) {
   );
 }
 
-/* ── Locked Reward (post-vote) matching Image 1 ──────────── */
+/* ── Locked Reward (post-vote) matching Image 1 & Image 2 ─── */
 function LockedRewardSection({ votedProduct, campaign, currentTime }) {
+  const confettiData = React.useMemo(() => {
+    const types = ['dot', 'ribbon', 'star', 'diamond'];
+    return Array.from({ length: 36 }, (_, i) => ({
+      id: i,
+      type: types[i % types.length],
+      left: (i * 11 + (i % 3) * 7) % 92 + 4,
+      top: (i * 8 + (i % 5) * 7) % 90 + 5,
+      delay: (i * 0.12) % 3,
+      duration: 2.2 + (i % 4) * 0.5,
+      scale: 0.7 + (i % 3) * 0.4,
+      rot: (i * 40) % 360,
+    }));
+  }, []);
+
   return (
     <div className={styles.lockedSection}>
       <div className={styles.lockedCard} role="status" aria-live="polite">
@@ -903,10 +917,22 @@ function LockedRewardSection({ votedProduct, campaign, currentTime }) {
         <span className={`${styles.cornerFiligree} ${styles.cornerBottomLeft}`}>⚜</span>
         <span className={`${styles.cornerFiligree} ${styles.cornerBottomRight}`}>⚜</span>
 
-        {/* Floating Golden Celebration Confetti & Sparkles across entire card */}
+        {/* Floating Golden Celebration Confetti & Sparkles across full card */}
         <div className={styles.lockedSparkles} aria-hidden="true">
-          {[...Array(24)].map((_, i) => (
-            <span key={i} className={styles.confettiParticle} style={{ '--ci': i }} aria-hidden="true" />
+          {confettiData.map((p) => (
+            <span
+              key={p.id}
+              className={`${styles.confettiParticle} ${styles[`confetti_${p.type}`]}`}
+              style={{
+                '--cx': `${p.left}%`,
+                '--cy': `${p.top}%`,
+                '--cd': `${p.delay}s`,
+                '--dur': `${p.duration}s`,
+                '--cs': p.scale,
+                '--cr': `${p.rot}deg`,
+              }}
+              aria-hidden="true"
+            />
           ))}
         </div>
 
@@ -968,11 +994,40 @@ function LockedRewardSection({ votedProduct, campaign, currentTime }) {
   );
 }
 
-/* ── Winner Reveal Section ────────────────────────────────── */
+/* ── Winner Reveal Section matching Image 2 ───────────────── */
 function WinnerRevealSection({ campaign, navigate, revealPhase }) {
   const winner = campaign.winnerProduct;
   const { refetchCart } = useCart();
   const [claiming, setClaiming] = useState(false);
+
+  const confettiData = React.useMemo(() => {
+    const types = ['dot', 'ribbon', 'star', 'diamond'];
+    return Array.from({ length: 36 }, (_, i) => ({
+      id: i,
+      type: types[i % types.length],
+      left: (i * 11 + (i % 3) * 7) % 92 + 4,
+      top: (i * 8 + (i % 5) * 7) % 90 + 5,
+      delay: (i * 0.12) % 3,
+      duration: 2.2 + (i % 4) * 0.5,
+      scale: 0.7 + (i % 3) * 0.4,
+      rot: (i * 40) % 360,
+    }));
+  }, []);
+
+  const fullPageConfetti = React.useMemo(() => {
+    const types = ['dot', 'ribbon', 'star', 'diamond'];
+    const colors = ['#e6c875', '#ff2a8d', '#00d4ff', '#00e676', '#9c27b0', '#ff3d00', '#ffd700', '#e81a64'];
+    return Array.from({ length: 75 }, (_, i) => ({
+      id: i,
+      type: types[i % types.length],
+      color: colors[i % colors.length],
+      left: (i * 7 + (i % 3) * 13) % 98 + 1,
+      delay: (i * 0.07) % 4,
+      duration: 3.2 + (i % 5) * 0.7,
+      scale: 0.6 + (i % 4) * 0.35,
+      rot: (i * 35) % 360,
+    }));
+  }, []);
 
   if (!winner) return null;
 
@@ -1004,23 +1059,70 @@ function WinnerRevealSection({ campaign, navigate, revealPhase }) {
 
   return (
     <div className={styles.winnerSection}>
-      {/* Winner card — Image 1 layout */}
+
+      {/* Whole-page colorful winner celebration confetti rain */}
+      <div className={styles.fullPageCelebrationLayer} aria-hidden="true">
+        {fullPageConfetti.map((p) => (
+          <span
+            key={p.id}
+            className={`${styles.fullPageParticle} ${styles[`fp_${p.type}`]}`}
+            style={{
+              '--fpx': `${p.left}%`,
+              '--fpd': `${p.delay}s`,
+              '--fpdur': `${p.duration}s`,
+              '--fps': p.scale,
+              '--fpr': `${p.rot}deg`,
+              '--fpcolor': p.color,
+            }}
+            aria-hidden="true"
+          />
+        ))}
+      </div>
+
       <div className={`${styles.winnerCard} ${showWinner ? styles.winnerCardVisible : ''}`}>
 
-        {/* ── "THE CROWN HAS BEEN REVEALED" top banner ── */}
-        <div className={styles.winnerTopBanner} aria-label="Crown has been revealed">
-          <div className={styles.winnerTopBannerLine} />
-          <span className={styles.winnerTopBannerText}>✦ THE CROWN HAS BEEN REVEALED ✦</span>
-          <div className={styles.winnerTopBannerLine} />
+        {/* Four Corner Filigree Ornaments */}
+        <span className={`${styles.cornerFiligree} ${styles.cornerTopLeft}`}>⚜</span>
+        <span className={`${styles.cornerFiligree} ${styles.cornerTopRight}`}>⚜</span>
+        <span className={`${styles.cornerFiligree} ${styles.cornerBottomLeft}`}>⚜</span>
+        <span className={`${styles.cornerFiligree} ${styles.cornerBottomRight}`}>⚜</span>
+
+        {/* Full Card Golden Celebration Confetti */}
+        <div className={styles.confettiLayer} aria-hidden="true">
+          {confettiData.map((p) => (
+            <span
+              key={p.id}
+              className={`${styles.confettiParticle} ${styles[`confetti_${p.type}`]}`}
+              style={{
+                '--cx': `${p.left}%`,
+                '--cy': `${p.top}%`,
+                '--cd': `${p.delay}s`,
+                '--dur': `${p.duration}s`,
+                '--cs': p.scale,
+                '--cr': `${p.rot}deg`,
+              }}
+              aria-hidden="true"
+            />
+          ))}
         </div>
 
-        {/* ── Two-column layout: image left, details right ── */}
+        {/* 3D Golden Ribbon Banner Header matching Image 2 */}
+        <div className={styles.winnerRibbonWrap} aria-label="Crown has been revealed">
+          <div className={styles.winnerRibbonTailLeft} />
+          <div className={styles.winnerRibbonBanner}>
+            <span className={styles.winnerRibbonText}>THE CROWN HAS BEEN REVEALED</span>
+          </div>
+          <div className={styles.winnerRibbonTailRight} />
+        </div>
+
+        {/* Two-column layout: Left saree image, Right details */}
         <div className={styles.winnerBody}>
 
-          {/* LEFT — saree image with gold glow frame + crown badge */}
+          {/* LEFT — Saree image with radiant 3D gold glow frame & crown badge */}
           <div className={styles.winnerImageWrap}>
-            {/* Crown badge top-left */}
-            <div className={styles.winnerImageCrownBadge} aria-hidden="true">👑</div>
+            <div className={styles.winnerImageCrownBadge} aria-hidden="true">
+              👑
+            </div>
 
             <div className={styles.winnerImageFrame}>
               {winner.image ? (
@@ -1032,23 +1134,23 @@ function WinnerRevealSection({ campaign, navigate, revealPhase }) {
               ) : (
                 <div className={styles.winnerImageFallback}>🥻</div>
               )}
-              {/* Gold frame glow */}
-              <div className={styles.winnerFrameGlow} aria-hidden="true" />
-              {/* Shine sweep */}
-              <div className={styles.shineSweep} aria-hidden="true" />
             </div>
           </div>
 
-          {/* RIGHT — details */}
+          {/* RIGHT — Details, reward box & claim button */}
           <div className={styles.winnerDetails}>
 
-            {/* "TODAY'S CROWN SAREE" heading */}
-            <div className={styles.winnerHeadingBlock}>
-              <span className={styles.winnerTodayLabel}>👑 TODAY'S —</span>
-              <h2 className={styles.winnerHeadingBig}>CROWN SAREE</h2>
+            {/* TODAY'S CROWN SAREE heading centered with lines left and right matching Image 2 */}
+            <div className={styles.winnerTodayHeaderRow}>
+              <div className={styles.winnerTodayLineLeft} />
+              <span className={styles.winnerTodayCrown}>👑</span>
+              <span className={styles.winnerTodayText}>TODAY'S</span>
+              <div className={styles.winnerTodayLineRight} />
             </div>
 
-            {/* Name + price */}
+            <h2 className={styles.winnerHeadingBig}>CROWN SAREE</h2>
+
+            {/* Winner product name & price */}
             <p
               className={styles.winnerName}
               onClick={() => navigate(`/product/${winner.id}`)}
@@ -1066,56 +1168,65 @@ function WinnerRevealSection({ campaign, navigate, revealPhase }) {
               )}
             </div>
 
-            {/* Ornamental gold divider */}
-            <div className={styles.winnerOrnDivider} aria-hidden="true">
-              <div className={styles.winnerOrnLine} />
-              <span className={styles.winnerOrnGem}>❧</span>
-              <div className={styles.winnerOrnLine} />
+            {/* Filigree Scroll Divider */}
+            <div className={styles.winnerFiligreeScroll} aria-hidden="true">
+              <svg width="180" height="18" viewBox="0 0 180 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 9 H70 C80 9 83 3 90 9 C86 15 80 9 70 9" stroke="#e6c875" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M170 9 H110 C100 9 97 3 90 9 C94 15 100 9 110 9" stroke="#e6c875" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="90" cy="9" r="3" fill="#fbe6ad" />
+              </svg>
             </div>
 
-            {/* Reward block */}
-            <div className={styles.rewardBlock}>
-              <div className={styles.rewardBlockHeader}>
-                <span aria-hidden="true">🎁</span>
+            {/* Reward filigree bracket box matching Image 2 */}
+            <div className={styles.rewardBracketBox}>
+              <span className={`${styles.bracketFiligree} ${styles.bracketTopLeft}`}>⚜</span>
+              <span className={`${styles.bracketFiligree} ${styles.bracketTopRight}`}>⚜</span>
+              <span className={`${styles.bracketFiligree} ${styles.bracketBottomLeft}`}>⚜</span>
+              <span className={`${styles.bracketFiligree} ${styles.bracketBottomRight}`}>⚜</span>
+              
+              <div className={styles.rewardHeaderRow}>
+                <span className={styles.rewardGiftIcon}>🎁</span>
                 <span className={styles.rewardBlockLabel}>YOUR CROWN REWARD</span>
               </div>
               <div className={styles.rewardValueBig}>{rewardLabel}</div>
             </div>
 
-            {/* Claim button */}
+            {/* Claim Reward Button matching Image 2 */}
             <button
               className={`${styles.claimBtn} ${isClaimed ? styles.claimBtnClaimed : ''}`}
               onClick={handleClaimReward}
               disabled={claiming || isClaimed}
               aria-label={isClaimed ? 'Reward already claimed' : 'Claim your Crown reward'}
             >
-              <span className={styles.claimBtnIcon} aria-hidden="true">
-                {isClaimed ? '✓' : '👑'}
+              <span className={styles.claimBtnCrownIconSvg} aria-hidden="true">
+                <svg width="22" height="18" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 17L0 4L7 11L12 0L17 11L24 4L22 17H2Z" fill="#2b0417" />
+                  <path d="M1 18.5H23" stroke="#2b0417" strokeWidth="2" strokeLinecap="round" />
+                </svg>
               </span>
               <span className={styles.claimBtnText}>
                 {isClaimed ? 'ALREADY CLAIMED' : (claiming ? 'Claiming…' : 'CLAIM REWARD')}
               </span>
-              {!isClaimed && !claiming && <span className={styles.claimBtnChevron}>›</span>}
+              {!isClaimed && !claiming && (
+                <span className={styles.claimBtnCircleArrow}>
+                  <span className={styles.claimBtnArrowChar}>›</span>
+                </span>
+              )}
             </button>
 
+            {/* Shield note matching Image 2 */}
             <p className={styles.claimNote}>
-              {isClaimed
-                ? '✓ You have already redeemed this Crown Reward.'
-                : '✓ Add the winning saree to your cart and enjoy your exclusive reward.'}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.claimShieldIcon}>
+                <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#d4af37" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <path d="M9 12L11 14L15 10" stroke="#d4af37" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>
+                {isClaimed
+                  ? 'You have already redeemed this Crown Reward.'
+                  : 'Add the winning saree to your cart and enjoy your exclusive reward.'}
+              </span>
             </p>
           </div>
-        </div>
-
-        {/* ── Golden confetti particles ── */}
-        <div className={styles.confettiLayer} aria-hidden="true">
-          {[...Array(18)].map((_, i) => (
-            <span
-              key={i}
-              className={styles.confettiPiece}
-              style={{ '--ci': i }}
-              aria-hidden="true"
-            />
-          ))}
         </div>
       </div>
     </div>
