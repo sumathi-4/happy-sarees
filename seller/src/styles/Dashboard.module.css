@@ -1,0 +1,252 @@
+.dashboardWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.welcomeSection {
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-color);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(22px, 3vw, 32px);
+  color: var(--text-color);
+  margin-top: 4px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* KPI Cards Grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.kpiCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  padding: 24px;
+  box-shadow: var(--shadow-premium);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: var(--transition-smooth);
+}
+
+.kpiCard:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.kpiLabel {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.kpiValue {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-color);
+}
+
+.kpiValueGold {
+  color: var(--gold-color);
+}
+
+.kpiMeta {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+/* Middle Layout: Chart + Best Seller */
+.middleLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+}
+
+.chartCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  padding: 24px;
+  box-shadow: var(--shadow-premium);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1.5px solid var(--bg-soft-pink-darker);
+  padding-bottom: 12px;
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+/* Best Seller Card */
+.bestSellerCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  padding: 24px;
+  box-shadow: var(--shadow-premium);
+  display: flex;
+  flex-direction: column;
+}
+
+.bestProductDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.productImg {
+  width: 110px;
+  height: 145px;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-premium);
+}
+
+.productName {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-top: 4px;
+}
+
+.productSku {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.productSales {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.salesStat {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.salesStatVal {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.noBestProduct {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 32px 16px;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+/* Payouts list */
+.payoutsCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  padding: 24px;
+  box-shadow: var(--shadow-premium);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.th {
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bg-soft-pink-darker);
+  color: var(--text-color);
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-small);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.statusPaid {
+  color: var(--success-color);
+  background-color: var(--success-bg);
+}
+
+.statusPending {
+  color: var(--warning-color);
+  background-color: var(--warning-bg);
+}
+
+.statusFailed {
+  color: var(--error-color);
+  background-color: var(--error-bg);
+}
+
+@media (max-width: 991px) {
+  .middleLayout {
+    grid-template-columns: 1fr;
+  }
+}

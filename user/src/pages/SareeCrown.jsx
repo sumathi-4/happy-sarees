@@ -52,6 +52,118 @@ function getCountdownParts(dateStr, now = new Date()) {
   return { days, hours, mins, secs };
 }
 
+/* ── Moving Head Stage Light Fixture Subcomponent ── */
+function MovingHeadFixture({ side }) {
+  const isLeft = side === 'left';
+  return (
+    <div className={`${styles.movingHeadWrap} ${isLeft ? styles.movingHeadLeft : styles.movingHeadRight}`}>
+      {/* Wall Truss Mount Base */}
+      <div className={styles.trussMountBase}>
+        <div className={styles.trussPlate} />
+        <div className={styles.trussPin} />
+      </div>
+
+      {/* Rotating Lamp Head & Beam Assembly */}
+      <div className={`${styles.rotatingAssembly} ${isLeft ? styles.rotateLeft : styles.rotateRight}`}>
+        {/* Real Moving Head Lamp Fixture SVG */}
+        <div className={styles.lampSvgContainer}>
+          <svg
+            width="88"
+            height="88"
+            viewBox="0 0 100 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={styles.lampFixtureSvg}
+          >
+            <defs>
+              <linearGradient id={`housingGrad_${side}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#1e1848" />
+                <stop offset="40%" stopColor="#0b0e2b" />
+                <stop offset="85%" stopColor="#050718" />
+                <stop offset="100%" stopColor="#1a123a" />
+              </linearGradient>
+
+              <linearGradient id={`goldTrim_${side}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#9e721d" />
+                <stop offset="30%" stopColor="#fbe6ad" />
+                <stop offset="70%" stopColor="#c89b3c" />
+                <stop offset="100%" stopColor="#8a6114" />
+              </linearGradient>
+
+              <radialGradient id={`lensGlow_${side}`} cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="30%" stopColor="#fff2c2" />
+                <stop offset="65%" stopColor="#e6c875" />
+                <stop offset="85%" stopColor="#c89b3c" />
+                <stop offset="100%" stopColor="rgba(158, 114, 29, 0.7)" />
+              </radialGradient>
+
+              <linearGradient id={`reflection_${side}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.75)" />
+                <stop offset="45%" stopColor="rgba(255,255,255,0.15)" />
+                <stop offset="100%" stopColor="transparent" />
+              </linearGradient>
+
+              <filter id={`fixtureShadow_${side}`} x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#000000" floodOpacity="0.85" />
+              </filter>
+            </defs>
+
+            <g filter={`url(#fixtureShadow_${side})`}>
+              {/* Outer Metallic Yoke Arm Bracket */}
+              <path d="M 22 25 C 10 38 10 68 22 80 L 15 85 C 3 70 3 35 15 20 Z" fill={`url(#goldTrim_${side})`} />
+              <path d="M 78 25 C 90 38 90 68 78 80 L 85 85 C 97 70 97 35 85 20 Z" fill={`url(#goldTrim_${side})`} />
+
+              {/* Main Moving Head Barrel Body */}
+              <rect
+                x="22"
+                y="22"
+                width="56"
+                height="56"
+                rx="12"
+                fill={`url(#housingGrad_${side})`}
+                stroke={`url(#goldTrim_${side})`}
+                strokeWidth="2.5"
+              />
+
+              {/* Gold Rib Rings around Barrel */}
+              <rect x="22" y="32" width="56" height="4" fill={`url(#goldTrim_${side})`} opacity="0.9" />
+              <rect x="22" y="64" width="56" height="4" fill={`url(#goldTrim_${side})`} opacity="0.9" />
+
+              {/* Front Bezel Outer Gold Ring */}
+              <circle cx="50" cy="50" r="22" fill="none" stroke={`url(#goldTrim_${side})`} strokeWidth="3.5" />
+
+              {/* Inner Lens Glow Core */}
+              <circle cx="50" cy="50" r="19" fill={`url(#lensGlow_${side})`} />
+
+              {/* Lens Grid Pattern Facets (Image 1 replica) */}
+              <circle cx="50" cy="50" r="19" fill="none" stroke="#9e721d" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.65" />
+              <line x1="33" y1="50" x2="67" y2="50" stroke="#8a6114" strokeWidth="1" opacity="0.5" />
+              <line x1="50" y1="33" x2="50" y2="67" stroke="#8a6114" strokeWidth="1" opacity="0.5" />
+
+              {/* Glass Gloss Arc Reflection */}
+              <path d="M 36 38 A 16 16 0 0 1 64 38 A 17 17 0 0 0 36 38 Z" fill={`url(#reflection_${side})`} />
+            </g>
+          </svg>
+        </div>
+
+        {/* Golden Stage Beam Emitted From Front Lens */}
+        <div className={`${styles.stageBeam} ${isLeft ? styles.beamLeft : styles.beamRight}`} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Stage Spotlights Container ── */
+function StageSpotlights() {
+  return (
+    <div className={styles.stageSpotlightContainer} aria-hidden="true">
+      <MovingHeadFixture side="left" />
+      <MovingHeadFixture side="right" />
+    </div>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────
 function SareeCrown() {
   const navigate = useNavigate();
@@ -377,6 +489,7 @@ function SareeCrown() {
   if (currentStatus === 'not_started') {
     return (
       <div className={styles.pageWrapper}>
+        <StageSpotlights />
         <div className={styles.container}>
           <Breadcrumb />
           <HeroSection entrancePhase={5} />
@@ -399,6 +512,7 @@ function SareeCrown() {
   if (currentStatus === 'ended') {
     return (
       <div className={styles.pageWrapper}>
+        <StageSpotlights />
         <div className={styles.container}>
           <Breadcrumb />
           <HeroSection entrancePhase={5} />
@@ -421,7 +535,8 @@ function SareeCrown() {
 
   // ── ACTIVE CAMPAIGN — main voting UI ─────────────────────
   return (
-    <div className={styles.pageWrapper}>
+    <div className={`${styles.pageWrapper} ${!voteStarted && !hasVoted ? styles.pageWrapperHero : ''}`}>
+      {!voteStarted && <StageSpotlights />}
       
       {/* Stage 1: Initial Event Entrance Silk Curtain */}
       {entrancePhase < 3 && (
@@ -445,9 +560,8 @@ function SareeCrown() {
               </svg>
             </div>
             
-            <h2 className={styles.revealTitleText}>THE CROWN WINNER IS...</h2>
+            <h2 className={styles.revealTitleText}>THE SAREE CROWN</h2>
             <div className={styles.revealDecoLine} />
-            <div className={styles.revealCountNum}>1</div>
 
             <div className={`${styles.curtainGlowRing} ${entrancePhase >= 1 ? styles.curtainGlowRingVisible : ''}`} />
             <div className={`${styles.curtainLightSweep} ${entrancePhase >= 1 ? styles.curtainLightSweepVisible : ''}`} />
@@ -482,9 +596,8 @@ function SareeCrown() {
               </svg>
             </div>
 
-            <h2 className={styles.revealTitleText}>THE CROWN WINNER IS...</h2>
+            <h2 className={styles.revealTitleText}>THE SAREE CROWN</h2>
             <div className={styles.revealDecoLine} />
-            <div className={styles.revealCountNum}>1</div>
 
             <div className={styles.curtainGlowRing} style={{ opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }} />
             <div className={styles.curtainLightSweep} style={{ opacity: 1, transform: 'translateX(-50%) scaleX(1)' }} />
@@ -875,8 +988,10 @@ function ProductCard({
 }
 
 /* ── Locked Countdown matching Image 1 ─────────────────── */
-function LockedCountdown({ dateStr, currentTime }) {
-  const { days, hours, mins, secs } = getCountdownParts(dateStr, currentTime);
+function LockedCountdown({ dateStr, currentTime, isStopped }) {
+  const { days, hours, mins, secs } = isStopped 
+    ? { days: 0, hours: 0, mins: 0, secs: 0 } 
+    : getCountdownParts(dateStr, currentTime);
 
   return (
     <div className={styles.lockedCountdownRow}>
@@ -903,6 +1018,8 @@ function LockedCountdownBlock({ value, label }) {
 
 /* ── Locked Reward (post-vote) matching Image 1 & Image 2 ─── */
 function LockedRewardSection({ votedProduct, campaign, currentTime }) {
+  const isStopped = campaign?.votingStopped === true || (campaign?.votingEnd && currentTime > new Date(campaign.votingEnd));
+
   const confettiData = React.useMemo(() => {
     const types = ['dot', 'ribbon', 'star', 'diamond'];
     return Array.from({ length: 36 }, (_, i) => ({
@@ -965,7 +1082,7 @@ function LockedRewardSection({ votedProduct, campaign, currentTime }) {
             {/* Golden 3D Shield Badge with Checkmark */}
             <div className={styles.lockedShieldBadge} title="Vote Verified">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="url(#shieldGrad)" stroke="#ffd700" strokeWidth="1.5" />
+                <path d="M12 22C12 22 20 18 20 12V5L12 2 L4 5V12C4 18 12 22 12 22Z" fill="url(#shieldGrad)" stroke="#ffd700" strokeWidth="1.5" />
                 <path d="M9 12L11 14L15 10" stroke="#3d0521" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 <defs>
                   <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -986,17 +1103,22 @@ function LockedRewardSection({ votedProduct, campaign, currentTime }) {
         {/* Inner Countdown Container Box */}
         <div className={styles.lockedInnerCountdownBox}>
           <p className={styles.lockedWinnerNotice}>
-            The Crown Winner will be revealed after voting ends.
+            {isStopped 
+              ? "Voting has ended — the Crown reward is being prepared for reveal"
+              : "The Crown Winner will be revealed after voting ends."
+            }
           </p>
 
           <div className={styles.lockedRevealHeaderRow}>
             <div className={styles.lockedHeaderLine} />
-            <span className={styles.lockedRevealLabel}>REVEAL IN</span>
+            <span className={styles.lockedRevealLabel}>
+              {isStopped ? "VOTING ENDED" : "REVEAL IN"}
+            </span>
             <div className={styles.lockedHeaderLine} />
           </div>
 
           {campaign?.votingEnd && (
-            <LockedCountdown dateStr={campaign.votingEnd} currentTime={currentTime} />
+            <LockedCountdown dateStr={campaign.votingEnd} currentTime={currentTime} isStopped={isStopped} />
           )}
         </div>
       </div>

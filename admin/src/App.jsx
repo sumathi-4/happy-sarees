@@ -20,6 +20,9 @@ import ProfileSettings from './pages/ProfileSettings';
 import RatingsReviewsManagement from './pages/RatingsReviewsManagement';
 import SareeCrownManagement from './pages/SareeCrownManagement';
 import PlaceholderPage from './pages/PlaceholderPage';
+import SellerRequests from './pages/SellerRequests';
+import SellerManagement from './pages/SellerManagement';
+import ProductApprovals from './pages/ProductApprovals';
 
 const router = createBrowserRouter([
   {
@@ -71,6 +74,18 @@ const router = createBrowserRouter([
           {
             path: '/customers',
             element: <Customers />,
+          },
+          {
+            path: '/sellers/requests',
+            element: <SellerRequests />,
+          },
+          {
+            path: '/sellers/registry',
+            element: <SellerManagement />,
+          },
+          {
+            path: '/sellers/product-approvals',
+            element: <ProductApprovals />,
           },
           {
             path: '/coupons',

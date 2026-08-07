@@ -205,6 +205,27 @@ export const sareeCrownApi = {
   revealWinner: (id)        => api.post(`/saree-crown/${id}/reveal-winner`),
 };
 
+// ── Sellers Management ───────────────────────────────────────
+export const sellersApi = {
+  getRequests:  ()          => api.get('/sellers?status=pending'),
+  getAll:       (params = {}) => api.get('/sellers?' + new URLSearchParams(params)),
+  getById:      (id)        => api.get(`/sellers/${id}`),
+  approve:      (id)        => api.post(`/sellers/${id}/approve`, {}),
+  reject:       (id, data)  => api.post(`/sellers/${id}/reject`, data),
+  suspend:      (id, data)  => api.post(`/sellers/${id}/suspend`, data),
+  unsuspend:    (id)        => api.post(`/sellers/${id}/unsuspend`, {}),
+  getProducts:  (id)        => api.get(`/sellers/${id}/products`),
+  getOrders:    (id)        => api.get(`/sellers/${id}/orders`),
+};
+
+// ── Product Approvals ────────────────────────────────────────
+export const productApprovalsApi = {
+  getAll:       (params = {}) => api.get('/product-approvals?' + new URLSearchParams(params)),
+  approve:      (id)        => api.post(`/product-approvals/${id}/approve`, {}),
+  reject:       (id, reason)=> api.post(`/product-approvals/${id}/reject`, { reason }),
+};
+
+
 /**
  * Convert a File object to base64 data URL
  * @param {File} file

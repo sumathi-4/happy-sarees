@@ -6,11 +6,14 @@
     "start:server": "cd server && npm start",
     "start:user": "cd user && npm run dev",
     "start:admin": "cd admin && npm run dev",
+    "start:seller": "cd seller && npm run dev",
     "dev:user": "npm run dev --prefix user",
     "dev:admin": "npm run dev --prefix admin",
+    "dev:seller": "npm run dev --prefix seller",
     "dev:server": "npm run dev --prefix server",
     "build:user": "npm run build --prefix user",
     "build:admin": "npm run build --prefix admin",
-    "build:all": "npm run build:user && npm run build:admin"
+    "build:seller": "npm run build --prefix seller",
+    "build:all": "npm run build:user && npm run build:admin && npm run build:seller"
   }
 }

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   FiMenu, FiSearch, FiBell, FiChevronDown, FiChevronUp, FiChevronRight, FiLayout, 
   FiPackage, FiHome, FiShoppingBag, FiUsers, FiPercent, FiBarChart2, 
-  FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX 
+  FiSettings, FiLogOut, FiUser, FiHelpCircle, FiAward, FiX, FiBriefcase 
 } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { useAdminData } from '../context/AdminDataContext';
@@ -26,6 +26,32 @@ function AdminLayout() {
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
   const [isCampaignsExpanded, setIsCampaignsExpanded] = useState(true);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isSellersExpanded, setIsSellersExpanded] = useState(true);
+
+  const [pendingSellersCount, setPendingSellersCount] = useState(0);
+  const [pendingProductsCount, setPendingProductsCount] = useState(0);
+
+  useEffect(() => {
+    async function loadCounts() {
+      try {
+        const [sellersRes, productsRes] = await Promise.all([
+          fetch('http://localhost:5001/api/admin/sellers?status=pending', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('hs_admin_token')}` }
+          }).then(r => r.json()),
+          fetch('http://localhost:5001/api/admin/product-approvals?status=pending', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('hs_admin_token')}` }
+          }).then(r => r.json())
+        ]);
+        if (sellersRes.success) setPendingSellersCount(sellersRes.requests.length);
+        if (productsRes.success) setPendingProductsCount(productsRes.products.length);
+      } catch (err) {
+        console.error('Failed to load sidebar badge counts:', err);
+      }
+    }
+    loadCounts();
+    const timer = setInterval(loadCounts, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLogout = () => {
     adminLogout();
@@ -38,6 +64,7 @@ function AdminLayout() {
     { label: 'Homepage CMS', path: '/homepage', icon: <FiHome /> },
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Customers', path: '/customers', icon: <FiUsers /> },
+    { label: 'Sellers', path: '/sellers', icon: <FiBriefcase />, hasDropdown: true },
     { label: 'Coupons', path: '/coupons', icon: <FiPercent /> },
     { label: 'Campaigns', path: '/campaigns', icon: <FiAward />, hasDropdown: true },
     { label: 'Reports', path: '/reports', icon: <FiBarChart2 /> },
@@ -52,6 +79,9 @@ function AdminLayout() {
     if (path.includes('homepage')) return ['Home', 'Homepage'];
     if (path.includes('orders')) return ['Home', 'Orders'];
     if (path.includes('customers')) return ['Home', 'Customers'];
+    if (path.includes('sellers/requests')) return ['Home', 'Sellers', 'Verification Requests'];
+    if (path.includes('sellers/registry')) return ['Home', 'Sellers', 'Registry Roster'];
+    if (path.includes('sellers/product-approvals')) return ['Home', 'Sellers', 'Product Approvals'];
     if (path.includes('coupons')) return ['Home', 'Coupons'];
     if (path.includes('campaigns/saree-crown')) return ['Home', 'Campaigns', 'Saree Crown'];
     if (path.includes('campaigns')) return ['Home', 'Campaigns'];
@@ -69,6 +99,9 @@ function AdminLayout() {
     if (path.includes('homepage')) return 'Homepage Curation';
     if (path.includes('orders')) return 'Orders Overview';
     if (path.includes('customers')) return 'Customers Directory';
+    if (path.includes('sellers/requests')) return 'Seller Approvals';
+    if (path.includes('sellers/registry')) return 'Seller Registry';
+    if (path.includes('sellers/product-approvals')) return 'Product Approvals';
     if (path.includes('coupons')) return 'Coupons & Offers';
     if (path.includes('campaigns/saree-crown')) return '👑 Saree Crown';
     if (path.includes('campaigns')) return 'Campaigns';
@@ -217,6 +250,78 @@ function AdminLayout() {
                           onClick={() => setIsMobileOpen(false)}
                         >
                           <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> 👑 Saree Crown
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              );
+            }
+
+            if (item.label === 'Sellers') {
+              const isActive = location.pathname.startsWith('/sellers');
+              return (
+                <li key={i}>
+                  <div 
+                    className={`${styles.menuItem} ${isActive && !isSidebarCollapsed ? styles.menuParentActive : ''}`}
+                    onClick={() => setIsSellersExpanded(!isSellersExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.menuItemLink}>
+                      <span className={styles.menuIcon}>{item.icon}</span>
+                      {(!isSidebarCollapsed || isMobileOpen) && (
+                        <span className={styles.menuItemText}>{item.label}</span>
+                      )}
+                    </div>
+                    {(!isSidebarCollapsed || isMobileOpen) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {pendingSellersCount > 0 && (
+                          <span style={{ backgroundColor: 'var(--primary-color)', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px' }}>{pendingSellersCount}</span>
+                        )}
+                        {isSellersExpanded ? <FiChevronUp className={styles.menuChevron} /> : <FiChevronDown className={styles.menuChevron} />}
+                      </div>
+                    )}
+                  </div>
+                  {isSellersExpanded && (!isSidebarCollapsed || isMobileOpen) && (
+                    <ul style={{ listStyle: 'none', paddingLeft: '20px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li>
+                        <Link 
+                          to="/sellers/requests" 
+                          className={`${styles.menuItem} ${location.pathname === '/sellers/requests' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Requests
+                          </span>
+                          {pendingSellersCount > 0 && (
+                            <span style={{ backgroundColor: 'var(--primary-color)', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px' }}>{pendingSellersCount}</span>
+                          )}
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/sellers/registry" 
+                          className={`${styles.menuItem} ${location.pathname === '/sellers/registry' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Registry
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          to="/sellers/product-approvals" 
+                          className={`${styles.menuItem} ${location.pathname === '/sellers/product-approvals' ? styles.menuActive : ''}`}
+                          style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                          onClick={() => setIsMobileOpen(false)}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Approvals
+                          </span>
+                          {pendingProductsCount > 0 && (
+                            <span style={{ backgroundColor: 'var(--primary-color)', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px' }}>{pendingProductsCount}</span>
+                          )}
                         </Link>
                       </li>
                     </ul>

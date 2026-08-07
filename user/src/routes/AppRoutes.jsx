@@ -20,6 +20,7 @@ import Contact from '../pages/Contact';
 import SearchResults from '../pages/SearchResults';
 import NotFound from '../pages/NotFound';
 import SareeCrown from '../pages/SareeCrown';
+import SellWithUs from '../pages/SellWithUs';
 
 const router = createBrowserRouter([
   {
@@ -102,6 +103,10 @@ const router = createBrowserRouter([
       {
         path: PATHS.CONTACT,
         element: <Contact />,
+      },
+      {
+        path: '/sell-with-us',
+        element: <SellWithUs />,
       },
       {
         path: PATHS.SEARCH,

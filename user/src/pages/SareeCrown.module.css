@@ -206,9 +206,22 @@
   width: 100%;
   min-height: 100vh;
   background: radial-gradient(circle at 50% 25%, #0d1e4a 0%, #06102e 55%, #04091c 100%);
-  padding-bottom: 6rem;
+  padding-bottom: 2rem;
   position: relative;
   overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Strict Viewport Containment for Hero Countdown Stage (ZERO vertical scroll) */
+.pageWrapperHero {
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100svh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding-bottom: 0;
 }
 
 /* Subtle texture overlay */
@@ -221,6 +234,218 @@
     radial-gradient(ellipse 60% 80% at 80% 80%, rgba(200,48,107,0.05) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────── */
+.breadcrumbBar {
+  position: absolute;
+  top: 10px;
+  left: 1.5rem;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+  pointer-events: auto;
+}
+
+/* ── Premium Moving-Head Stage Light Fixtures (Image 1 replica) ───── */
+.stageSpotlightContainer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Moving Head Fixture Positioning Wrapper */
+.movingHeadWrap {
+  position: absolute;
+  top: 8%;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.movingHeadLeft {
+  left: 7%;
+}
+
+.movingHeadRight {
+  right: 7%;
+}
+
+/* Wall Truss Mounting Plate & Pin */
+.trussMountBase {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 12px;
+  background: linear-gradient(90deg, #573e0e 0%, #c89b3c 40%, #fbe6ad 60%, #573e0e 100%);
+  border-radius: 3px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 10px rgba(230, 200, 117, 0.4);
+  z-index: 12;
+}
+
+.trussPlate {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #e6c875;
+}
+
+.trussPin {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 6px;
+  background: #c89b3c;
+  border-radius: 2px;
+}
+
+/* Rotating Assembly — Lamp Head SVG + Emitted Beam rotate together */
+.rotatingAssembly {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 44px 44px;
+  will-change: transform;
+}
+
+/* Exact Mirror-Opposite Synchronized Motion (14s duration) */
+.rotateLeft {
+  animation: rotateLampLeft 14s ease-in-out infinite alternate;
+}
+
+.rotateRight {
+  animation: rotateLampRight 14s ease-in-out infinite alternate;
+}
+
+/* SVG Fixture Container */
+.lampSvgContainer {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  z-index: 15;
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+  animation: beamGlowPulse 5s ease-in-out infinite alternate;
+}
+
+.lampFixtureSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Continuous Golden Stage Light Beam ── */
+.stageBeam {
+  position: absolute;
+  top: 44px;
+  width: 550px;
+  height: 1100px;
+  z-index: 8;
+  filter: blur(22px) drop-shadow(0 0 50px rgba(255, 215, 0, 0.55));
+  mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 50%, transparent 100%);
+  opacity: 0.85;
+  will-change: transform, opacity;
+  pointer-events: none;
+  animation: beamGlowPulse 6s ease-in-out infinite alternate;
+}
+
+/* Left Beam originating from center of left lamp lens */
+.beamLeft {
+  left: 44px;
+  transform-origin: top left;
+  background: conic-gradient(from 125deg at 0% 0%, rgba(255, 242, 190, 0.45) 0deg, rgba(230, 200, 117, 0.28) 20deg, rgba(200, 155, 60, 0.08) 35deg, transparent 48deg);
+  clip-path: polygon(0 0, 100% 65%, 45% 100%, 0 0);
+}
+
+/* Right Beam originating from center of right lamp lens */
+.beamRight {
+  right: 44px;
+  transform-origin: top right;
+  background: conic-gradient(from 185deg at 100% 0%, rgba(255, 242, 190, 0.45) 0deg, rgba(230, 200, 117, 0.28) 20deg, rgba(200, 155, 60, 0.08) 35deg, transparent 48deg);
+  clip-path: polygon(100% 0, 0 65%, 55% 100%, 100% 0);
+}
+
+/* ── Keyframe Animations — Synchronized Mirror-Opposite Sweeping Motion ── */
+/* LEFT LAMP: CENTER MEET (-18deg) → OUTWARD SWEEP (48deg) → CENTER MEET (-18deg) */
+@keyframes rotateLampLeft {
+  0% {
+    transform: rotate(-18deg);
+  }
+  50% {
+    transform: rotate(48deg);
+  }
+  100% {
+    transform: rotate(-18deg);
+  }
+}
+
+/* RIGHT LAMP: PERFECT MIRROR INVERSION of Left Lamp */
+/* RIGHT LAMP: CENTER MEET (18deg) → OUTWARD SWEEP (-48deg) → CENTER MEET (18deg) */
+@keyframes rotateLampRight {
+  0% {
+    transform: rotate(18deg);
+  }
+  50% {
+    transform: rotate(-48deg);
+  }
+  100% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes beamGlowPulse {
+  0% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0.98;
+  }
+}
+
+/* ── Responsive Adaptations ── */
+@media (max-width: 900px) {
+  .movingHeadWrap {
+    top: 5%;
+    width: 70px;
+    height: 70px;
+  }
+  .movingHeadLeft { left: 4%; }
+  .movingHeadRight { right: 4%; }
+  .lampSvgContainer { width: 64px; height: 64px; }
+  .stageBeam { width: 320px; height: 650px; }
+}
+
+@media (max-width: 600px) {
+  .movingHeadWrap {
+    top: 3%;
+    width: 54px;
+    height: 54px;
+  }
+  .movingHeadLeft { left: 2%; }
+  .movingHeadRight { right: 2%; }
+  .lampSvgContainer { width: 50px; height: 50px; }
+  .stageBeam { width: 240px; height: 500px; filter: blur(14px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotateLeft,
+  .rotateRight,
+  .lampSvgContainer,
+  .stageBeam {
+    animation: none !important;
+  }
 }
 
 .container {
@@ -267,7 +492,7 @@
 .breadcrumbBar {
   display: flex;
   align-items: center;
-  padding: 1.25rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px solid rgba(197,160,89,0.15);
   margin-bottom: 0;
 }
@@ -298,7 +523,7 @@
 /* ── Hero Section ─────────────────────────────────────────── */
 .heroSection {
   position: relative;
-  padding: 3rem 0 1.5rem;
+  padding: 1.2rem 0 0.6rem;
   text-align: center;
   overflow: visible;
   opacity: 0;
@@ -347,7 +572,7 @@
 /* 3D Gold Crown Emblem */
 .heroCrownWrap {
   display: inline-block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   opacity: 0;
   transform: translateY(-20px) scale(0.8);
   transition: opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -360,8 +585,8 @@
 }
 
 .heroGoldCrownSvg {
-  width: 90px;
-  height: 65px;
+  width: 76px;
+  height: 54px;
 }
 
 /* Title block */
@@ -404,15 +629,15 @@
 
 .heroTitle {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2.4rem, 6vw, 4.2rem);
-  font-weight: 800;
-  color: transparent;
-  background: linear-gradient(180deg, #fff5c0 0%, #f5d76e 35%, #d4af37 75%, #a8790e 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  letter-spacing: 3px;
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: 5px;
   margin: 0.1rem 0;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, #ffffff 0%, #fff3cd 40%, #e6c875 75%, #b58928 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 25px rgba(200, 155, 60, 0.4);
+  line-height: 1.1;
 }
 
 .heroSubtitleTag {
@@ -449,7 +674,7 @@
 .countdownWrapper {
   text-align: center;
   padding: 0;
-  margin: 2.2rem auto 1.5rem;
+  margin: 1rem auto 0.8rem;
   max-width: 600px;
   background: transparent;
   border: none;
@@ -470,7 +695,7 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 0.8rem;
 }
 
 .countdownHeaderLine {
@@ -503,9 +728,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  min-width: 82px;
-  height: 88px;
+  gap: 0.2rem;
+  min-width: 74px;
+  height: 76px;
   background: rgba(8, 18, 48, 0.7);
   border: 1.5px solid rgba(212, 175, 55, 0.45);
   border-radius: 12px;
@@ -515,7 +740,7 @@
 
 .countdownNum {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2.2rem, 4vw, 2.7rem);
+  font-size: clamp(2rem, 3.5vw, 2.4rem);
   font-weight: 700;
   color: #f5d76e;
   line-height: 1;
@@ -525,7 +750,7 @@
 
 .countdownUnit {
   font-family: system-ui, -apple-system, sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 2px;
   color: #ffffff;
   text-transform: uppercase;
@@ -1329,6 +1554,69 @@
   max-width: 100px;
   height: 1px;
   background: linear-gradient(90deg, transparent, #d4af37 60%, transparent);
+}
+
+.lockedRevealLabel {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.8rem;
+  letter-spacing: 5px;
+  color: #f5d76e;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Locked Inner Countdown Row matching Image 1 & Image 2 */
+.lockedCountdownRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.lockedCountdownBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 82px;
+  height: 88px;
+  background: rgba(35, 4, 20, 0.7);
+  border: 1.5px solid rgba(232, 62, 140, 0.5);
+  border-radius: 14px;
+  box-shadow: inset 0 0 15px rgba(232, 62, 140, 0.2), 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.lockedCountdownNum {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 3.8vw, 2.5rem);
+  font-weight: 800;
+  color: #ff4da6;
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(255, 77, 166, 0.7);
+  display: block;
+}
+
+.lockedCountdownUnit {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.lockedCountdownSep {
+  font-size: 1.8rem;
+  color: #ff4da6;
+  font-weight: 300;
+  opacity: 0.9;
+  align-self: center;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 0 10px rgba(255, 77, 166, 0.6);
 }
 
 /* ── Cinematic Winner Reveal Overlay matching Image 1 ────── */

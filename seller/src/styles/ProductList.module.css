@@ -1,0 +1,261 @@
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--text-color);
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.filterCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  padding: 16px 24px;
+  box-shadow: var(--shadow-premium);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.filtersGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.searchBox {
+  position: relative;
+  max-width: 320px;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+}
+
+.searchInput {
+  padding-left: 36px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.select {
+  max-width: 180px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.btnPrimary {
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  padding: 11px 24px;
+  border-radius: var(--radius-button);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 14px var(--primary-glow);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btnPrimary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.tableCard {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-premium);
+  box-shadow: var(--shadow-premium);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.th {
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bg-soft-pink-darker);
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productImg {
+  width: 44px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.productNameLink {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.productNameLink:hover {
+  color: var(--primary-color);
+}
+
+.sku {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.actionsCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  transition: var(--transition-fast);
+}
+
+.editBtn {
+  color: var(--secondary-color);
+}
+
+.editBtn:hover {
+  background-color: var(--info-bg);
+}
+
+.deleteBtn {
+  color: var(--error-color);
+}
+
+.deleteBtn:hover {
+  background-color: var(--error-bg);
+}
+
+.statusReason {
+  font-size: 11px;
+  color: var(--error-color);
+  margin-top: 4px;
+  display: block;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-small);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badgePending {
+  color: var(--warning-color);
+  background-color: var(--warning-bg);
+}
+
+.badgeApproved {
+  color: var(--success-color);
+  background-color: var(--success-bg);
+}
+
+.badgeRejected {
+  color: var(--error-color);
+  background-color: var(--error-bg);
+}
+
+.emptyState {
+  padding: 64px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: var(--accent-blush);
+}
+
+.emptyTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--text-color);
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 400px;
+}

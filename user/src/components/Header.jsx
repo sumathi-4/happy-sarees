@@ -44,6 +44,11 @@ function Header() {
               Contact
             </Link>
           </li>
+          <li>
+            <Link to="/sell-with-us" className="header-nav-link" style={{ color: '#C5A059', fontWeight: 700 }}>
+              Sell with Us
+            </Link>
+          </li>
         </ul>
       </nav>
 
