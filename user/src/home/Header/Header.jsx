@@ -197,6 +197,17 @@ function Header() {
           {/* Header Actions Icons */}
           <div className={styles.actions}>
             <div className={styles.iconGroup}>
+              {/* Become a Seller link */}
+              <a
+                href={import.meta.env.VITE_SELLER_PORTAL_URL || 'http://localhost:5176'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.sellerPortalBtn}
+                title="Sell on Happy Sarees"
+              >
+                Sell on Happy Sarees
+              </a>
+
               {/* Search trigger button */}
               <button
                 className={styles.actionIcon}
@@ -277,6 +288,15 @@ function Header() {
             </ul>
 
             <div className={styles.mobileDrawerFooter}>
+              <a
+                href={import.meta.env.VITE_SELLER_PORTAL_URL || 'http://localhost:5176'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.mobileSellerBtn}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Become a Seller 👑
+              </a>
               {!isAuthenticated ? (
                 <div className={styles.mobileAuthBtns}>
                   <Link

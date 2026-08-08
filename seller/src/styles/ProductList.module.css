@@ -671,3 +671,29 @@
   border-radius: var(--radius-premium);
   border: 1px solid var(--error-bg);
 }
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sku {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.tr {
+  transition: all var(--motion-premium);
+}
+
+.td {
+  vertical-align: middle;
+}

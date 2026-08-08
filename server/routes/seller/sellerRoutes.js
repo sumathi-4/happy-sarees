@@ -12,9 +12,10 @@ const sellerPayoutController = require('../../controllers/seller/sellerPayoutCon
 
 const { sellerAuth, requireApprovedSeller } = require('../../middleware/sellerAuth');
 
-// ── Auth Endpoints (No Gate) ──────────────────────────────
+// ── Auth & Public Endpoints (No Gate) ──────────────────────
 router.post('/register', sellerAuthController.register);
 router.post('/login', sellerAuthController.login);
+router.get('/public-stats', sellerDashboardController.getPublicStats);
 
 // ── Status/Self Check (Auth Token verification only) ─────
 router.get('/me', sellerAuth, sellerAuthController.getMe);

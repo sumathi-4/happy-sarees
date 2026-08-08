@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiSearch, FiEdit, FiTrash, FiPlus, FiBox, FiAlertCircle } from 'react-icons/fi';
 import { sellerApi } from '../api/sellerApi';
+import DataTable from '../components/DataTable';
 import styles from '../styles/ProductList.module.css';
 
 function ProductList() {
@@ -62,20 +63,22 @@ function ProductList() {
   };
 
   return (
-    <div>
-      <div className={styles.headerRow}>
-        <div className={styles.titleBlock}>
-          <h1 className={styles.title}>Saree Products</h1>
-          <p className={styles.subtitle}>Manage your saree catalog, check verification statuses, and list new products.</p>
+    <div className={styles.container}>
+      <div className={styles.managementHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>Saree Products</h1>
+          <p className={styles.pageDesc}>Manage your saree catalog, check verification statuses, and list new products.</p>
         </div>
-        <Link to="/products/new" className={styles.btnPrimary}>
-          <FiPlus /> List New Saree
-        </Link>
+        <div className={styles.headerActions}>
+          <Link to="/products/new" className={styles.addBtn}>
+            <FiPlus /> List New Saree
+          </Link>
+        </div>
       </div>
 
       {/* Filter Row */}
       <div className={styles.filterCard}>
-        <div className={styles.filtersGroup}>
+        <div className={styles.searchRow}>
           <div className={styles.searchBox}>
             <FiSearch className={styles.searchIcon} />
             <input
@@ -86,16 +89,20 @@ function ProductList() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <select 
-            className={styles.select}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="pending">Pending Review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          <div className={styles.filterSelects}>
+            <div className={styles.selectGroup}>
+              <label>Status</label>
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                <option value="pending">Pending Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -130,83 +137,69 @@ function ProductList() {
         </div>
       ) : (
         <div className={styles.tableCard}>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.th}>Saree</th>
-                  <th className={styles.th}>Category</th>
-                  <th className={styles.th}>Price</th>
-                  <th className={styles.th}>Stock</th>
-                  <th className={styles.th}>Status</th>
-                  <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map(p => (
-                  <tr key={p.id} className={styles.tr}>
-                    <td className={styles.td}>
-                      <div className={styles.productCell}>
-                        <img src={p.image} alt={p.name} className={styles.productImg} />
-                        <div className={styles.productInfo}>
-                          <Link to={`/products/${p.id}/edit`} className={styles.productNameLink}>
-                            {p.name}
-                          </Link>
-                          <span className={styles.sku}>SKU: {p.sku}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.td} style={{ fontStyle: 'italic' }}>
-                      {p.categoryName || 'Sarees'}
-                    </td>
-                    <td className={styles.td} style={{ fontWeight: 700, color: 'var(--gold-color)' }}>
-                      ₹{p.price.toLocaleString('en-IN')}
-                    </td>
-                    <td className={styles.td}>
-                      <span style={{ fontWeight: 600, color: p.stockCount === 0 ? 'var(--error-color)' : 'inherit' }}>
-                        {p.stockCount} in stock
-                      </span>
-                    </td>
-                    <td className={styles.td}>
-                      {getStatusBadge(p.approvalStatus)}
-                      {p.approvalStatus === 'rejected' && (
-                        <div className={styles.statusReason}>
-                          <strong>Reason:</strong> {p.rejectionReason || 'Attributes mismatch.'}
-                          <div style={{ marginTop: '4px' }}>
-                            <button 
-                              className={styles.link}
-                              style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', cursor: 'pointer' }}
-                              onClick={() => navigate(`/products/${p.id}/edit`)}
-                            >
-                              Edit & Resubmit
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </td>
-                    <td className={styles.td} style={{ textAlign: 'right' }}>
-                      <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
+          <DataTable headers={['Saree', 'Category', 'Price', 'Stock', 'Status', 'Actions']}>
+            {products.map(p => (
+              <tr key={p.id} className={styles.tr}>
+                <td className={styles.td}>
+                  <div className={styles.productCell}>
+                    <img src={p.image} alt={p.name} className={styles.productImg} />
+                    <div className={styles.productInfo}>
+                      <Link to={`/products/${p.id}/edit`} className={styles.productNameLink}>
+                        {p.name}
+                      </Link>
+                      <span className={styles.sku}>SKU: {p.sku}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className={styles.td} style={{ fontStyle: 'italic' }}>
+                  {p.categoryName || 'Sarees'}
+                </td>
+                <td className={styles.td} style={{ fontWeight: 700, color: 'var(--gold-color)' }}>
+                  ₹{p.price.toLocaleString('en-IN')}
+                </td>
+                <td className={styles.td}>
+                  <span style={{ fontWeight: 600, color: p.stockCount === 0 ? 'var(--error-color)' : 'inherit' }}>
+                    {p.stockCount} in stock
+                  </span>
+                </td>
+                <td className={styles.td}>
+                  {getStatusBadge(p.approvalStatus)}
+                  {p.approvalStatus === 'rejected' && (
+                    <div className={styles.statusReason}>
+                      <strong>Reason:</strong> {p.rejectionReason || 'Attributes mismatch.'}
+                      <div style={{ marginTop: '4px' }}>
                         <button 
-                          className={`${styles.actionBtn} ${styles.editBtn}`}
+                          className={styles.link}
+                          style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', cursor: 'pointer' }}
                           onClick={() => navigate(`/products/${p.id}/edit`)}
-                          title="Edit Saree"
                         >
-                          <FiEdit />
-                        </button>
-                        <button 
-                          className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                          onClick={() => handleDelete(p.id, p.name)}
-                          title="Delete Saree"
-                        >
-                          <FiTrash />
+                          Edit & Resubmit
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  )}
+                </td>
+                <td className={styles.td} style={{ textAlign: 'right' }}>
+                  <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
+                    <button 
+                      className={`${styles.actionBtn} ${styles.editBtn}`}
+                      onClick={() => navigate(`/products/${p.id}/edit`)}
+                      title="Edit Saree"
+                    >
+                      <FiEdit />
+                    </button>
+                    <button 
+                      className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                      onClick={() => handleDelete(p.id, p.name)}
+                      title="Delete Saree"
+                    >
+                      <FiTrash />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
         </div>
       )}
     </div>

@@ -1243,3 +1243,59 @@
   .actions { gap: 0.9rem; }
 }
 
+/* ── Seller Portal Links ─────────────────────────────────── */
+.sellerPortalBtn {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: rgba(209, 27, 105, 0.08);
+  border: 1.5px solid rgba(209, 27, 105, 0.25);
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all var(--motion-premium);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+}
+
+.sellerPortalBtn:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 16px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.mobileSellerBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, var(--gold-color), var(--gold-hover));
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-button);
+  text-decoration: none;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 4px 14px var(--gold-glow);
+  transition: var(--transition-smooth);
+}
+
+.mobileSellerBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px var(--gold-glow);
+}
+
+@media (max-width: 900px) {
+  .sellerPortalBtn {
+    display: none;
+  }
+}
+

@@ -503,21 +503,80 @@ function ProductForm() {
       image: formData.image,
       galleryImages: formData.galleryImages,
       images: formData.galleryImages,
-      videoUrl: formData.videoUrl || ''
+      videoUrl: formData.videoUrl || formData.video_url || ''
     };
 
     if (isEditMode) {
       await sellerApi.updateProduct(id, finalData);
-      setToastMessage("Saree updated successfully!");
+      setToastMessage("Saree updated successfully! Changes saved.");
+      // Stay on the same page — re-fetch the product so video & all fields refresh dynamically
+      try {
+        const res = await sellerApi.getProductById(id);
+        if (res.success && res.product) {
+          const match = res.product;
+          const rawGallery = Array.isArray(match.galleryImages) && match.galleryImages.length > 0
+            ? match.galleryImages
+            : (Array.isArray(match.images) && match.images.length > 0 ? match.images : (match.image ? [match.image] : []));
+          const gallery = rawGallery.map(img => typeof img === 'string' ? img : (img ? (img.url || img.image_data || img.image_url) : '')).filter(Boolean);
+          const coverImage = match.image ? (typeof match.image === 'string' ? match.image : (match.image.url || match.image.image_data)) : (gallery[0] || '');
+          const mrpNum = Number(match.mrp || match.originalPrice || match.price || 0);
+          const priceNum = Number(match.price || 0);
+          const calcDisc = mrpNum > priceNum && mrpNum > 0 ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : '';
+          const longDescVal = match.description || match.fullDescription || match.longDescription || match.full_description || '';
+          const isNewArrival = match.newArrival !== undefined ? Boolean(match.newArrival) : (match.isNewArrival !== undefined ? Boolean(match.isNewArrival) : (match.is_new_arrival !== undefined ? Boolean(match.is_new_arrival) : true));
+          setFormData(prev => ({
+            ...prev,
+            ...match,
+            newArrival: isNewArrival,
+            isNewArrival: isNewArrival,
+            is_new_arrival: isNewArrival,
+            shortDescription: match.shortDescription || match.short_description || '',
+            fullDescription: longDescVal,
+            description: longDescVal,
+            longDescription: longDescVal,
+            seoTitle: match.seoTitle || match.meta_title || `${match.name} | Happy Sarees`,
+            metaDescription: match.metaDescription || match.meta_description || match.shortDescription || longDescVal || '',
+            washCare: match.washCare || match.wash_care || 'Dry Clean Only',
+            sareeLength: match.sareeLength || match.height || '5.5m',
+            sareeWidth: match.sareeWidth || match.width || '1.1m',
+            mrp: mrpNum || '',
+            price: priceNum || '',
+            discountValue: match.discountValue !== undefined && match.discountValue !== '' ? match.discountValue : calcDisc,
+            videoUrl: match.videoUrl || match.video_url || '',
+            videoData: match.videoData || match.video_data || '',
+            galleryImages: gallery,
+            image: coverImage
+          }));
+          // Update video mode based on freshly fetched video URL
+          const vurl = match.videoUrl || match.video_url || '';
+          const vdata = match.videoData || match.video_data || '';
+          if (vdata) {
+            setVideoMode('upload');
+          } else if (vurl) {
+            if (vurl.includes('youtube') || vurl.includes('youtu.be') || vurl.includes('vimeo')) {
+              setVideoMode('url');
+            } else {
+              setVideoMode('upload');
+            }
+          }
+        }
+      } catch (fetchErr) {
+        console.log('[ProductForm] Re-fetch after update failed:', fetchErr.message);
+      }
+      setTimeout(() => setToastMessage(null), 3000);
     } else {
-      await sellerApi.createProduct(finalData);
-      setToastMessage("Saree published successfully!");
+      const result = await sellerApi.createProduct(finalData);
+      setToastMessage("Saree submitted for approval successfully!");
+      const newId = result?.productId;
+      setTimeout(() => {
+        setToastMessage(null);
+        if (newId) {
+          navigate(`/products/edit/${newId}`);
+        } else {
+          navigate('/products');
+        }
+      }, 1500);
     }
-
-    setTimeout(() => {
-      setToastMessage(null);
-      navigate('/products');
-    }, 1200);
   };
 
   // Simplified 7 Steps
@@ -1267,6 +1326,17 @@ function ProductForm() {
                 </div>
               </div>
 
+              <div className={styles.miniMetaRow}>
+                <div>
+                  <strong>Brand:</strong>
+                  <span>{formData.brand || '-'}</span>
+                </div>
+                <div>
+                  <strong>Pattern:</strong>
+                  <span>{formData.pattern || '-'}</span>
+                </div>
+              </div>
+
               <div style={{ marginTop: '12px' }}>
                 <strong style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Homepage Collections:</strong>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
@@ -1293,6 +1363,18 @@ function ProductForm() {
                     {(formData.fullDescription || formData.description).slice(0, 150)}
                     {(formData.fullDescription || formData.description).length > 150 ? '...' : ''}
                   </p>
+                </div>
+              )}
+              {(formData.videoUrl || formData.video_url) && (
+                <div style={{ marginTop: '8px', background: '#f3e5f5', padding: '8px', borderRadius: '6px', border: '1px solid #e1bee7' }}>
+                  <strong style={{ fontSize: '11px', color: 'var(--primary-color)' }}>Product Video:</strong>
+                  <div style={{ marginTop: '4px', borderRadius: '4px', overflow: 'hidden' }}>
+                    <video 
+                      src={formData.videoUrl || formData.video_url} 
+                      controls 
+                      style={{ width: '100%', maxHeight: '110px', objectFit: 'cover' }} 
+                    />
+                  </div>
                 </div>
               )}
             </div>

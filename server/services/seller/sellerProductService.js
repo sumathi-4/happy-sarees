@@ -59,35 +59,77 @@ async function getSellerProducts(sellerId, filters = {}) {
  * Get single seller product with all images and specifications
  */
 async function getSellerProductById(sellerId, productId) {
-  const res = await db.query(
-    `SELECT p.*, c.name as category_name
-     FROM products p
-     LEFT JOIN categories c ON p.category_id = c.id
-     WHERE p.seller_id = $1 AND p.id = $2`,
-    [sellerId, productId]
-  );
+  const [prod, images, seo, specs] = await Promise.all([
+    db.query(
+      `SELECT p.*, c.name as category_name
+       FROM products p LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.seller_id = $1 AND p.id = $2`,
+      [sellerId, productId]
+    ),
+    db.query(
+      `SELECT image_url, display_order, is_primary FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, display_order ASC`,
+      [productId]
+    ),
+    db.query(`SELECT * FROM product_seo WHERE product_id = $1`, [productId]),
+    db.query(
+      `SELECT ps.master_type_id, ps.master_value_id, mt.name as master_type_name, mt.slug as master_type_slug, 
+              mt.show_in_specifications, mi.name as master_value_name, ps.custom_value
+       FROM product_specifications ps
+       JOIN master_types mt ON ps.master_type_id = mt.id
+       LEFT JOIN master_items mi ON ps.master_value_id = mi.id
+       WHERE ps.product_id = $1 AND mt.is_active = true`,
+      [productId]
+    )
+  ]);
 
-  if (res.rows.length === 0) {
+  if (prod.rows.length === 0) {
     throw new Error('Product not found or not owned by you.');
   }
 
-  const product = res.rows[0];
+  const product = prod.rows[0];
+  const imgUrls = images.rows.map(img => img.image_url).filter(Boolean);
+  const primaryImgObj = images.rows.find(img => img.is_primary);
+  const coverImage = primaryImgObj ? primaryImgObj.image_url : (imgUrls[0] || null);
 
-  const imgsRes = await db.query(
-    `SELECT image_url, display_order, is_primary FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, display_order ASC`,
-    [productId]
-  );
+  const seoData = seo.rows[0] || {};
 
-  const images = imgsRes.rows.map(i => i.image_url);
+  const specificationsList = specs.rows.map(r => ({
+    master_type_id: r.master_type_id,
+    master_value_id: r.master_value_id,
+    master_type_name: r.master_type_name,
+    master_type_slug: r.master_type_slug,
+    show_in_specifications: r.show_in_specifications,
+    value: r.master_value_name || r.custom_value
+  }));
+
+  const customData = {};
+  specs.rows.forEach(r => {
+    const valName = r.master_value_name || r.custom_value;
+    if (valName) {
+      customData[r.master_type_id] = valName;
+      customData[r.master_type_slug] = valName;
+      customData[r.master_type_name] = valName;
+      const singular = r.master_type_slug.endsWith('s') ? r.master_type_slug.slice(0, -1) : r.master_type_slug;
+      customData[singular] = valName;
+      customData[singular.replace(/-/g, '_')] = valName;
+    }
+  });
 
   return {
+    ...customData,
+    ...product,
+    specifications: specificationsList,
+    customMasterData: customData,
+    custom_master_data: customData,
     id: product.id,
     name: product.name,
     slug: product.slug,
     sku: product.sku,
     price: Number(product.price),
     originalPrice: product.original_price ? Number(product.original_price) : null,
+    mrp: product.original_price ? Number(product.original_price) : Number(product.price),
     stockCount: product.stock_count,
+    stock: product.stock_count,
     inStock: product.in_stock,
     categoryName: product.category_name,
     categoryId: product.category_id,
@@ -98,6 +140,9 @@ async function getSellerProductById(sellerId, productId) {
     pallu: product.pallu,
     occasion: product.occasion,
     description: product.description,
+    fullDescription: product.description || '',
+    shortDescription: product.short_description || '',
+    short_description: product.short_description || '',
     approvalStatus: product.approval_status,
     rejectionReason: product.rejection_reason,
     blouseIncluded: product.blouse_included,
@@ -105,8 +150,17 @@ async function getSellerProductById(sellerId, productId) {
     height: product.height,
     width: product.width,
     weight: product.weight,
-    images: images,
-    coverImage: images[0] || 'https://via.placeholder.com/300x400?text=No+Image',
+    images: imgUrls,
+    coverImage: coverImage || 'https://via.placeholder.com/300x400?text=No+Image',
+    videoUrl: product.video_url || '',
+    video_url: product.video_url || '',
+    videoData: product.video_data || '',
+    video_data: product.video_data || '',
+    newArrival: Boolean(product.is_new_arrival),
+    isNewArrival: Boolean(product.is_new_arrival),
+    is_new_arrival: Boolean(product.is_new_arrival),
+    seoTitle: seoData.meta_title || `${product.name} | Happy Sarees`,
+    metaDescription: seoData.meta_description || product.short_description || product.description || ''
   };
 }
 
@@ -130,17 +184,17 @@ async function createSellerProduct(sellerId, data) {
 
     const productQuery = `
       INSERT INTO products (
-        name, slug, category_id, description, price, original_price,
+        name, slug, category_id, description, short_description, price, original_price,
         fabric, color, weave, border, pallu, occasion,
         blouse_included, blouse_size, height, width, weight,
         sku, in_stock, stock_count,
         seller_id, approval_status, status, submitted_at,
         video_url, is_new_arrival
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, 'pending', 'draft', CURRENT_TIMESTAMP, $22, $23)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, 'pending', 'draft', CURRENT_TIMESTAMP, $23, $24)
       RETURNING id
     `;
     const productValues = [
-      data.name, slug, data.categoryId || null, data.description, data.price, data.originalPrice || null,
+      data.name, slug, data.categoryId || null, data.description, data.shortDescription || data.short_description || null, data.price, data.originalPrice || null,
       data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
       data.blouseIncluded ?? true, data.blouseSize || null, data.height || '5.5m', data.width || '1.1m', data.weight || null,
       autoSku, inStock, stockCount,
@@ -233,7 +287,7 @@ async function updateSellerProduct(sellerId, productId, data) {
 
     if (requiresReapproval) {
       params.push(
-        data.name, data.categoryId || null, data.description, data.price, data.originalPrice || null,
+        data.name, data.categoryId || null, data.description, data.shortDescription || data.short_description || null, data.price, data.originalPrice || null,
         data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
         data.blouseIncluded ?? true, data.blouseSize || null, data.height || '5.5m', data.width || '1.1m', data.weight || null,
         data.sku || current.sku,
@@ -244,22 +298,23 @@ async function updateSellerProduct(sellerId, productId, data) {
         name = $5,
         category_id = $6,
         description = $7,
-        price = $8,
-        original_price = $9,
-        fabric = $10,
-        color = $11,
-        weave = $12,
-        border = $13,
-        pallu = $14,
-        occasion = $15,
-        blouse_included = $16,
-        blouse_size = $17,
-        height = $18,
-        width = $19,
-        weight = $20,
-        sku = $21,
-        video_url = $22,
-        is_new_arrival = $23,
+        short_description = $8,
+        price = $9,
+        original_price = $10,
+        fabric = $11,
+        color = $12,
+        weave = $13,
+        border = $14,
+        pallu = $15,
+        occasion = $16,
+        blouse_included = $17,
+        blouse_size = $18,
+        height = $19,
+        width = $20,
+        weight = $21,
+        sku = $22,
+        video_url = $23,
+        is_new_arrival = $24,
         approval_status = 'pending',
         rejection_reason = NULL,
         submitted_at = CURRENT_TIMESTAMP

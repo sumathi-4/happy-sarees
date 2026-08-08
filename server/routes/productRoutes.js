@@ -122,7 +122,7 @@ router.get('/', async (req, res) => {
       FROM products p 
       LEFT JOIN categories c ON p.category_id = c.id 
       LEFT JOIN product_seo s ON s.product_id = p.id
-      WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published')
+      WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.approval_status = 'approved'
     `;
     const params = [];
 
@@ -200,7 +200,7 @@ router.get('/', async (req, res) => {
 // 2. Get Best Sellers
 router.get('/bestsellers', async (req, res) => {
   try {
-    const productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.is_best_seller = true ORDER BY p.id DESC LIMIT 8`);
+    const productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.approval_status = 'approved' AND p.is_best_seller = true ORDER BY p.id DESC LIMIT 8`);
     const imagesRes = await db.query(`SELECT product_id, image_url, is_primary FROM product_images ORDER BY is_primary DESC, display_order ASC`);
     const imagesMap = {};
     imagesRes.rows.forEach((img) => {
@@ -220,12 +220,12 @@ router.get('/bestsellers', async (req, res) => {
 // 3. Get New Arrivals
 router.get('/new-arrivals', async (req, res) => {
   try {
-    let productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.is_new_arrival = true ORDER BY p.id DESC LIMIT 4`);
+    let productsRes = await db.query(`SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.approval_status = 'approved' AND p.is_new_arrival = true ORDER BY p.id DESC LIMIT 4`);
 
     if (productsRes.rows.length < 4) {
       const existingIds = productsRes.rows.map(r => r.id);
       const needed = 4 - productsRes.rows.length;
-      let fallbackQuery = `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published')`;
+      let fallbackQuery = `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.deleted_at IS NULL AND (p.status IS NULL OR LOWER(p.status) = 'published') AND p.approval_status = 'approved'`;
       if (existingIds.length > 0) {
         fallbackQuery += ` AND p.id NOT IN (${existingIds.join(',')})`;
       }
@@ -259,6 +259,7 @@ router.get('/videos', async (req, res) => {
       LEFT JOIN product_seo s ON s.product_id = p.id 
       WHERE p.deleted_at IS NULL 
         AND LOWER(p.status) = 'published' 
+        AND p.approval_status = 'approved'
         AND p.video_url IS NOT NULL 
         AND TRIM(p.video_url) <> '' 
       ORDER BY p.id DESC
@@ -288,13 +289,13 @@ router.get('/:id', async (req, res) => {
     const parsedId = isNum ? parseInt(id) : (parseInt(id.replace(/\D/g, '')) || 0);
 
     let productRes = await db.query(
-      `SELECT id FROM products WHERE (id = $1 AND deleted_at IS NULL) OR (slug = $2 AND deleted_at IS NULL)`,
+      `SELECT id FROM products WHERE ((id = $1 AND deleted_at IS NULL) OR (slug = $2 AND deleted_at IS NULL)) AND approval_status = 'approved'`,
       [parsedId > 0 ? parsedId : 0, id]
     );
 
     // Fallback: return first product if requested ID is mock format like "p1"
     if (productRes.rows.length === 0) {
-      productRes = await db.query(`SELECT id FROM products WHERE deleted_at IS NULL ORDER BY id ASC LIMIT 1`);
+      productRes = await db.query(`SELECT id FROM products WHERE deleted_at IS NULL AND approval_status = 'approved' ORDER BY id ASC LIMIT 1`);
     }
 
     if (productRes.rows.length === 0) {
@@ -306,7 +307,7 @@ router.get('/:id', async (req, res) => {
 
     // Fetch related products
     const relatedRes = await db.query(
-      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 AND p.deleted_at IS NULL LIMIT 4`,
+      `SELECT p.*, s.meta_title, s.meta_description FROM products p LEFT JOIN product_seo s ON s.product_id = p.id WHERE p.category_id = $1 AND p.id != $2 AND p.deleted_at IS NULL AND p.approval_status = 'approved' LIMIT 4`,
       [productData.category_id || 1, prodId]
     );
     const specsMap = await getSpecsMap();

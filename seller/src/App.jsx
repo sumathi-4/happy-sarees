@@ -17,9 +17,14 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import MasterDataRequests from './pages/MasterDataRequests';
 import Payouts from './pages/Payouts';
+import Landing from './pages/Landing';
 
 const router = createBrowserRouter([
   // Public Paths
+  {
+    path: '/',
+    element: <Landing />,
+  },
   {
     path: '/login',
     element: <Login />,
@@ -95,12 +100,8 @@ const router = createBrowserRouter([
 
   // Fallbacks
   {
-    path: '/',
-    element: <Navigate to="/login" replace />,
-  },
-  {
     path: '*',
-    element: <Navigate to="/dashboard" replace />,
+    element: <Navigate to="/" replace />,
   },
 ]);
 

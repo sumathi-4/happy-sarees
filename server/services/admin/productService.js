@@ -13,7 +13,7 @@ class ProductService {
     const { page, limit, offset } = parsePagination(query, 12);
     const { search, status, fabric, color, category, sort, stockAlert } = query;
 
-    let where = [`p.deleted_at IS NULL`];
+    let where = [`p.deleted_at IS NULL`, `p.approval_status = 'approved'`];
     const params = [];
 
     const p = () => { params.push(arguments[0]); return `$${params.length}`; };

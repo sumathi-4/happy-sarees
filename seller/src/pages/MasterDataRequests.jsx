@@ -415,10 +415,8 @@ function MasterDataRequests() {
                 </div>
               </div>
 
-              <DataTable
-                headers={['Name', 'Slug', 'Description', 'Status', 'Sort Order', 'Actions']}
-                items={paginatedItems}
-                renderRow={(item) => (
+              <DataTable headers={['Name', 'Slug', 'Description', 'Status', 'Sort Order', 'Actions']}>
+                {paginatedItems.map((item) => (
                   <tr key={item.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
@@ -476,8 +474,8 @@ function MasterDataRequests() {
                       )}
                     </td>
                   </tr>
-                )}
-              />
+                ))}
+              </DataTable>
 
               {/* Pagination */}
               {totalPages > 1 && (

@@ -47,11 +47,12 @@ const request = {
 };
 
 export const sellerApi = {
-  // Auth
+  // Auth & Public
   register: (data) => request.post('/register', data),
   login: (email, password) => request.post('/login', { email, password }),
   getMe: () => request.get('/me'),
   logout: () => request.post('/logout', {}),
+  getPublicStats: () => request.get('/public-stats'),
 
   // Dashboard & Analytics
   getDashboardSummary: () => request.get('/dashboard/summary'),

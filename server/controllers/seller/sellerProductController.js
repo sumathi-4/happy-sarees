@@ -54,7 +54,8 @@ async function createProduct(req, res, next) {
       weight,
       sku,
       stockCount,
-      images // Array of base64 strings or URLs
+      images, // Array of base64 strings or URLs
+      ...rest
     } = req.body;
 
     // Upload base64 images to Cloudinary
@@ -89,7 +90,8 @@ async function createProduct(req, res, next) {
       weight,
       sku,
       stockCount,
-      images: uploadedImages
+      images: uploadedImages,
+      ...rest
     });
 
     res.status(201).json({
@@ -123,7 +125,8 @@ async function updateProduct(req, res, next) {
       weight,
       sku,
       stockCount,
-      images // Array of base64 strings or URLs
+      images, // Array of base64 strings or URLs
+      ...rest
     } = req.body;
 
     // Upload new base64 images to Cloudinary if they are raw base64 data
@@ -158,7 +161,8 @@ async function updateProduct(req, res, next) {
       weight,
       sku,
       stockCount,
-      images: images ? uploadedImages : undefined
+      images: images ? uploadedImages : undefined,
+      ...rest
     });
 
     res.json({
