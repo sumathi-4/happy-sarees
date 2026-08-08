@@ -570,7 +570,7 @@ function ProductForm() {
             Save Draft
           </button>
           <button className={styles.publishBtn} onClick={() => handleSave('Published')}>
-            {isEditMode ? 'Update Product' : '+ Publish Product'}
+            {isEditMode ? 'Submit Updates for Approval' : 'Submit for Approval'}
           </button>
         </div>
       </div>

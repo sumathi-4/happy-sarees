@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { sellerApi } from '../api/sellerApi';
+import { useSellerAuth } from '../context/SellerAuthContext';
 import { 
   FiPlus, FiSearch, FiEdit, FiTrash2, FiClock, FiCheckCircle, FiXCircle, 
   FiAlertCircle, FiRefreshCw, FiArrowLeft, FiGrid, FiLayers, FiCalendar, 
@@ -7,7 +8,7 @@ import {
 } from 'react-icons/fi';
 import EmptyState from '../components/EmptyState';
 import DataTable from '../components/DataTable';
-import styles from '../styles/MasterDataManagement.module.css';
+import styles from '../styles/MasterDataRequests.module.css';
 
 const STATUS_BADGE = {
   pending:  { color: '#f59e0b', bg: '#fef3c7', label: 'Pending Review' },
@@ -16,27 +17,29 @@ const STATUS_BADGE = {
 };
 
 function StatusBadge({ status }) {
-  const s = STATUS_BADGE[status] || STATUS_BADGE.pending;
+  const cls = status === 'approved' ? styles.statusApproved
+             : status === 'rejected' ? styles.statusRejected
+             : styles.statusPending;
   return (
-    <span style={{
-      background: s.bg, color: s.color, padding: '3px 10px',
-      borderRadius: '12px', fontSize: '12px', fontWeight: 600,
-      display: 'inline-flex', alignItems: 'center', gap: '4px'
-    }}>
+    <span className={`${styles.statusBadge} ${cls}`}>
       {status === 'approved' ? <FiCheckCircle size={12} /> :
        status === 'rejected' ? <FiXCircle size={12} /> :
        <FiClock size={12} />}
-      {s.label}
+      {STATUS_BADGE[status]?.label || status}
     </span>
   );
 }
 
 function MasterDataRequests() {
+  const { sellerUser } = useSellerAuth();
+  const currentSellerId = sellerUser?.id ?? null;
+
   const [activeTab, setActiveTab] = useState('browser'); // 'browser' or 'my-requests'
   const [requests, setRequests] = useState([]);
   const [masterTypes, setMasterTypes] = useState([]);
   const [masterItems, setMasterItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -64,8 +67,9 @@ function MasterDataRequests() {
   const [targetId, setTargetId] = useState(null); // type ID or item ID
 
   // Load types, items and request logs
-  async function loadData() {
-    setLoading(true);
+  async function loadData(silent = false) {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
     try {
       const [typesRes, itemsRes, reqsRes] = await Promise.all([
         sellerApi.getMasterTypes(),
@@ -79,6 +83,7 @@ function MasterDataRequests() {
       setError(err.message || 'Failed to load master data.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
@@ -210,75 +215,78 @@ function MasterDataRequests() {
   const paginatedItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className={styles.wrapper}>
       
       {/* Upper header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-color, #2b1220)', fontFamily: 'var(--font-serif)' }}>
-            Catalog Specifications & Master Data
+      <div className={styles.pageHeader}>
+        <div className={styles.pageHeaderLeft}>
+          <h1 className={styles.pageTitle}>
+            Catalog Specifications &amp; Master Data
           </h1>
-          <p style={{ color: 'var(--text-muted, #757575)', fontSize: '14px', marginTop: '4px' }}>
+          <p className={styles.pageDesc}>
             Browse the active catalog specification attributes and suggest updates to build catalog parity.
           </p>
         </div>
         <button
           onClick={loadData}
-          style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}
+          className={styles.refreshBtn}
         >
           <FiRefreshCw size={13} /> Refresh
         </button>
       </div>
 
       {/* Toggle Tab Bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '24px', gap: '16px' }}>
+      <div className={styles.tabBar}>
         <button
           onClick={() => { setActiveTab('browser'); setError(''); }}
-          style={{
-            padding: '12px 16px', background: 'none', border: 'none', fontSize: '14px', fontWeight: 600,
-            cursor: 'pointer', borderBottom: activeTab === 'browser' ? '2.5px solid var(--primary-color)' : '2.5px solid transparent',
-            color: activeTab === 'browser' ? 'var(--primary-color)' : 'var(--text-muted)'
-          }}
+          className={`${styles.tabBtn} ${activeTab === 'browser' ? styles.tabBtnActive : ''}`}
         >
           Catalog Browser
         </button>
         <button
           onClick={() => { setActiveTab('my-requests'); setError(''); }}
-          style={{
-            padding: '12px 16px', background: 'none', border: 'none', fontSize: '14px', fontWeight: 600,
-            cursor: 'pointer', borderBottom: activeTab === 'my-requests' ? '2.5px solid var(--primary-color)' : '2.5px solid transparent',
-            color: activeTab === 'my-requests' ? 'var(--primary-color)' : 'var(--text-muted)'
-          }}
+          className={`${styles.tabBtn} ${activeTab === 'my-requests' ? styles.tabBtnActive : ''}`}
         >
           My Change Requests ({requests.length})
         </button>
       </div>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+        <div className={styles.errorAlert}>
           <FiAlertCircle /> {error}
         </div>
       )}
       {success && (
-        <div style={{ background: '#d1fae5', color: '#10b981', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+        <div className={styles.errorAlert} style={{ background: 'var(--success-bg)', color: 'var(--success-color)' }}>
           <FiCheckCircle /> {success}
         </div>
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>Loading Master Data...</div>
+        <div className={styles.emptyState}>Loading Master Data...</div>
       ) : activeTab === 'browser' ? (
         <>
           {viewMode === 'grid' ? (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 700 }}>Attribute Types</h3>
-                <button
-                  onClick={() => { setModalType('add_type'); }}
-                  style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}
-                >
-                  <FiPlus /> Request New Type
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => loadData(true)}
+                    disabled={refreshing}
+                    title="Refresh to see newly approved items"
+                    style={{ background: 'none', border: '1.5px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-color)', opacity: refreshing ? 0.6 : 1 }}
+                  >
+                    <FiRefreshCw style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={() => { setModalType('add_type'); }}
+                    style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}
+                  >
+                    <FiPlus /> Request New Type
+                  </button>
+                </div>
               </div>
 
               <div className={styles.typeGrid}>
@@ -321,29 +329,42 @@ function MasterDataRequests() {
                         >
                           Browse Items
                         </button>
-                        <button
-                          onClick={() => {
-                            setTargetId(t.id);
-                            setTypeName(t.name);
-                            setShowInFilters(t.showInFilters);
-                            setShowInSpecifications(t.showInSpecifications);
-                            setModalType('edit_type');
-                          }}
-                          style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                          title="Request Edit Type"
-                        >
-                          <FiEdit />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setTargetId(t.id);
-                            setModalType('delete_type');
-                          }}
-                          style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #fee2e2', color: '#ef4444', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                          title="Request Delete Type"
-                        >
-                          <FiTrash2 />
-                        </button>
+
+                        {t.source === 'seller' && t.createdBySellerId === currentSellerId ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setTargetId(t.id);
+                                setTypeName(t.name);
+                                setShowInFilters(t.showInFilters);
+                                setShowInSpecifications(t.showInSpecifications);
+                                setModalType('edit_type');
+                              }}
+                              style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                              title="Request Edit Type"
+                            >
+                              <FiEdit />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setTargetId(t.id);
+                                setModalType('delete_type');
+                              }}
+                              style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #fee2e2', color: '#ef4444', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                              title="Request Delete Type"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </>
+                        ) : (
+                          <span
+                            title="This attribute type is managed by Happy Sarees and cannot be edited by sellers."
+                            style={{ fontSize: '11px', color: '#9ca3af', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', cursor: 'default' }}
+                          >
+                            <FiDatabase size={10} />
+                            Managed by Happy Sarees
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
@@ -365,7 +386,7 @@ function MasterDataRequests() {
                   <h3 style={{ fontSize: '18px', fontWeight: 700 }}>{currentType?.name || 'Items'}</h3>
                 </div>
 
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <div style={{ position: 'relative' }}>
                     <FiSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
                     <input
@@ -376,6 +397,15 @@ function MasterDataRequests() {
                       style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '13px', width: '200px' }}
                     />
                   </div>
+                  <button
+                    onClick={() => loadData(true)}
+                    disabled={refreshing}
+                    title="Refresh to see newly approved items"
+                    style={{ background: 'none', border: '1.5px solid var(--border-color)', borderRadius: '8px', padding: '7px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-color)', opacity: refreshing ? 0.6 : 1 }}
+                  >
+                    <FiRefreshCw style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
                   <button
                     onClick={() => { setTargetId(currentTypeId); setModalType('add_item'); }}
                     style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}
@@ -409,31 +439,41 @@ function MasterDataRequests() {
                     </td>
                     <td>{item.sortOrder ?? '—'}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          onClick={() => {
-                            setTargetId(item.id);
-                            setItemName(item.name);
-                            setItemDescription(item.description || '');
-                            setItemColorHex(item.colorHex || '#ffffff');
-                            setModalType('edit_item');
-                          }}
-                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', color: 'var(--text-color)' }}
-                          title="Request Edit Item"
+                      {item.source === 'seller' && item.createdBySellerId === currentSellerId ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => {
+                              setTargetId(item.id);
+                              setItemName(item.name);
+                              setItemDescription(item.description || '');
+                              setItemColorHex(item.colorHex || '#ffffff');
+                              setModalType('edit_item');
+                            }}
+                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', color: 'var(--text-color)' }}
+                            title="Request Edit Item"
+                          >
+                            <FiEdit size={12} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setTargetId(item.id);
+                              setModalType('delete_item');
+                            }}
+                            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #fee2e2', background: 'none', cursor: 'pointer', color: '#ef4444' }}
+                            title="Request Delete Item"
+                          >
+                            <FiTrash2 size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          title="This item is managed by Happy Sarees and cannot be edited by sellers."
+                          style={{ fontSize: '11px', color: '#9ca3af', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', cursor: 'default' }}
                         >
-                          <FiEdit size={12} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setTargetId(item.id);
-                            setModalType('delete_item');
-                          }}
-                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #fee2e2', background: 'none', cursor: 'pointer', color: '#ef4444' }}
-                          title="Request Delete Item"
-                        >
-                          <FiTrash2 size={12} />
-                        </button>
-                      </div>
+                          <FiDatabase size={10} />
+                          Managed by Happy Sarees
+                        </span>
+                      )}
                     </td>
                   </tr>
                 )}

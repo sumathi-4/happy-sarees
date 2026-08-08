@@ -1,252 +1,456 @@
-.dashboardWrapper {
+/* ============================================================
+   ADMIN DASHBOARD — PREMIUM STAT CARDS & LAYOUTS
+   ============================================================ */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* Colored left-border stat cards keyed to meaning */
+.statCard {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-premium);
+  border-left: 4px solid transparent;
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Revenue = Primary Magenta */
+.statCardRevenue {
+  border-left-color: var(--primary-color);
+  box-shadow: 0 4px 20px rgba(209, 27, 105, 0.08);
+}
+
+.statCardRevenue:hover {
+  box-shadow: 0 12px 36px rgba(209, 27, 105, 0.18);
+}
+
+/* Orders = Secondary Indigo */
+.statCardOrders {
+  border-left-color: var(--secondary-color);
+  box-shadow: 0 4px 20px rgba(39, 24, 157, 0.08);
+}
+
+.statCardOrders:hover {
+  box-shadow: 0 12px 36px rgba(39, 24, 157, 0.15);
+}
+
+/* Low Stock = Gold/Warning */
+.statCardStock {
+  border-left-color: var(--gold-color);
+  box-shadow: 0 4px 20px rgba(197, 160, 89, 0.1);
+}
+
+.statCardStock:hover {
+  box-shadow: var(--shadow-gold);
+}
+
+/* Customers = Blush/Lavender */
+.statCardCustomers {
+  border-left-color: var(--accent-lavender);
+  box-shadow: 0 4px 20px rgba(174, 147, 217, 0.1);
+}
+
+/* Stat values colored by meaning */
+.statValueRevenue {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary-color);
+  letter-spacing: -0.5px;
+}
+
+.statValueOrders {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--secondary-color);
+  letter-spacing: -0.5px;
+}
+
+.statValueStock {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gold-color);
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+
+.statValueCustomers {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-lavender);
+  letter-spacing: -0.5px;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.bottomSectionGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
 }
 
-.welcomeSection {
-  margin-bottom: 8px;
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.eyebrow {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gold-color);
-  letter-spacing: 2px;
-  text-transform: uppercase;
+/* Product item row under Top Selling / Low Stock cards */
+.productItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.title {
-  font-family: var(--font-serif);
-  font-size: clamp(22px, 3vw, 32px);
-  color: var(--text-color);
-  margin-top: 4px;
+.productItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-.subtitle {
+.productInfoLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-input);
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+.productMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productName {
   font-size: 13px;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text-color);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
 }
 
-/* KPI Cards Grid */
+.productPrice {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+.productCountBadge {
+  background-color: rgba(209, 27, 105, 0.08);
+  color: var(--primary-color);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+}
+
+.stockBadge {
+  background-color: var(--error-bg);
+  color: var(--error-color);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--error-color);
+}
+
+.quickActionsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Section page titles — gradient text treatment */
+.pageTitle {
+  font-family: var(--font-serif);
+  font-size: var(--text-h2);
+  font-weight: 800;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .chartsGrid { grid-template-columns: 1fr; }
+  .bottomSectionGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .chartsGrid, .bottomSectionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================
+   SELLER PORTAL COMPATIBILITY ALIASES
+   ============================================================ */
+.dashboardWrapper {
+  padding: 24px;
+  min-height: calc(100vh - 120px);
+}
+.welcomeSection {
+  margin-bottom: 28px;
+}
+.kpiValueGold {
+  color: var(--gold-color) !important;
+}
+.bestProductDetails {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.bestProductDetails img {
+  width: 60px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-color);
+}
+.productSales {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+}
+.salesStat {
+  display: flex;
+  flex-direction: column;
+}
+.salesStatVal {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-color);
+}
+.payoutsCard {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  border: 1px solid rgba(43, 18, 32, 0.05);
+  box-shadow: var(--shadow-premium);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+/* ============================================================
+   SELLER DASHBOARD — Class aliases used by Dashboard.jsx
+   (classes that did not exist in the original module)
+   ============================================================ */
+
+/* KPI Grid: 5 cards, collapses responsively */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
+  margin-bottom: 24px;
 }
+@media (max-width: 1400px) { .kpiGrid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .kpiGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .kpiGrid { grid-template-columns: 1fr; } }
 
 .kpiCard {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-color);
+  background: var(--bg-white);
   border-radius: var(--radius-premium);
-  padding: 24px;
+  padding: 20px 22px;
   box-shadow: var(--shadow-premium);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  border-left: 4px solid var(--primary-color);
   transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
 }
-
-.kpiCard:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-4px);
-}
+.kpiCard:hover { transform: translateY(-4px); box-shadow: var(--shadow-card-hover); }
 
 .kpiLabel {
-  font-family: var(--font-display);
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 1px;
   text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
 }
 
 .kpiValue {
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
-  color: var(--text-color);
-}
-
-.kpiValueGold {
-  color: var(--gold-color);
+  color: var(--secondary-color);
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .kpiMeta {
   font-size: 11px;
-  color: var(--text-light);
+  color: var(--text-muted);
+  margin-top: 6px;
 }
 
-/* Middle Layout: Chart + Best Seller */
+/* Middle layout: chart + best seller */
 .middleLayout {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 28px;
+  gap: 24px;
+  margin-bottom: 24px;
 }
+@media (max-width: 1024px) { .middleLayout { grid-template-columns: 1fr; } }
 
 .chartCard {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-color);
+  background: var(--bg-white);
   border-radius: var(--radius-premium);
   padding: 24px;
   box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(43, 18, 32, 0.05);
+  transition: var(--transition-smooth);
 }
+.chartCard:hover { box-shadow: var(--shadow-card-hover); }
+
+.bestSellerCard {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium);
+  padding: 24px;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(43, 18, 32, 0.05);
+  border-left: 4px solid var(--gold-color);
+  transition: var(--transition-smooth);
+}
+.bestSellerCard:hover { box-shadow: 0 12px 36px rgba(197, 160, 89, 0.15); }
 
 .cardHeader {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  border-bottom: 1.5px solid var(--bg-soft-pink-darker);
-  padding-bottom: 12px;
-}
-
-.cardTitle {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-color);
-}
-
-/* Best Seller Card */
-.bestSellerCard {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-premium);
-  padding: 24px;
-  box-shadow: var(--shadow-premium);
-  display: flex;
-  flex-direction: column;
-}
-
-.bestProductDetails {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 12px;
-  margin-top: 12px;
+  margin-bottom: 20px;
 }
-
-.productImg {
-  width: 110px;
-  height: 145px;
-  object-fit: cover;
-  border-radius: var(--radius-small);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-premium);
-}
-
-.productName {
-  font-family: var(--font-serif);
+.cardTitle {
   font-size: 15px;
   font-weight: 700;
   color: var(--text-color);
-  margin-top: 4px;
+  font-family: var(--font-sans);
 }
-
-.productSku {
-  font-size: 11px;
-  color: var(--text-light);
-}
-
-.productSales {
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-}
-
-.salesStat {
-  display: flex;
-  flex-direction: column;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.salesStatVal {
-  font-size: 14px;
+.eyebrow {
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 2px;
   color: var(--primary-color);
+  text-transform: uppercase;
 }
 
-.noBestProduct {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: 32px 16px;
-  color: var(--text-light);
-  font-size: 13px;
-}
-
-/* Payouts list */
-.payoutsCard {
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-premium);
-  padding: 24px;
-  box-shadow: var(--shadow-premium);
-}
-
+/* Payouts table inside dashboard */
 .tableWrapper {
   overflow-x: auto;
+  border-radius: var(--radius-small);
+  border: 1px solid rgba(43, 18, 32, 0.05);
+  margin-top: 16px;
 }
-
 .table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
   font-size: 13px;
+  font-family: var(--font-sans);
 }
-
+.table thead tr { background: rgba(209, 27, 105, 0.04); }
 .th {
   padding: 12px 16px;
-  border-bottom: 2px solid var(--border-color);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-muted);
-  font-weight: 700;
   text-transform: uppercase;
-  font-size: 11px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-bottom: 1.5px solid var(--border-color);
 }
-
 .td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--bg-soft-pink-darker);
+  padding: 12px 16px;
   color: var(--text-color);
+  border-bottom: 1px solid rgba(43, 18, 32, 0.04);
+  font-size: 13px;
+  vertical-align: middle;
 }
+.tr:last-child .td { border-bottom: none; }
+.tr:hover { background: rgba(209, 27, 105, 0.02); }
 
-.tr:last-child .td {
-  border-bottom: none;
-}
-
+/* Status badges */
 .statusBadge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: var(--radius-small);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: capitalize;
+}
+.statusPaid    { background: var(--success-bg); color: var(--success-color); }
+.statusPending { background: var(--warning-bg); color: var(--warning-color); }
+.statusFailed  { background: var(--error-bg);   color: var(--error-color); }
+
+/* Best product */
+.productImg {
+  width: 56px; height: 72px; object-fit: cover;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-color); flex-shrink: 0;
+}
+.productSku { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.noBestProduct {
+  padding: 24px; text-align: center;
+  color: var(--text-muted); font-size: 13px; font-style: italic; line-height: 1.6;
 }
 
-.statusPaid {
-  color: var(--success-color);
-  background-color: var(--success-bg);
+/* Page header aliases */
+.welcomeSection { margin-bottom: 28px; }
+.title {
+  font-family: var(--font-serif);
+  font-size: 28px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px; margin-bottom: 6px;
 }
-
-.statusPending {
-  color: var(--warning-color);
-  background-color: var(--warning-bg);
-}
-
-.statusFailed {
-  color: var(--error-color);
-  background-color: var(--error-bg);
-}
-
-@media (max-width: 991px) {
-  .middleLayout {
-    grid-template-columns: 1fr;
-  }
-}
+.subtitle { font-size: 14px; color: var(--text-muted); }

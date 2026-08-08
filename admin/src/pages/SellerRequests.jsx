@@ -111,7 +111,7 @@ function SellerRequests() {
       </div>
 
       {errorMsg && (
-        <div style={{ color: 'var(--error-color)', padding: '12px', background: 'var(--error-bg)', borderRadius: '8px', marginBottom: '20px' }}>
+        <div className={styles.errorMsg}>
           {errorMsg}
         </div>
       )}
@@ -138,7 +138,7 @@ function SellerRequests() {
 
           <div className={styles.tableContainer}>
             {loading ? (
-              <div style={{ padding: '24px', textAlign: 'center' }}>Loading verification queues...</div>
+              <div className={styles.empty}>Loading verification queues...</div>
             ) : filteredRequests.length === 0 ? (
               <div className={styles.empty}>
                 No pending seller verification requests. Excellent! All queues clear.
@@ -151,36 +151,36 @@ function SellerRequests() {
                     <th className={styles.th}>Weaver Owner</th>
                     <th className={styles.th}>Contact Info</th>
                     <th className={styles.th}>Location</th>
-                    <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>
+                    <th className={`${styles.th} ${styles.alignRight}`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRequests.map(r => (
                     <tr key={r.id} className={`${styles.tr} ${selectedId === r.id ? styles.trActive : ''}`}>
                       <td className={styles.td}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className={styles.storeCell}>
                           {r.storeLogoUrl ? (
-                            <img src={r.storeLogoUrl} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} />
+                            <img src={r.storeLogoUrl} alt="" className={styles.storeLogo} />
                           ) : (
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>
+                            <div className={styles.storeLogoFallback}>
                               {(r.storeName || '').charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div>
-                            <span style={{ fontWeight: 700 }}>{r.storeName}</span>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{(r.businessCategory || 'N/A').toUpperCase()}</div>
+                            <span className={styles.storeNameText}>{r.storeName}</span>
+                            <div className={styles.storeCategoryText}>{(r.businessCategory || 'N/A').toUpperCase()}</div>
                           </div>
                         </div>
                       </td>
                       <td className={styles.td}>{r.ownerName}</td>
                       <td className={styles.td}>
-                        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '12px' }}>
+                        <div className={styles.contactCell}>
                           <span>{r.email}</span>
-                          <span style={{ color: 'var(--text-light)' }}>{r.phone}</span>
+                          <span className={styles.textLight}>{r.phone}</span>
                         </div>
                       </td>
                       <td className={styles.td}>{r.city}, {r.state}</td>
-                      <td className={styles.td} style={{ textAlign: 'right' }}>
+                      <td className={`${styles.td} ${styles.alignRight}`}>
                         <div className={styles.actionIconGroup} style={{ justifyContent: 'flex-end' }}>
                           <button 
                             className={`${styles.iconBtn} ${styles.iconBtnView}`}
@@ -227,16 +227,16 @@ function SellerRequests() {
 
             <div className={styles.panelBody}>
               {/* Logo Preview */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+              <div className={styles.dossierHeader}>
                 {activeReq.storeLogoUrl ? (
-                  <img src={activeReq.storeLogoUrl} alt={activeReq.storeName} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold-color)' }} />
+                  <img src={activeReq.storeLogoUrl} alt={activeReq.storeName} className={styles.dossierLogo} />
                 ) : (
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--gold-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '24px' }}>
+                  <div className={styles.dossierLogoFallback}>
                     {(activeReq.storeName || '').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <h4 style={{ margin: '4px 0 0 0', fontFamily: 'var(--font-serif)', fontSize: '16px' }}>{activeReq.storeName}</h4>
-                <span style={{ fontSize: '11px', color: 'var(--text-light)', textTransform: 'uppercase' }}>PAN: {activeReq.panNumber}</span>
+                <h4 className={styles.dossierStoreName}>{activeReq.storeName}</h4>
+                <span className={styles.dossierPan}>PAN: {activeReq.panNumber}</span>
               </div>
 
               <div>
@@ -251,7 +251,7 @@ function SellerRequests() {
                 </div>
                 <div className={styles.infoRow}>
                   <span>Brand story:</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', textAlign: 'left', marginTop: '4px' }}>
+                  <span className={styles.dossierStory}>
                     {activeReq.businessDescription}
                   </span>
                 </div>
@@ -265,7 +265,7 @@ function SellerRequests() {
                 </div>
                 <div className={styles.infoRow}>
                   <span>Account Number:</span>
-                  <span className={styles.infoVal} style={{ letterSpacing: '0.5px' }}>{activeReq.bankAccountNo}</span>
+                  <span className={`${styles.infoVal} ${styles.letterSpacingSmall}`}>{activeReq.bankAccountNo}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <span>Bank name:</span>
@@ -273,13 +273,13 @@ function SellerRequests() {
                 </div>
                 <div className={styles.infoRow}>
                   <span>IFSC code:</span>
-                  <span className={styles.infoVal} style={{ fontFamily: 'monospace' }}>{activeReq.bankIfsc}</span>
+                  <span className={`${styles.infoVal} ${styles.monospaceText}`}>{activeReq.bankIfsc}</span>
                 </div>
               </div>
 
               <div>
                 <h4 className={styles.sectionTitle}>Compliance Documents</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles.docLinkContainer}>
                   {activeReq.documents && activeReq.documents.length > 0 ? (
                     activeReq.documents.map((d, index) => (
                       <a 
@@ -293,21 +293,21 @@ function SellerRequests() {
                       </a>
                     ))
                   ) : (
-                    <span style={{ fontSize: '12px', color: 'var(--text-light)' }}>No verification document uploads found.</span>
+                    <span className={styles.noDocsText}>No verification document uploads found.</span>
                   )}
                 </div>
               </div>
 
               {/* Bottom audit decision */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+              <div className={styles.dossierActions}>
                 <button 
-                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  className={`${styles.btn} ${styles.btnPrimary} ${styles.fullWidth}`}
                   onClick={() => handleApprove(activeReq.id, activeReq.storeName)}
                 >
                   <FiCheck /> Approve Store
                 </button>
                 <button 
-                  className={`${styles.btn} ${styles.btnDanger}`}
+                  className={`${styles.btn} ${styles.btnDanger} ${styles.fullWidth}`}
                   onClick={() => openRejectModal(activeReq.id)}
                 >
                   <FiX /> Reject Request
@@ -325,7 +325,7 @@ function SellerRequests() {
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: '15px' }}>Reject Vendor Application</h3>
+              <h3 className={styles.modalTitle}>Reject Vendor Application</h3>
               <button className={styles.iconBtn} onClick={() => setShowRejectModal(false)}>
                 <FiX />
               </button>
@@ -341,7 +341,7 @@ function SellerRequests() {
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                 />
-                <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>This comment is visible to the seller on their login dashboard.</span>
+                <span className={styles.formHelpText}>This comment is visible to the seller on their login dashboard.</span>
               </div>
 
               <div className={styles.formGroup}>

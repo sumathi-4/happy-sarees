@@ -372,3 +372,223 @@
   color: var(--text-light);
   font-size: 13.5px;
 }
+
+/* Additional styles to remove inline style overrides from SellerRequests.jsx and SellerManagement.jsx */
+.errorMsg {
+  color: var(--error-color);
+  padding: 12px 16px;
+  background: var(--error-bg);
+  border-radius: var(--radius-small);
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.successMsg {
+  color: var(--success-color);
+  padding: 12px 16px;
+  background: var(--success-bg);
+  border-radius: var(--radius-small);
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.storeCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.storeLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+.storeLogoFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gold-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.storeNameText {
+  font-weight: 700;
+}
+
+.storeCategoryText {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.contactCell {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.textLight {
+  color: var(--text-light);
+}
+
+.dossierHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.dossierLogo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold-color);
+}
+
+.dossierLogoFallback {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--gold-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.dossierStoreName {
+  margin: 4px 0 0 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+}
+
+.dossierPan {
+  font-size: 11px;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+
+.dossierStory {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.letterSpacingSmall {
+  letter-spacing: 0.5px;
+}
+
+.monospaceText {
+  font-family: monospace;
+}
+
+.docLinkContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noDocsText {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.dossierActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.fullWidth {
+  width: 100% !important;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 15px;
+}
+
+.formHelpText {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.drillLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-style: italic;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--secondary-color);
+}
+
+.drillLink:hover {
+  text-decoration: underline;
+}
+
+.drillItemRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.drillItemImg {
+  width: 40px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.flexOne {
+  flex: 1;
+}
+
+.drillItemTitle {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.drillItemSubtitle {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.drillItemValue {
+  font-weight: 700;
+  color: var(--gold-color);
+}
+
+.drillItemStatus {
+  font-size: 10px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  font-weight: 600;
+}

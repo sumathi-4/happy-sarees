@@ -144,7 +144,7 @@ function SellerManagement() {
       </div>
 
       {errorMsg && (
-        <div style={{ color: 'var(--error-color)', padding: '12px', background: 'var(--error-bg)', borderRadius: '8px', marginBottom: '20px' }}>
+        <div className={styles.errorMsg}>
           {errorMsg}
         </div>
       )}
@@ -183,7 +183,7 @@ function SellerManagement() {
 
           <div className={styles.tableContainer}>
             {loading ? (
-              <div style={{ padding: '24px', textAlign: 'center' }}>Loading seller files...</div>
+              <div className={styles.empty}>Loading seller files...</div>
             ) : sellers.length === 0 ? (
               <div className={styles.empty}>
                 No registered vendors found matching filters.
@@ -198,24 +198,24 @@ function SellerManagement() {
                     <th className={styles.th}>Products</th>
                     <th className={styles.th}>Orders</th>
                     <th className={styles.th}>Verification Status</th>
-                    <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>
+                    <th className={`${styles.th} ${styles.alignRight}`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sellers.map(s => (
                     <tr key={s.id} className={`${styles.tr} ${selectedId === s.id ? styles.trActive : ''}`}>
                       <td className={styles.td}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className={styles.storeCell}>
                            {s.storeLogoUrl ? (
-                            <img src={s.storeLogoUrl} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={s.storeLogoUrl} alt="" className={styles.storeLogo} />
                           ) : (
-                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>
+                            <div className={styles.storeLogoFallback}>
                               {(s.storeName || '').charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontWeight: 700 }}>{s.storeName}</span>
-                            <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>{s.email}</span>
+                          <div className={styles.contactCell}>
+                            <span className={styles.storeNameText}>{s.storeName}</span>
+                            <span className={styles.textLight}>{s.email}</span>
                           </div>
                         </div>
                       </td>
@@ -223,8 +223,7 @@ function SellerManagement() {
                       <td className={styles.td} style={{ textTransform: 'capitalize' }}>{s.businessCategory || 'N/A'}</td>
                       <td className={styles.td}>
                         <button 
-                          className={styles.link}
-                          style={{ background: 'none', border: 'none', padding: 0, fontStyle: 'italic', fontWeight: 600, cursor: 'pointer', color: 'var(--secondary-color)' }}
+                          className={styles.drillLink}
                           onClick={() => openDrillProducts(s.id)}
                         >
                           {s.productsCount || 0} Listed
@@ -232,15 +231,14 @@ function SellerManagement() {
                       </td>
                       <td className={styles.td}>
                         <button 
-                          className={styles.link}
-                          style={{ background: 'none', border: 'none', padding: 0, fontStyle: 'italic', fontWeight: 600, cursor: 'pointer', color: 'var(--secondary-color)' }}
+                          className={styles.drillLink}
                           onClick={() => openDrillOrders(s.id)}
                         >
                           {s.ordersCount || 0} Orders
                         </button>
                       </td>
                       <td className={styles.td}>{getStatusBadge(s.status)}</td>
-                      <td className={styles.td} style={{ textAlign: 'right' }}>
+                      <td className={`${styles.td} ${styles.alignRight}`}>
                         <div className={styles.actionIconGroup} style={{ justifyContent: 'flex-end' }}>
                           <button 
                             className={`${styles.iconBtn} ${styles.iconBtnView}`}
@@ -290,15 +288,15 @@ function SellerManagement() {
             </div>
 
             <div className={styles.panelBody}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+              <div className={styles.dossierHeader}>
                 {activeSeller.storeLogoUrl ? (
-                  <img src={activeSeller.storeLogoUrl} alt={activeSeller.storeName} style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={activeSeller.storeLogoUrl} alt={activeSeller.storeName} className={styles.dossierLogo} />
                 ) : (
-                  <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'var(--gold-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '20px' }}>
+                  <div className={styles.dossierLogoFallback}>
                     {(activeSeller.storeName || '').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <h4 style={{ margin: '4px 0 0 0', fontFamily: 'var(--font-serif)', fontSize: '15px' }}>{activeSeller.storeName}</h4>
+                <h4 className={styles.dossierStoreName}>{activeSeller.storeName}</h4>
                 {getStatusBadge(activeSeller.status)}
               </div>
 
@@ -330,13 +328,13 @@ function SellerManagement() {
                 </div>
                 <div className={styles.infoRow}>
                   <span>PAN Card Number:</span>
-                  <span className={styles.infoVal} style={{ fontFamily: 'monospace' }}>{activeSeller.panNumber}</span>
+                  <span className={`${styles.infoVal} ${styles.monospaceText}`}>{activeSeller.panNumber}</span>
                 </div>
               </div>
 
               <div>
                 <h4 className={styles.sectionTitle}>Audit Documents</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className={styles.docLinkContainer}>
                   {activeSeller.documents && activeSeller.documents.length > 0 ? (
                     activeSeller.documents.map((d, i) => (
                       <a key={i} href={d.fileUrl} target="_blank" rel="noreferrer" className={styles.docLink}>
@@ -344,17 +342,16 @@ function SellerManagement() {
                       </a>
                     ))
                   ) : (
-                    <span style={{ fontSize: '12px', color: 'var(--text-light)' }}>No compliance documents verified.</span>
+                    <span className={styles.noDocsText}>No compliance documents verified.</span>
                   )}
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+              <div className={styles.dossierActions}>
                 {activeSeller.status === 'approved' && (
                   <button 
-                    className={`${styles.btn} ${styles.btnDanger}`} 
-                    style={{ width: '100%' }}
+                    className={`${styles.btn} ${styles.btnDanger} ${styles.fullWidth}`} 
                     onClick={() => openSuspendModal(activeSeller.id)}
                   >
                     <FiAlertOctagon /> Suspend Store
@@ -362,8 +359,7 @@ function SellerManagement() {
                 )}
                 {activeSeller.status === 'suspended' && (
                   <button 
-                    className={`${styles.btn} ${styles.btnPrimary}`} 
-                    style={{ width: '100%' }}
+                    className={`${styles.btn} ${styles.btnPrimary} ${styles.fullWidth}`} 
                     onClick={() => handleReactivate(activeSeller.id, activeSeller.storeName)}
                   >
                     <FiCheckSquare /> Reactivate Store
@@ -381,7 +377,7 @@ function SellerManagement() {
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: '15px' }}>Suspend Vendor Access</h3>
+              <h3 className={styles.modalTitle}>Suspend Vendor Access</h3>
               <button className={styles.iconBtn} onClick={() => setShowSuspendModal(false)}>
                 <FiX />
               </button>
@@ -397,7 +393,7 @@ function SellerManagement() {
                   value={suspendReason}
                   onChange={(e) => setSuspendReason(e.target.value)}
                 />
-                <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+                <span className={styles.formHelpText}>
                   This reason is shown on their login portal explaining why access is suspended.
                 </span>
               </div>
@@ -420,7 +416,7 @@ function SellerManagement() {
         <div className={styles.modalOverlay}>
           <div className={styles.modal} style={{ maxWidth: '640px' }}>
             <div className={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: '15px', textTransform: 'capitalize' }}>
+              <h3 className={styles.modalTitle} style={{ textTransform: 'capitalize' }}>
                 {drillModalMode === 'products' ? 'Listed Sarees Portfolio' : 'Fulfillment Ledger items'}
               </h3>
               <button className={styles.iconBtn} onClick={() => setDrillModalMode(null)}>
@@ -430,38 +426,38 @@ function SellerManagement() {
 
             <div className={styles.modalBody} style={{ maxHeight: '420px', overflowY: 'auto' }}>
               {drillLoading ? (
-                <div style={{ padding: '24px', textAlign: 'center' }}>Querying items ledger...</div>
+                <div className={styles.empty}>Querying items ledger...</div>
               ) : drillItems.length === 0 ? (
-                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-light)' }}>
+                <div className={styles.empty}>
                   No items found in this section.
                 </div>
               ) : drillModalMode === 'products' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className={styles.docLinkContainer}>
                   {drillItems.map(p => (
-                    <div key={p.id} style={{ display: 'flex', gap: '12px', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                      <img src={p.image} alt="" style={{ width: '40px', height: '52px', objectFit: 'cover', borderRadius: '4px' }} />
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontWeight: 700, fontSize: '13.5px' }}>{p.name}</span>
-                        <div style={{ fontSize: '11px', color: 'var(--text-light)', marginTop: '2px' }}>SKU: {p.sku} | Qty: {p.stockCount}</div>
+                    <div key={p.id} className={styles.drillItemRow}>
+                      <img src={p.image} alt="" className={styles.drillItemImg} />
+                      <div className={styles.flexOne}>
+                        <span className={styles.drillItemTitle}>{p.name}</span>
+                        <div className={styles.drillItemSubtitle}>SKU: {p.sku} | Qty: {p.stockCount}</div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontWeight: 700, color: 'var(--gold-color)' }}>₹{p.price.toLocaleString('en-IN')}</span>
-                        <div style={{ fontSize: '10px', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>{p.approvalStatus}</div>
+                      <div className={styles.alignRight}>
+                        <span className={styles.drillItemValue}>₹{p.price.toLocaleString('en-IN')}</span>
+                        <div className={styles.drillItemStatus}>{p.approvalStatus}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className={styles.docLinkContainer}>
                   {drillItems.map(o => (
-                    <div key={o.id} style={{ display: 'flex', gap: '12px', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontWeight: 700, fontSize: '13.5px' }}>Order #{o.orderNumber}</span>
-                        <div style={{ fontSize: '11px', color: 'var(--text-light)', marginTop: '2px' }}>Placed: {new Date(o.createdAt).toLocaleDateString()} | Qty: {o.quantity}</div>
+                    <div key={o.id} className={styles.drillItemRow}>
+                      <div className={styles.flexOne}>
+                        <span className={styles.drillItemTitle}>Order #{o.orderNumber}</span>
+                        <div className={styles.drillItemSubtitle}>Placed: {new Date(o.createdAt).toLocaleDateString()} | Qty: {o.quantity}</div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontWeight: 700, color: 'var(--gold-color)' }}>₹{o.subtotal.toLocaleString('en-IN')}</span>
-                        <div style={{ fontSize: '10px', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>{o.fulfillmentStatus}</div>
+                      <div className={styles.alignRight}>
+                        <span className={styles.drillItemValue}>₹{o.subtotal.toLocaleString('en-IN')}</span>
+                        <div className={styles.drillItemStatus}>{o.fulfillmentStatus}</div>
                       </div>
                     </div>
                   ))}

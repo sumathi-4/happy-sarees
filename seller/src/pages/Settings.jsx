@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FiLock, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 import { sellerApi } from '../api/sellerApi';
-import styles from '../styles/ProductForm.module.css';
+import styles from '../styles/Settings.module.css';
 
 function Settings() {
   const [loading, setLoading] = useState(false);
@@ -45,13 +45,13 @@ function Settings() {
       </div>
 
       {errorMsg && (
-        <div style={{ color: 'var(--error-color)', padding: '12px', background: 'var(--error-bg)', borderRadius: '8px', marginBottom: '20px' }}>
+        <div className={styles.errorMsg}>
           {errorMsg}
         </div>
       )}
 
       {successMsg && (
-        <div style={{ color: 'var(--success-color)', padding: '12px', background: 'var(--success-bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+        <div className={styles.successMsg}>
           <FiCheckCircle /> {successMsg}
         </div>
       )}

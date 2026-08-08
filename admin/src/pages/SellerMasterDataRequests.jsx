@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { FiCheckCircle, FiXCircle, FiClock, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
+import styles from '../styles/SellerMasterDataRequests.module.css';
 
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5001/api/admin' : `${window.location.origin}/api/admin`;
 function getToken() { return localStorage.getItem('hs_admin_token'); }
@@ -11,16 +12,15 @@ async function adminReq(method, path, body = null) {
   return res.json();
 }
 
-const STATUS_COLORS = {
-  pending:  { color: '#f59e0b', bg: '#fef3c7', label: 'Pending' },
-  approved: { color: '#10b981', bg: '#d1fae5', label: 'Approved' },
-  rejected: { color: '#ef4444', bg: '#fee2e2', label: 'Rejected' },
-};
-
 function Badge({ status }) {
-  const s = STATUS_COLORS[status] || STATUS_COLORS.pending;
+  const cls = status === 'approved' ? styles.badgeApproved
+             : status === 'rejected' ? styles.badgeRejected
+             : styles.badgePending;
+  const label = status === 'approved' ? 'Approved'
+              : status === 'rejected' ? 'Rejected'
+              : 'Pending';
   return (
-    <span style={{ background: s.bg, color: s.color, padding: '3px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>{s.label}</span>
+    <span className={`${styles.badge} ${cls}`}>{label}</span>
   );
 }
 
@@ -32,16 +32,40 @@ function formatRequestType(t) {
 function renderChangeDetails(r) {
   const type = r.requestType || 'add_item';
   
+  let sourceBadge = null;
+  if (type === 'add_item' || type === 'add_type') {
+    sourceBadge = (
+      <div className={`${styles.sourceBadge} ${styles.sourceSeller}`}>
+        Seller Proposed
+      </div>
+    );
+  } else if (type === 'edit_item' || type === 'delete_item') {
+    const src = r.targetItemSource || 'admin';
+    sourceBadge = (
+      <div className={`${styles.sourceBadge} ${src === 'seller' ? styles.sourceSeller : styles.sourceAdmin}`}>
+        Current Source: {src === 'seller' ? `Seller (${r.targetItemSellerName || 'ID: ' + r.targetItemCreatedBySellerId})` : 'Admin'}
+      </div>
+    );
+  } else if (type === 'edit_type' || type === 'delete_type') {
+    const src = r.targetTypeSource || 'admin';
+    sourceBadge = (
+      <div className={`${styles.sourceBadge} ${src === 'seller' ? styles.sourceSeller : styles.sourceAdmin}`}>
+        Current Source: {src === 'seller' ? `Seller (${r.targetTypeSellerName || 'ID: ' + r.targetTypeCreatedBySellerId})` : 'Admin'}
+      </div>
+    );
+  }
+
   if (type === 'add_item') {
     return (
       <div>
-        <strong>{r.itemName}</strong>
+        <strong className={styles.changeDesc}>{r.itemName}</strong>
         {r.payload?.colorHex && (
-          <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: r.payload.colorHex, marginLeft: '6px', border: '1px solid #ccc', verticalAlign: 'middle' }} />
+          <span className={styles.colorIndicator} style={{ backgroundColor: r.payload.colorHex }} />
         )}
-        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+        <div className={styles.subText}>
           Under Category: {r.typeName || r.typeSlug}
         </div>
+        {sourceBadge}
       </div>
     );
   }
@@ -49,10 +73,11 @@ function renderChangeDetails(r) {
   if (type === 'add_type') {
     return (
       <div>
-        <strong>Type: {r.typeName}</strong>
-        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+        <strong className={styles.changeDesc}>Type: {r.typeName}</strong>
+        <div className={styles.subText}>
           Filters: {r.payload?.showInFilters ? 'Yes' : 'No'} | Specs: {r.payload?.showInSpecifications ? 'Yes' : 'No'}
         </div>
+        {sourceBadge}
       </div>
     );
   }
@@ -60,24 +85,26 @@ function renderChangeDetails(r) {
   if (type === 'edit_item') {
     return (
       <div>
-        <strong>Edit Item ID {r.targetItemId}</strong>
-        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-          New Name: <span style={{ color: '#10b981', fontWeight: 600 }}>{r.payload?.name || r.itemName}</span>
+        <strong className={styles.changeDesc}>Edit Item ID {r.targetItemId}</strong>
+        <div className={styles.subText}>
+          New Name: <span style={{ color: 'var(--success-color)', fontWeight: 600 }}>{r.payload?.name || r.itemName}</span>
         </div>
         {r.payload?.colorHex && (
-          <div style={{ fontSize: '11px' }}>
+          <div className={styles.subText}>
             Color: {r.payload.colorHex} 
-            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: r.payload.colorHex, marginLeft: '4px', verticalAlign: 'middle' }} />
+            <span className={styles.colorIndicator} style={{ backgroundColor: r.payload.colorHex, marginLeft: '4px' }} />
           </div>
         )}
+        {sourceBadge}
       </div>
     );
   }
 
   if (type === 'delete_item') {
     return (
-      <div style={{ color: '#ef4444' }}>
-        <strong>Delete Item ID {r.targetItemId}</strong>
+      <div>
+        <strong style={{ color: 'var(--error-color)' }}>Delete Item ID {r.targetItemId}</strong>
+        {sourceBadge}
       </div>
     );
   }
@@ -85,23 +112,30 @@ function renderChangeDetails(r) {
   if (type === 'edit_type') {
     return (
       <div>
-        <strong>Edit Type ID {r.targetTypeId}</strong>
-        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-          New Name: <span style={{ color: '#10b981', fontWeight: 600 }}>{r.payload?.name || r.typeName}</span>
+        <strong className={styles.changeDesc}>Edit Type ID {r.targetTypeId}</strong>
+        <div className={styles.subText}>
+          New Name: <span style={{ color: 'var(--success-color)', fontWeight: 600 }}>{r.payload?.name || r.typeName}</span>
         </div>
+        {sourceBadge}
       </div>
     );
   }
 
   if (type === 'delete_type') {
     return (
-      <div style={{ color: '#ef4444' }}>
-        <strong>Delete Type ID {r.targetTypeId}</strong>
+      <div>
+        <strong style={{ color: 'var(--error-color)' }}>Delete Type ID {r.targetTypeId}</strong>
+        {sourceBadge}
       </div>
     );
   }
 
-  return <div>{r.itemName || r.typeName || '—'}</div>;
+  return (
+    <div>
+      <span className={styles.changeDesc}>{r.itemName || r.typeName || '—'}</span>
+      {sourceBadge}
+    </div>
+  );
 }
 
 function SellerMasterDataRequests() {
@@ -171,107 +205,104 @@ function SellerMasterDataRequests() {
     }
   };
 
-  const containerStyle = { padding: '32px', maxWidth: '1200px' };
-  const cardStyle = { background: 'var(--bg-card, #fff)', borderRadius: '16px', border: '1px solid var(--border-color, #e5e7eb)', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' };
-
   return (
-    <div style={containerStyle}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-primary, #1a1a2e)' }}>Seller Data Requests</h1>
-        <p style={{ color: 'var(--text-secondary, #6b7280)', marginTop: '4px', fontSize: '14px' }}>
-          Review and approve or reject seller requests to add new catalog attributes (fabrics, colors, patterns, etc.)
-        </p>
+    <div className={styles.wrapper}>
+      <div className={styles.headerRow}>
+        <div>
+          <h1 className={styles.title}>Seller Data Requests</h1>
+          <p className={styles.desc}>
+            Review and approve or reject seller requests to add new catalog attributes (fabrics, colors, patterns, etc.)
+          </p>
+        </div>
       </div>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+        <div className={styles.errorAlert}>
           <FiAlertCircle /> {error}
         </div>
       )}
       {success && (
-        <div style={{ background: '#d1fae5', color: '#10b981', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+        <div className={styles.successAlert}>
           <FiCheckCircle /> {success}
         </div>
       )}
 
       {/* Filter Bar */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+      <div className={styles.filterBar}>
         {['pending', 'approved', 'rejected', 'all'].map(s => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
-            style={{ padding: '7px 18px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
-              background: filterStatus === s ? 'var(--primary-color, #7c3aed)' : 'var(--bg-secondary, #f3f4f6)',
-              color: filterStatus === s ? '#fff' : 'var(--text-primary, #374151)' }}
+            className={`${styles.filterBtn} ${filterStatus === s ? styles.filterBtnActive : ''}`}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
         <button
           onClick={loadRequests}
-          style={{ marginLeft: 'auto', background: 'none', border: '1px solid var(--border-color, #e5e7eb)', borderRadius: '8px', padding: '7px 14px', cursor: 'pointer', display: 'flex', gap: '6px', alignItems: 'center', fontSize: '13px', color: 'var(--text-secondary, #6b7280)' }}
+          className={styles.refreshBtn}
         >
           <FiRefreshCw size={13} /> Refresh
         </button>
       </div>
 
-      {/* Table */}
-      <div style={cardStyle}>
+      {/* Table Card */}
+      <div className={styles.card}>
         {loading ? (
-          <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-secondary, #6b7280)' }}>Loading requests...</div>
+          <div className={styles.loading}>Loading requests...</div>
         ) : requests.length === 0 ? (
-          <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-secondary, #9ca3af)' }}>
-            <FiClock size={36} style={{ opacity: 0.3, marginBottom: '12px' }} />
+          <div className={styles.empty}>
+            <FiClock size={36} className={styles.emptyIcon} />
             <p>No {filterStatus !== 'all' ? filterStatus : ''} requests.</p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color, #e5e7eb)', background: 'var(--bg-secondary, #f9fafb)' }}>
+                <tr>
                   {['Seller', 'Request Type', 'Proposed Change', 'Reason', 'Status', 'Date', 'Actions'].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, fontSize: '12px', color: 'var(--text-secondary, #6b7280)', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} className={styles.th}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {requests.map(r => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--border-color, #f3f4f6)' }}>
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary, #1a1a2e)', fontSize: '13px' }}>{r.storeName}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-secondary, #6b7280)' }}>{r.sellerEmail}</div>
+                  <tr key={r.id} className={styles.tr}>
+                    <td className={styles.td}>
+                      <div className={styles.storeName}>{r.storeName}</div>
+                      <div className={styles.sellerEmail}>{r.sellerEmail}</div>
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)', fontWeight: 600 }}>
+                    <td className={`${styles.td} ${styles.requestType}`}>
                       {formatRequestType(r.requestType)}
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)' }}>
+                    <td className={styles.td}>
                       {renderChangeDetails(r)}
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary, #6b7280)', maxWidth: '200px' }}>{r.reason || '—'}</td>
-                    <td style={{ padding: '14px 16px' }}><Badge status={r.status} /></td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary, #6b7280)', whiteSpace: 'nowrap', fontSize: '12px' }}>
+                    <td className={`${styles.td} ${styles.reasonText}`}>{r.reason || '—'}</td>
+                    <td className={styles.td}><Badge status={r.status} /></td>
+                    <td className={`${styles.td} ${styles.dateText}`}>
                       {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
-                    <td style={{ padding: '14px 16px' }}>
+                    <td className={styles.td}>
                       {r.status === 'pending' ? (
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className={styles.actionGroup}>
                           <button
                             onClick={() => handleApprove(r.id)}
                             disabled={actionLoading === r.id}
-                            style={{ background: '#d1fae5', color: '#10b981', border: 'none', borderRadius: '6px', padding: '6px 14px', cursor: 'pointer', fontWeight: 600, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                            className={styles.approveBtn}
                           >
                             <FiCheckCircle size={13} /> Approve
                           </button>
                           <button
                             onClick={() => { setRejectModal({ id: r.id, itemName: r.itemName || r.typeName || `Request #${r.id}` }); setRejectNote(''); }}
                             disabled={actionLoading === r.id}
-                            style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '6px', padding: '6px 14px', cursor: 'pointer', fontWeight: 600, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                            className={styles.rejectBtn}
                           >
                             <FiXCircle size={13} /> Reject
                           </button>
                         </div>
                       ) : (
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary, #9ca3af)', fontStyle: 'italic' }}>
+                        <span className={styles.actionNote}>
                           {r.status === 'approved' ? 'Already approved' : `Rejected: ${r.adminNote || ''}`}
                         </span>
                       )}
@@ -287,10 +318,10 @@ function SellerMasterDataRequests() {
       {/* Reject Modal */}
       {rejectModal && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} onClick={() => setRejectModal(null)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '16px', padding: '32px', zIndex: 201, width: '440px', maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>Reject Request</h3>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+          <div className={styles.modalOverlay} onClick={() => setRejectModal(null)} />
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Reject Request</h3>
+            <p className={styles.modalDesc}>
               Provide a reason for rejecting "<strong>{rejectModal.itemName}</strong>". The seller will be notified.
             </p>
             <textarea
@@ -298,11 +329,11 @@ function SellerMasterDataRequests() {
               placeholder="e.g. This name is already covered by an existing item..."
               value={rejectNote}
               onChange={e => setRejectNote(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box' }}
+              className={styles.modalTextarea}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
-              <button onClick={() => setRejectModal(null)} style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '9px 20px', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
-              <button onClick={handleReject} disabled={actionLoading === rejectModal.id} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 22px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
+            <div className={styles.modalActions}>
+              <button onClick={() => setRejectModal(null)} className={styles.modalCancelBtn}>Cancel</button>
+              <button onClick={handleReject} disabled={actionLoading === rejectModal.id} className={styles.modalConfirmBtn}>
                 {actionLoading === rejectModal.id ? 'Rejecting...' : 'Confirm Reject'}
               </button>
             </div>

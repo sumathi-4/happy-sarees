@@ -9,13 +9,13 @@ const { parsePagination } = require('../../utils/pagination');
 class MasterDataService {
 
   // Resolve typeId from either numeric ID or string slug
-  async resolveTypeId(idOrSlug) {
+  async resolveTypeId(idOrSlug, client) {
     if (idOrSlug === null || idOrSlug === undefined) return null;
     const isNum = !isNaN(idOrSlug) && !isNaN(parseInt(idOrSlug));
     if (isNum) {
       return parseInt(idOrSlug);
     }
-    const typeRes = await db.query(
+    const typeRes = await (client || db).query(
       `SELECT id FROM master_types 
        WHERE slug = $1 
           OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') 
@@ -43,7 +43,9 @@ class MasterDataService {
       sortOrder: Number(r.sort_order || 0),
       showInFilters: r.show_in_filters ?? true,
       showInSpecifications: r.show_in_specifications ?? true,
-      itemCount: Number(r.item_count || 0)
+      itemCount: Number(r.item_count || 0),
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     }));
   }
 
@@ -61,7 +63,9 @@ class MasterDataService {
       imageData: r.image_data || null,
       colorHex: r.color_hex || null,
       sortOrder: Number(r.sort_order || 0),
-      isActive: !!r.is_active
+      isActive: !!r.is_active,
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     }));
   }
 
@@ -106,7 +110,9 @@ class MasterDataService {
         isActive: !!type.is_active,
         sortOrder: Number(type.sort_order || 0),
         showInFilters: type.show_in_filters ?? true,
-        showInSpecifications: type.show_in_specifications ?? true
+        showInSpecifications: type.show_in_specifications ?? true,
+        source: type.source || 'admin',
+        createdBySellerId: type.created_by_seller_id || null
       },
       items: items.rows.map(item => ({
         id: item.id,
@@ -117,7 +123,9 @@ class MasterDataService {
         imageData: item.image_data || null,
         colorHex: item.color_hex || null,
         sortOrder: Number(item.sort_order || 0),
-        isActive: !!item.is_active
+        isActive: !!item.is_active,
+        source: item.source || 'admin',
+        createdBySellerId: item.created_by_seller_id || null
       })),
       total: Number(countRes.rows[0].count),
       page,
@@ -125,22 +133,23 @@ class MasterDataService {
     };
   }
 
-  // ── Create Item ────────────────────────────────────────────
-  async createItem(typeIdParam, data) {
-    const typeId = await this.resolveTypeId(typeIdParam);
-    const typeRes = await db.query(`SELECT id FROM master_types WHERE id = $1`, [typeId]);
+  async createItem(typeIdParam, data, client) {
+    const typeId = await this.resolveTypeId(typeIdParam, client);
+    const typeRes = await (client || db).query(`SELECT id FROM master_types WHERE id = $1`, [typeId]);
     if (typeRes.rows.length === 0) throw { status: 404, message: `Type ID/slug '${typeIdParam}' not found.` };
 
     const slug = slugify(data.name);
     const isActiveBool = data.isActive ?? true;
+    const createdBySellerId = data.createdBySellerId || null;
+    const source = createdBySellerId ? 'seller' : 'admin';
 
     let res;
     try {
-      res = await db.query(
-        `INSERT INTO master_items (type_id, name, slug, description, image_data, color_hex, sort_order, is_active)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      res = await (client || db).query(
+        `INSERT INTO master_items (type_id, name, slug, description, image_data, color_hex, sort_order, is_active, created_by_seller_id, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
          RETURNING *`,
-        [typeId, data.name, slug, data.description || null, data.imageData || null, data.colorHex || null, data.sortOrder || 0, isActiveBool]
+        [typeId, data.name, slug, data.description || null, data.imageData || null, data.colorHex || null, data.sortOrder || 0, isActiveBool, createdBySellerId, source]
       );
     } catch (err) {
       if (err.code === '23505') {
@@ -159,14 +168,16 @@ class MasterDataService {
       imageData: r.image_data || null,
       colorHex: r.color_hex || null,
       sortOrder: Number(r.sort_order || 0),
-      isActive: !!r.is_active
+      isActive: !!r.is_active,
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     };
   }
 
   // ── Update Item ────────────────────────────────────────────
-  async updateItem(typeIdParam, id, data) {
-    const typeId = await this.resolveTypeId(typeIdParam);
-    const existing = await db.query(
+  async updateItem(typeIdParam, id, data, client) {
+    const typeId = await this.resolveTypeId(typeIdParam, client);
+    const existing = await (client || db).query(
       `SELECT mi.*, mt.slug as type_slug 
        FROM master_items mi 
        JOIN master_types mt ON mi.type_id = mt.id
@@ -186,7 +197,7 @@ class MasterDataService {
 
     let res;
     try {
-      res = await db.query(
+      res = await (client || db).query(
         `UPDATE master_items SET
           name=$1, slug=$2, description=$3, image_data=$4, color_hex=$5,
           sort_order=$6, is_active=$7, updated_at=NOW()
@@ -226,12 +237,12 @@ class MasterDataService {
       };
       const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
       
-      const colCheck = await db.query(
+      const colCheck = await (client || db).query(
         `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
         [col]
       );
       if (colCheck.rows.length > 0) {
-        await db.query(
+        await (client || db).query(
           `UPDATE products SET ${col} = $1 WHERE LOWER(${col}) = LOWER($2)`,
           [data.name, item.name]
         );
@@ -248,13 +259,15 @@ class MasterDataService {
       imageData: r.image_data || null,
       colorHex: r.color_hex || null,
       sortOrder: Number(r.sort_order || 0),
-      isActive: !!r.is_active
+      isActive: !!r.is_active,
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     };
   }
 
-  async deleteItem(typeIdParam, id) {
-    const typeId = await this.resolveTypeId(typeIdParam);
-    const itemQuery = await db.query(
+  async deleteItem(typeIdParam, id, client) {
+    const typeId = await this.resolveTypeId(typeIdParam, client);
+    const itemQuery = await (client || db).query(
       `SELECT mi.name as item_name, mt.slug as type_slug
        FROM master_items mi
        JOIN master_types mt ON mi.type_id = mt.id
@@ -262,7 +275,7 @@ class MasterDataService {
       [id, typeId]
     );
 
-    const res = await db.query(
+    const res = await (client || db).query(
       `DELETE FROM master_items WHERE id = $1 AND type_id = $2 RETURNING id`,
       [id, typeId]
     );
@@ -284,12 +297,12 @@ class MasterDataService {
       };
       const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
       
-      const colCheck = await db.query(
+      const colCheck = await (client || db).query(
         `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
         [col]
       );
       if (colCheck.rows.length > 0) {
-        await db.query(`UPDATE products SET ${col} = NULL WHERE LOWER(${col}) = LOWER($1)`, [itemName]);
+        await (client || db).query(`UPDATE products SET ${col} = NULL WHERE LOWER(${col}) = LOWER($1)`, [itemName]);
       }
     }
 
@@ -338,18 +351,22 @@ class MasterDataService {
     const sortOrder = data.sortOrder ?? 0;
     const showInFilters = data.showInFilters ?? true;
     const showInSpecifications = data.showInSpecifications ?? true;
+    const createdBySellerId = data.createdBySellerId || null;
+    const source = createdBySellerId ? 'seller' : 'admin';
 
     const res = await db.query(
-      `INSERT INTO master_types (name, slug, description, icon, is_active, sort_order, show_in_filters, show_in_specifications)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO master_types (name, slug, description, icon, is_active, sort_order, show_in_filters, show_in_specifications, created_by_seller_id, source)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (slug) DO UPDATE SET 
          name = EXCLUDED.name, 
          description = EXCLUDED.description,
          icon = EXCLUDED.icon,
          show_in_filters = EXCLUDED.show_in_filters,
-         show_in_specifications = EXCLUDED.show_in_specifications
+         show_in_specifications = EXCLUDED.show_in_specifications,
+         created_by_seller_id = COALESCE(master_types.created_by_seller_id, EXCLUDED.created_by_seller_id),
+         source = COALESCE(master_types.source, EXCLUDED.source)
        RETURNING *`,
-      [name, slug, description, icon, isActive, sortOrder, showInFilters, showInSpecifications]
+      [name, slug, description, icon, isActive, sortOrder, showInFilters, showInSpecifications, createdBySellerId, source]
     );
     const r = res.rows[0];
     return {
@@ -362,7 +379,9 @@ class MasterDataService {
       sortOrder: Number(r.sort_order || 0),
       showInFilters: r.show_in_filters,
       showInSpecifications: r.show_in_specifications,
-      itemCount: 0
+      itemCount: 0,
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     };
   }
 
@@ -399,12 +418,14 @@ class MasterDataService {
       isActive: !!r.is_active,
       sortOrder: Number(r.sort_order || 0),
       showInFilters: r.show_in_filters,
-      showInSpecifications: r.show_in_specifications
+      showInSpecifications: r.show_in_specifications,
+      source: r.source || 'admin',
+      createdBySellerId: r.created_by_seller_id || null
     };
   }
 
-  async deleteType(idOrSlug) {
-    const typeRes = await db.query(
+  async deleteType(idOrSlug, client) {
+    const typeRes = await (client || db).query(
       `SELECT id, slug FROM master_types WHERE slug = $1 OR REPLACE(slug, '-', '_') = REPLACE($1, '-', '_') OR id::text = $1`,
       [idOrSlug]
     );
@@ -413,8 +434,8 @@ class MasterDataService {
     const typeId = typeRes.rows[0].id;
     const typeSlug = typeRes.rows[0].slug || '';
 
-    await db.query(`DELETE FROM master_items WHERE type_id = $1`, [typeId]);
-    await db.query(`DELETE FROM master_types WHERE id = $1`, [typeId]);
+    await (client || db).query(`DELETE FROM master_items WHERE type_id = $1`, [typeId]);
+    await (client || db).query(`DELETE FROM master_types WHERE id = $1`, [typeId]);
 
     const typeToColumn = {
       fabrics: 'fabric',
@@ -428,12 +449,12 @@ class MasterDataService {
       collections: 'collection'
     };
     const col = typeToColumn[typeSlug.toLowerCase()] || typeSlug.toLowerCase().replace(/-/g, '_');
-    const colCheck = await db.query(
+    const colCheck = await (client || db).query(
       `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = $1`,
       [col]
     );
     if (colCheck.rows.length > 0) {
-      await db.query(`UPDATE products SET ${col} = NULL`);
+      await (client || db).query(`UPDATE products SET ${col} = NULL`);
     }
 
     return true;

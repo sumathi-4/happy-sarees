@@ -43,6 +43,7 @@
   /* ── GRADIENTS ────────────────────────────────────────── */
   --heading-gradient:        linear-gradient(100deg, var(--primary-color) 0%, var(--primary-dark) 35%, var(--secondary-color) 100%);
   --primary-gradient:        linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  --admin-sidebar-gradient:  linear-gradient(180deg, #27189D 0%, #1a0f6e 100%);
   --seller-sidebar-gradient: linear-gradient(180deg, var(--primary-color) 0%, var(--deep-rose) 100%);
 
   /* ── TYPOGRAPHY ───────────────────────────────────────── */
@@ -207,3 +208,9 @@ input:focus, textarea:focus, select:focus {
 .badge-approved { color: var(--success-color); background: var(--success-bg); }
 .badge-rejected { color: var(--error-color); background: var(--error-bg); }
 .badge-suspended { color: var(--error-color); background: var(--error-bg); }
+
+/* ── Utility Animations ─────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

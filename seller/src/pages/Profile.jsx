@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FiUser, FiHome, FiCreditCard, FiFileText, FiUpload, FiCheckCircle } from 'react-icons/fi';
 import { sellerApi } from '../api/sellerApi';
-import styles from '../styles/ProductForm.module.css';
+import styles from '../styles/Profile.module.css';
 
 const TABS = [
   { id: 'business', label: 'Business Info', icon: <FiUser /> },

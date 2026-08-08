@@ -1,4 +1,4 @@
-const db = require('../../db');
+﻿const db = require('../../db');
 const masterDataService = require('../admin/masterDataService');
 
 /**
@@ -24,6 +24,49 @@ async function submitRequest(sellerId, data) {
   }
   if ((requestType === 'edit_item' || requestType === 'delete_item') && !targetItemId) {
     throw new Error('targetItemId is required.');
+  }
+
+  // â”€â”€ Ownership check: sellers may only request edit/delete on their own rows â”€â”€
+  if (requestType === 'edit_item' || requestType === 'delete_item') {
+    const itemRow = await db.query(
+      `SELECT created_by_seller_id, source FROM master_items WHERE id = $1`,
+      [parseInt(targetItemId)]
+    );
+    if (itemRow.rows.length === 0) {
+      const notFound = new Error(`Item ID ${targetItemId} not found.`);
+      notFound.status = 404;
+      throw notFound;
+    }
+    const { created_by_seller_id, source } = itemRow.rows[0];
+    if (source !== 'seller' || created_by_seller_id !== sellerId) {
+      const forbidden = new Error(
+        'You can only request edits or deletions for items you personally created. ' +
+        'Items managed by Happy Sarees cannot be modified by sellers.'
+      );
+      forbidden.status = 403;
+      throw forbidden;
+    }
+  }
+
+  if (requestType === 'edit_type' || requestType === 'delete_type') {
+    const typeRow = await db.query(
+      `SELECT created_by_seller_id, source FROM master_types WHERE id = $1`,
+      [parseInt(targetTypeId)]
+    );
+    if (typeRow.rows.length === 0) {
+      const notFound = new Error(`Type ID ${targetTypeId} not found.`);
+      notFound.status = 404;
+      throw notFound;
+    }
+    const { created_by_seller_id, source } = typeRow.rows[0];
+    if (source !== 'seller' || created_by_seller_id !== sellerId) {
+      const forbidden = new Error(
+        'You can only request edits or deletions for attribute types you personally created. ' +
+        'Types managed by Happy Sarees cannot be modified by sellers.'
+      );
+      forbidden.status = 403;
+      throw forbidden;
+    }
   }
 
   // Prevent duplicate pending requests for same action by the same seller
@@ -118,9 +161,15 @@ async function getAllRequests(filter = 'all') {
            smdr.reason, smdr.status, smdr.admin_note as "adminNote",
            smdr.reviewed_at as "reviewedAt", smdr.created_at as "createdAt",
            smdr.target_type_id as "targetTypeId", smdr.target_item_id as "targetItemId", smdr.payload,
-           s.business_name as "businessName", s.store_name as "storeName", s.email as "sellerEmail"
+           s.business_name as "businessName", s.store_name as "storeName", s.email as "sellerEmail",
+           mi.source as "targetItemSource", mi.created_by_seller_id as "targetItemCreatedBySellerId", s_mi.store_name as "targetItemSellerName",
+           mt.source as "targetTypeSource", mt.created_by_seller_id as "targetTypeCreatedBySellerId", s_mt.store_name as "targetTypeSellerName"
     FROM seller_master_data_requests smdr
     JOIN sellers s ON smdr.seller_id = s.id
+    LEFT JOIN master_items mi ON smdr.target_item_id = mi.id
+    LEFT JOIN sellers s_mi ON mi.created_by_seller_id = s_mi.id
+    LEFT JOIN master_types mt ON smdr.target_type_id = mt.id
+    LEFT JOIN sellers s_mt ON mt.created_by_seller_id = s_mt.id
   `;
   if (filter !== 'all') {
     query += ` WHERE smdr.status = '${filter}'`;
@@ -137,7 +186,7 @@ async function getAllRequests(filter = 'all') {
 }
 
 /**
- * Admin: Approve a request — applies the operation and notifies seller
+ * Admin: Approve a request â€” applies the operation and notifies seller
  */
 async function approveRequest(requestId, adminId) {
   const reqRes = await db.query(
@@ -160,19 +209,20 @@ async function approveRequest(requestId, adminId) {
       await masterDataService.createType({
         name: req.type_name,
         showInFilters: payload.showInFilters ?? true,
-        showInSpecifications: payload.showInSpecifications ?? true
-      });
+        showInSpecifications: payload.showInSpecifications ?? true,
+        createdBySellerId: req.seller_id
+      }, client);
     } 
     else if (requestType === 'edit_type') {
       const typeId = req.target_type_id || req.type_slug;
-      await masterDataService.updateType(typeId, payload);
+      await masterDataService.updateType(typeId, payload, client);
     } 
     else if (requestType === 'delete_type') {
       const typeId = req.target_type_id || req.type_slug;
-      await masterDataService.deleteType(typeId);
+      await masterDataService.deleteType(typeId, client);
     } 
     else if (requestType === 'add_item') {
-      const typeId = req.target_type_id || (await masterDataService.resolveTypeId(req.type_slug));
+      const typeId = req.target_type_id || (await masterDataService.resolveTypeId(req.type_slug, client));
       if (!typeId) {
         throw new Error(`Master type "${req.type_slug || req.type_name}" not found.`);
       }
@@ -182,18 +232,19 @@ async function approveRequest(requestId, adminId) {
         imageData: payload.imageData || '',
         isActive: payload.isActive ?? true,
         sortOrder: payload.sortOrder || null,
-        colorHex: payload.colorHex || null
-      });
+        colorHex: payload.colorHex || null,
+        createdBySellerId: req.seller_id
+      }, client);
     } 
     else if (requestType === 'edit_item') {
       const typeId = req.target_type_id;
       const itemId = req.target_item_id;
-      await masterDataService.updateItem(typeId, itemId, payload);
+      await masterDataService.updateItem(typeId, itemId, payload, client);
     } 
     else if (requestType === 'delete_item') {
       const typeId = req.target_type_id;
       const itemId = req.target_item_id;
-      await masterDataService.deleteItem(typeId, itemId);
+      await masterDataService.deleteItem(typeId, itemId, client);
     }
 
     // Mark request as approved
@@ -287,3 +338,4 @@ async function rejectRequest(requestId, adminId, adminNote) {
 }
 
 module.exports = { submitRequest, getSellerRequests, getAllRequests, approveRequest, rejectRequest };
+

@@ -1,0 +1,101 @@
+﻿/* ============================================================
+   SELLER ANALYTICS — Dedicated CSS Module
+   Mirrors admin dashboard card/table/chart conventions
+   ============================================================ */
+.wrapper {
+  padding: 24px;
+  min-height: calc(100vh - 120px);
+  animation: fadeIn 0.4s ease;
+  font-family: var(--font-sans);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.header { margin-bottom: 28px; }
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  color: var(--primary-color); text-transform: uppercase;
+  display: block; margin-bottom: 4px;
+}
+.title {
+  font-family: var(--font-serif); font-size: 28px; font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px; margin-bottom: 6px;
+}
+.subtitle { font-size: 14px; color: var(--text-muted); }
+
+.chartsGrid {
+  display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;
+}
+@media (max-width: 1024px) { .chartsGrid { grid-template-columns: 1fr; } }
+
+.chartCard {
+  background: var(--bg-white); border-radius: var(--radius-premium); padding: 24px;
+  box-shadow: var(--shadow-premium); border: 1px solid rgba(43,18,32,0.05);
+  transition: var(--transition-smooth);
+}
+.chartCard:hover { box-shadow: var(--shadow-card-hover); }
+
+.sideCard {
+  background: var(--bg-white); border-radius: var(--radius-premium); padding: 24px;
+  box-shadow: var(--shadow-premium); border: 1px solid rgba(43,18,32,0.05);
+  border-left: 4px solid var(--gold-color); transition: var(--transition-smooth);
+}
+.sideCard:hover { box-shadow: 0 12px 36px rgba(197,160,89,0.15); }
+
+.cardHeader {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+.cardTitle { font-size: 15px; font-weight: 700; color: var(--text-color); font-family: var(--font-sans); }
+
+.bestProductDetails { display: flex; align-items: flex-start; gap: 14px; margin-top: 16px; }
+.bestProductDetails img {
+  width: 56px; height: 72px; object-fit: cover;
+  border-radius: var(--radius-small); border: 1px solid var(--border-color); flex-shrink: 0;
+}
+.productName { font-size: 13px; font-weight: 700; color: var(--text-color); margin-bottom: 4px; }
+.productSku  { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.productSales { display: flex; gap: 20px; margin-top: 14px; }
+.salesStat  { display: flex; flex-direction: column; gap: 2px; }
+.salesStatVal {
+  font-size: 18px; font-weight: 800; color: var(--text-color); font-family: var(--font-serif);
+}
+
+.tableCard {
+  background: var(--bg-white); border-radius: var(--radius-premium);
+  border: 1px solid rgba(43,18,32,0.05); box-shadow: var(--shadow-premium); padding: 24px;
+}
+.tableWrapper {
+  overflow-x: auto; border-radius: var(--radius-small);
+  border: 1px solid rgba(43,18,32,0.05); margin-top: 16px;
+}
+.table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: var(--font-sans); }
+.table thead tr { background: rgba(209,27,105,0.04); }
+.th {
+  padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap; border-bottom: 1.5px solid var(--border-color);
+}
+.td {
+  padding: 12px 16px; color: var(--text-color);
+  border-bottom: 1px solid rgba(43,18,32,0.04); font-size: 13px; vertical-align: middle;
+}
+.tr:last-child .td { border-bottom: none; }
+.tr:hover { background: rgba(209,27,105,0.02); }
+
+.statusBadge {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: capitalize;
+}
+.statusPaid    { background: var(--success-bg); color: var(--success-color); }
+.statusPending { background: var(--warning-bg); color: var(--warning-color); }
+.statusFailed  { background: var(--error-bg);   color: var(--error-color); }
+
+.noBestProduct {
+  padding: 24px; text-align: center; color: var(--text-muted);
+  font-size: 13px; font-style: italic; line-height: 1.6;
+}
+.loadingState, .errorState { padding: 48px 24px; text-align: center; color: var(--text-muted); font-size: 14px; }
+.errorState { color: var(--error-color); background: var(--error-bg); border-radius: var(--radius-small); }

@@ -3,7 +3,7 @@ import { sellerApi } from '../api/sellerApi';
 import { 
   ResponsiveContainer, BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend 
 } from 'recharts';
-import styles from '../styles/Dashboard.module.css';
+import styles from '../styles/Analytics.module.css';
 
 function Analytics() {
   const [salesData, setSalesData] = useState([]);
@@ -44,15 +44,15 @@ function Analytics() {
   if (error) return <div style={{ padding: '20px', color: 'var(--error-color)' }}>{error}</div>;
 
   return (
-    <div className={styles.dashboardWrapper}>
-      <div className={styles.welcomeSection}>
+    <div className={styles.wrapper}>
+      <div className={styles.header}>
         <span className={styles.eyebrow}>YOUR REPORTS</span>
         <h1 className={styles.title}>Atelier Analytics</h1>
         <p className={styles.subtitle}>Deep dive into sales trends, order volumes, and financial payouts history.</p>
       </div>
 
       {/* Grid of chart graphs */}
-      <div className={styles.middleLayout}>
+      <div className={styles.chartsGrid}>
         <div className={styles.chartCard}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Revenue Generated</h3>
@@ -103,7 +103,7 @@ function Analytics() {
       </div>
 
       {/* Payouts list */}
-      <div className={styles.payoutsCard}>
+      <div className={styles.tableCard}>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>Weaver Settlement & Bank Ledger</h3>
           <span className={styles.eyebrow}>PAYOUT LEDGER</span>
