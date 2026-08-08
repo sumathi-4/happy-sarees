@@ -18,4 +18,24 @@ async function getMyRequests(req, res, next) {
   }
 }
 
-module.exports = { submitRequest, getMyRequests };
+const masterDataService = require('../../services/admin/masterDataService');
+
+async function getTypes(req, res, next) {
+  try {
+    const types = await masterDataService.getAllTypes();
+    res.json({ success: true, types });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getItems(req, res, next) {
+  try {
+    const items = await masterDataService.getAllItems();
+    res.json({ success: true, items });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { submitRequest, getMyRequests, getTypes, getItems };

@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import { useAdminData } from '../context/AdminDataContext';
 import styles from '../styles/ProductForm.module.css';
+import ClassificationFields from '../components/ClassificationFields';
 
 function ProductForm() {
   const navigate = useNavigate();
@@ -672,54 +673,13 @@ function ProductForm() {
                     All dropdown options are loaded dynamically from Master Data.
                   </p>
                   <div className={styles.formGrid}>
-                    {(masterTypes || []).filter(t => t.isActive).map((t) => {
-                      const typeKey = t.slug;
-                      const typeLabel = t.name;
-                      const items = (masterItems || []).filter(item => item.typeId === t.id && item.isActive);
-                      // Map standard singular names for backend compatibility
-                      const fieldNameMap = {
-                        fabrics: 'fabric',
-                        occasions: 'occasion',
-                        colors: 'color',
-                        patterns: 'pattern',
-                        weaves: 'weave',
-                        borders: 'border',
-                        brands: 'brand',
-                        brand: 'brand',
-                        collections: 'collection'
-                      };
-                      const nameAttr = fieldNameMap[typeKey] || typeKey;
-                      const selectedVal = formData[nameAttr] || formData[typeKey] || formData.customMasterData?.[typeKey] || '';
-
-                      return (
-                        <div className={styles.formGroupHalf} key={t.id}>
-                          <label>{typeLabel}</label>
-                          <select 
-                            name={nameAttr} 
-                            value={selectedVal} 
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              handleInputChange(e);
-                              setFormData(prev => ({
-                                ...prev,
-                                [typeKey]: val,
-                                [nameAttr]: val,
-                                customMasterData: {
-                                  ...(prev.customMasterData || {}),
-                                  [typeKey]: val,
-                                  [nameAttr]: val
-                                }
-                              }));
-                            }}
-                          >
-                            <option value="">Select {typeLabel}</option>
-                            {items.map(item => (
-                              <option key={item.id || item.name} value={item.name}>{item.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
+                    <ClassificationFields
+                      formData={formData}
+                      setFormData={setFormData}
+                      masterTypes={masterTypes}
+                      masterItems={masterItems}
+                      formGroupClass={styles.formGroupHalf}
+                    />
                   </div>
                 </div>
               )}

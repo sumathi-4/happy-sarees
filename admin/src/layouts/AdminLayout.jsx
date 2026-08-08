@@ -308,10 +308,12 @@ function AdminLayout() {
                         <Link 
                           to="/sellers/registry" 
                           className={`${styles.menuItem} ${location.pathname === '/sellers/registry' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Registry
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Registry
+                          </span>
                         </Link>
                       </li>
                       <li>
@@ -333,10 +335,12 @@ function AdminLayout() {
                         <Link 
                           to="/sellers/master-data-requests" 
                           className={`${styles.menuItem} ${location.pathname === '/sellers/master-data-requests' ? styles.menuActive : ''}`}
-                          style={{ padding: '8px 12px', fontSize: '13px' }}
+                          style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           onClick={() => setIsMobileOpen(false)}
                         >
-                          <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Data Requests
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FiChevronRight style={{ marginRight: '6px', fontSize: '11px', flexShrink: 0 }} /> Data Requests
+                          </span>
                         </Link>
                       </li>
                     </ul>

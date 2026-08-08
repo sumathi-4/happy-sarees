@@ -108,21 +108,27 @@ async function getSellerOrderDetails(sellerId, orderId) {
   };
 }
 
-/**
- * Update order item fulfillment status (Pending -> Processing -> Shipped -> Delivered, or Cancelled)
- */
-async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = null) {
+async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = null, isAdmin = false) {
   // Check ownership
-  const check = await db.query(
-    'SELECT oi.id, oi.product_id, oi.quantity, oi.price_at_purchase, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.id = $1 AND oi.seller_id = $2',
-    [itemId, sellerId]
-  );
+  let check;
+  if (isAdmin) {
+    check = await db.query(
+      'SELECT oi.id, oi.product_id, oi.quantity, oi.price_at_purchase, oi.seller_id, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.id = $1',
+      [itemId]
+    );
+  } else {
+    check = await db.query(
+      'SELECT oi.id, oi.product_id, oi.quantity, oi.price_at_purchase, oi.seller_id, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.id = $1 AND oi.seller_id = $2',
+      [itemId, sellerId]
+    );
+  }
   if (check.rows.length === 0) {
     throw new Error('Order item not found or not owned by you.');
   }
 
   const item = check.rows[0];
   const shippedAt = status === 'Shipped' ? new Date() : null;
+  const deliveredAt = status === 'Delivered' ? new Date() : null;
 
   let query = `
     UPDATE order_items SET
@@ -138,8 +144,16 @@ async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = 
     params.push(shippedAt);
     query += `, shipped_at = $${params.length}`;
   }
+  if (deliveredAt !== null) {
+    params.push(deliveredAt);
+    query += `, delivered_at = $${params.length}`;
+  }
 
-  query += ` WHERE id = $1 AND seller_id = $2`;
+  if (isAdmin) {
+    query += ` WHERE id = $1`;
+  } else {
+    query += ` WHERE id = $1 AND seller_id = $2`;
+  }
 
   await db.query(query, params);
 
@@ -162,6 +176,8 @@ async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = 
       rollupStatus = 'shipped';
     } else if (statuses.some(s => s === 'Processing')) {
       rollupStatus = 'processing';
+    } else if (statuses.some(s => s === 'Confirmed')) {
+      rollupStatus = 'confirmed';
     } else {
       rollupStatus = 'pending';
     }
@@ -171,16 +187,19 @@ async function updateOrderItemStatus(sellerId, itemId, status, trackingNumber = 
     );
   }
 
-  // Notify seller
-  await db.query(
-    `INSERT INTO seller_notifications (seller_id, type, title, message)
-     VALUES ($1, 'new_order', $2, $3)`,
-    [
-      sellerId,
-      'Order Item Status Updated',
-      `Fulfillment status for "${item.name}" (Qty: ${item.quantity}) updated to "${status}".`
-    ]
-  );
+  const targetSellerId = item.seller_id || sellerId;
+  if (targetSellerId) {
+    // Notify seller
+    await db.query(
+      `INSERT INTO seller_notifications (seller_id, type, title, message)
+       VALUES ($1, 'new_order', $2, $3)`,
+      [
+        targetSellerId,
+        'Order Item Status Updated',
+        `Fulfillment status for "${item.name}" (Qty: ${item.quantity}) updated to "${status}".`
+      ]
+    );
+  }
 
   return true;
 }

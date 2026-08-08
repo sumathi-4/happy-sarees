@@ -58,10 +58,11 @@ async function getSellerDetailsForAdmin(sellerId) {
   };
 }
 
-/**
- * Approve a seller request
- */
 async function approveSeller(sellerId, adminUserId) {
+  const sRes = await db.query('SELECT email, store_name FROM sellers WHERE id = $1', [sellerId]);
+  if (sRes.rows.length === 0) throw new Error('Seller not found.');
+  const { email, store_name: storeName } = sRes.rows[0];
+
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
@@ -85,6 +86,11 @@ async function approveSeller(sellerId, adminUserId) {
     );
 
     await client.query('COMMIT');
+
+    // Send email alert (non-blocking)
+    const emailService = require('../emailService');
+    emailService.sendSellerApprovalEmail(email, storeName, true).catch(console.error);
+
     return true;
   } catch (err) {
     await client.query('ROLLBACK');
@@ -101,6 +107,10 @@ async function rejectSeller(sellerId, reason, adminNotes) {
   if (!reason || !adminNotes) {
     throw new Error('Rejection reason and admin notes are both required.');
   }
+
+  const sRes = await db.query('SELECT email, store_name FROM sellers WHERE id = $1', [sellerId]);
+  if (sRes.rows.length === 0) throw new Error('Seller not found.');
+  const { email, store_name: storeName } = sRes.rows[0];
 
   const client = await db.pool.connect();
   try {
@@ -124,6 +134,11 @@ async function rejectSeller(sellerId, reason, adminNotes) {
     );
 
     await client.query('COMMIT');
+
+    // Send email alert (non-blocking)
+    const emailService = require('../emailService');
+    emailService.sendSellerApprovalEmail(email, storeName, false, reason).catch(console.error);
+
     return true;
   } catch (err) {
     await client.query('ROLLBACK');

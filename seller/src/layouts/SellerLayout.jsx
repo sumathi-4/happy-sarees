@@ -51,10 +51,10 @@ function SellerLayout() {
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: <FiLayout /> },
     { label: 'Products', path: '/products', icon: <FiPackage /> },
+    { label: 'Master Data', path: '/master-data', icon: <FiDatabase /> },
     { label: 'Orders', path: '/orders', icon: <FiShoppingBag /> },
     { label: 'Analytics', path: '/analytics', icon: <FiBarChart2 /> },
     { label: 'Payouts', path: '/payouts', icon: <FiDollarSign /> },
-    { label: 'Data Requests', path: '/master-data-requests', icon: <FiDatabase /> },
     { label: 'Notifications', path: '/notifications', icon: <FiBell />, badgeCount: unreadCount },
     { label: 'Profile', path: '/profile', icon: <FiUser /> },
     { label: 'Settings', path: '/settings', icon: <FiSettings /> }
@@ -83,7 +83,7 @@ function SellerLayout() {
     if (path.includes('orders')) return 'Orders Fulfilment';
     if (path.includes('analytics')) return 'Performance Analytics';
     if (path.includes('payouts')) return 'Payout History';
-    if (path.includes('master-data-requests')) return 'Master Data Requests';
+    if (path.includes('master-data')) return 'Master Data';
     if (path.includes('notifications')) return 'Notifications Inbox';
     if (path.includes('profile')) return 'Business Profile';
     if (path.includes('settings')) return 'Security Settings';

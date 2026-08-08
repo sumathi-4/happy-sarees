@@ -76,6 +76,18 @@ async function approveProduct(productId) {
     );
 
     await client.query('COMMIT');
+
+    // Fetch seller email and store_name (non-blocking email send)
+    db.query('SELECT email, store_name FROM sellers WHERE id = $1', [seller_id])
+      .then(sRes => {
+        if (sRes.rows.length > 0) {
+          const { email, store_name } = sRes.rows[0];
+          const emailService = require('../emailService');
+          emailService.sendProductApprovalEmail(email, store_name, name, true).catch(console.error);
+        }
+      })
+      .catch(console.error);
+
     return true;
   } catch (err) {
     await client.query('ROLLBACK');
@@ -122,6 +134,18 @@ async function rejectProduct(productId, reason) {
     );
 
     await client.query('COMMIT');
+
+    // Fetch seller email and store_name (non-blocking email send)
+    db.query('SELECT email, store_name FROM sellers WHERE id = $1', [seller_id])
+      .then(sRes => {
+        if (sRes.rows.length > 0) {
+          const { email, store_name } = sRes.rows[0];
+          const emailService = require('../emailService');
+          emailService.sendProductApprovalEmail(email, store_name, name, false, reason).catch(console.error);
+        }
+      })
+      .catch(console.error);
+
     return true;
   } catch (err) {
     await client.query('ROLLBACK');

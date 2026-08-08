@@ -90,3 +90,15 @@ exports.rejectReturn = async (req, res, next) => {
     return success(res, { order }, 'Return request rejected.');
   } catch (e) { return e.status ? error(res, e.message, e.status) : next(e); }
 };
+
+const sellerOrderService = require('../../services/seller/sellerOrderService');
+exports.updateItemFulfillmentStatus = async (req, res, next) => {
+  try {
+    const { itemId } = req.params;
+    const { status, trackingNumber } = req.body;
+    if (!status) return error(res, 'Status is required.', 400);
+    await sellerOrderService.updateOrderItemStatus(null, parseInt(itemId), status, trackingNumber, true);
+    return success(res, {}, `Order item fulfillment status updated to ${status}.`);
+  } catch (e) { return next(e); }
+};
+

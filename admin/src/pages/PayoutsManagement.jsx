@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiDollarSign, FiRefreshCw, FiCheckCircle, FiAlertCircle, FiClock } from 'react-icons/fi';
 
-const API_BASE = 'http://localhost:5001/api/admin';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5001/api/admin' : `${window.location.origin}/api/admin`;
 function getToken() { return localStorage.getItem('hs_admin_token'); }
 async function adminReq(method, path, body = null) {
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` };

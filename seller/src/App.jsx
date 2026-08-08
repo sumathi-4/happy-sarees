@@ -81,7 +81,7 @@ const router = createBrowserRouter([
             element: <Settings />,
           },
           {
-            path: '/master-data-requests',
+            path: '/master-data',
             element: <MasterDataRequests />,
           },
           {

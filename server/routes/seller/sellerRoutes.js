@@ -31,6 +31,13 @@ router.put('/products/:id', sellerAuth, requireApprovedSeller, sellerProductCont
 router.delete('/products/:id', sellerAuth, requireApprovedSeller, sellerProductController.deleteProduct);
 router.post('/products/:id/images', sellerAuth, requireApprovedSeller, sellerProductController.uploadProductImage);
 
+// ── Media Upload Endpoints (Approved Sellers only) ─────────
+const uploadController = require('../../controllers/admin/uploadController');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+router.post('/upload/video', sellerAuth, requireApprovedSeller, upload.single('video'), uploadController.uploadVideo);
+router.post('/upload/delete-video', sellerAuth, requireApprovedSeller, uploadController.deleteVideo);
+
 // ── Orders & Shipments (Approved Sellers only) ────────────
 router.get('/orders', sellerAuth, requireApprovedSeller, sellerOrderController.getOrders);
 router.get('/orders/:id', sellerAuth, requireApprovedSeller, sellerOrderController.getOrderById);
@@ -51,7 +58,9 @@ router.get('/profile', sellerAuth, requireApprovedSeller, sellerProfileControlle
 router.put('/profile', sellerAuth, requireApprovedSeller, sellerProfileController.updateProfile);
 router.put('/settings/password', sellerAuth, requireApprovedSeller, sellerProfileController.updatePassword);
 
-// ── Master Data Requests (Approved Sellers only) ───────────
+// ── Master Data Config & Requests (Approved Sellers only) ──
+router.get('/master-data/types', sellerAuth, requireApprovedSeller, sellerMasterDataController.getTypes);
+router.get('/master-data/items', sellerAuth, requireApprovedSeller, sellerMasterDataController.getItems);
 router.get('/master-data-requests', sellerAuth, requireApprovedSeller, sellerMasterDataController.getMyRequests);
 router.post('/master-data-requests', sellerAuth, requireApprovedSeller, sellerMasterDataController.submitRequest);
 

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { sellerApi } from '../api/sellerApi';
-import {
-  FiPlusCircle, FiRefreshCw, FiCheckCircle, FiXCircle, FiClock, FiAlertCircle
+import { 
+  FiPlus, FiSearch, FiEdit, FiTrash2, FiClock, FiCheckCircle, FiXCircle, 
+  FiAlertCircle, FiRefreshCw, FiArrowLeft, FiGrid, FiLayers, FiCalendar, 
+  FiDroplet, FiTag, FiBox, FiSliders, FiFeather, FiMaximize2, FiDatabase
 } from 'react-icons/fi';
-import styles from '../styles/Orders.module.css';
+import EmptyState from '../components/EmptyState';
+import DataTable from '../components/DataTable';
+import styles from '../styles/MasterDataManagement.module.css';
 
 const STATUS_BADGE = {
   pending:  { color: '#f59e0b', bg: '#fef3c7', label: 'Pending Review' },
@@ -16,71 +20,175 @@ function StatusBadge({ status }) {
   return (
     <span style={{
       background: s.bg, color: s.color, padding: '3px 10px',
-      borderRadius: '12px', fontSize: '12px', fontWeight: 600
+      borderRadius: '12px', fontSize: '12px', fontWeight: 600,
+      display: 'inline-flex', alignItems: 'center', gap: '4px'
     }}>
-      {status === 'approved' ? <FiCheckCircle style={{ marginRight: 4 }} /> :
-       status === 'rejected' ? <FiXCircle style={{ marginRight: 4 }} /> :
-       <FiClock style={{ marginRight: 4 }} />}
+      {status === 'approved' ? <FiCheckCircle size={12} /> :
+       status === 'rejected' ? <FiXCircle size={12} /> :
+       <FiClock size={12} />}
       {s.label}
     </span>
   );
 }
 
 function MasterDataRequests() {
+  const [activeTab, setActiveTab] = useState('browser'); // 'browser' or 'my-requests'
   const [requests, setRequests] = useState([]);
   const [masterTypes, setMasterTypes] = useState([]);
+  const [masterItems, setMasterItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showForm, setShowForm] = useState(false);
+
+  // Browser States
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [selectedType, setSelectedType] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  // Request Submission Modals
+  const [modalType, setModalType] = useState(null); // 'add_type', 'edit_type', 'delete_type', 'add_item', 'edit_item', 'delete_item'
   const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({
-    typeSlug: '',
-    typeName: '',
-    itemName: '',
-    reason: ''
-  });
+  // Form Fields
+  const [typeName, setTypeName] = useState('');
+  const [showInFilters, setShowInFilters] = useState(true);
+  const [showInSpecifications, setShowInSpecifications] = useState(true);
 
+  const [itemName, setItemName] = useState('');
+  const [itemDescription, setItemDescription] = useState('');
+  const [itemColorHex, setItemColorHex] = useState('#ffffff');
+
+  const [requestReason, setRequestReason] = useState('');
+  const [targetId, setTargetId] = useState(null); // type ID or item ID
+
+  // Load types, items and request logs
   async function loadData() {
     setLoading(true);
     try {
-      const [reqRes, typesRes] = await Promise.all([
-        sellerApi.getMasterDataRequests(),
-        fetch('http://localhost:5001/api/cms/spec-types').then(r => r.json())
+      const [typesRes, itemsRes, reqsRes] = await Promise.all([
+        sellerApi.getMasterTypes(),
+        sellerApi.getMasterItems(),
+        sellerApi.getMasterDataRequests()
       ]);
-      if (reqRes.success) setRequests(reqRes.requests);
-      if (typesRes.success && Array.isArray(typesRes.types)) setMasterTypes(typesRes.types);
+      if (typesRes.success) setMasterTypes(typesRes.types);
+      if (itemsRes.success) setMasterItems(itemsRes.items);
+      if (reqsRes.success) setRequests(reqsRes.requests);
     } catch (err) {
-      setError(err.message || 'Failed to load requests.');
+      setError(err.message || 'Failed to load master data.');
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleTypeChange = (e) => {
-    const slug = e.target.value;
-    const type = masterTypes.find(t => t.slug === slug);
-    setForm(f => ({ ...f, typeSlug: slug, typeName: type ? type.name : '' }));
+  const triggerToast = (msg) => {
+    setSuccess(msg);
+    setTimeout(() => setSuccess(''), 4000);
   };
 
-  const handleSubmit = async (e) => {
+  const getCategoryIcon = (key) => {
+    switch (key.toLowerCase()) {
+      case 'fabrics': return <FiLayers />;
+      case 'occasions': return <FiCalendar />;
+      case 'colors': return <FiDroplet />;
+      case 'patterns': return <FiGrid />;
+      case 'weaves': return <FiFeather />;
+      case 'borders': return <FiMaximize2 />;
+      case 'brands': return <FiTag />;
+      case 'collections': return <FiBox />;
+      default: return <FiSliders />;
+    }
+  };
+
+  const closeModals = () => {
+    setModalType(null);
+    setTypeName('');
+    setShowInFilters(true);
+    setShowInSpecifications(true);
+    setItemName('');
+    setItemDescription('');
+    setItemColorHex('#ffffff');
+    setRequestReason('');
+    setTargetId(null);
+    setError('');
+  };
+
+  const handleRequestSubmit = async (e) => {
     e.preventDefault();
-    if (!form.typeSlug || !form.itemName.trim()) {
-      setError('Please select a type and provide an item name.');
+    if (!requestReason.trim()) {
+      setError('Please provide a reason / context for this request.');
       return;
     }
+
     setSubmitting(true);
     setError('');
-    setSuccess('');
+    
+    let payload = {};
+    let requestData = {
+      requestType: modalType,
+      reason: requestReason
+    };
+
+    if (modalType === 'add_type') {
+      requestData.typeName = typeName;
+      payload = { showInFilters, showInSpecifications };
+    } 
+    else if (modalType === 'edit_type') {
+      requestData.targetTypeId = targetId;
+      requestData.typeName = typeName;
+      payload = { name: typeName, showInFilters, showInSpecifications };
+    } 
+    else if (modalType === 'delete_type') {
+      requestData.targetTypeId = targetId;
+      const matched = masterTypes.find(t => t.id === targetId);
+      requestData.typeName = matched?.name || '';
+    } 
+    else if (modalType === 'add_item') {
+      const parentType = masterTypes.find(t => t.id === targetId);
+      requestData.targetTypeId = targetId;
+      requestData.typeSlug = parentType?.slug || '';
+      requestData.typeName = parentType?.name || '';
+      requestData.itemName = itemName;
+      payload = {
+        description: itemDescription,
+        colorHex: parentType?.slug === 'colors' ? itemColorHex : null,
+        isActive: true
+      };
+    } 
+    else if (modalType === 'edit_item') {
+      requestData.targetItemId = targetId;
+      requestData.targetTypeId = selectedType;
+      const parentType = masterTypes.find(t => t.id === selectedType);
+      requestData.typeSlug = parentType?.slug || '';
+      requestData.typeName = parentType?.name || '';
+      requestData.itemName = itemName;
+      payload = {
+        name: itemName,
+        description: itemDescription,
+        colorHex: parentType?.slug === 'colors' ? itemColorHex : null,
+        isActive: true
+      };
+    } 
+    else if (modalType === 'delete_item') {
+      requestData.targetItemId = targetId;
+      requestData.targetTypeId = selectedType;
+      const matchedItem = masterItems.find(i => i.id === targetId);
+      requestData.itemName = matchedItem?.name || '';
+    }
+
+    requestData.payload = payload;
+
     try {
-      await sellerApi.submitMasterDataRequest(form);
-      setSuccess('Your request has been submitted for admin review.');
-      setForm({ typeSlug: '', typeName: '', itemName: '', reason: '' });
-      setShowForm(false);
+      await sellerApi.submitMasterDataRequest(requestData);
+      triggerToast('Change request submitted successfully for administrator review!');
+      closeModals();
       loadData();
+      setActiveTab('my-requests');
     } catch (err) {
       setError(err.message || 'Failed to submit request.');
     } finally {
@@ -88,144 +196,465 @@ function MasterDataRequests() {
     }
   };
 
+  // Browser Detail calculations
+  const currentTypeId = selectedType || masterTypes[0]?.id;
+  const currentType = masterTypes.find(t => t.id === currentTypeId);
+  const activeItems = masterItems.filter(item => item.typeId === currentTypeId);
+
+  const filteredItems = activeItems.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const sortedItems = [...filteredItems].sort((a, b) => (a.sortOrder || 99) - (b.sortOrder || 99));
+  
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
+  const paginatedItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
-    <div className={styles.container}>
-      <div className={styles.detailCard} style={{ padding: '32px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1.5px solid var(--border-color)', paddingBottom: '16px' }}>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', color: 'var(--text-color)' }}>
-              Master Data Requests
-            </h1>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Request new attributes (fabric, color, pattern, etc.) to be added to the catalog.
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={loadData}
-              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}
-            >
-              <FiRefreshCw size={14} /> Refresh
-            </button>
-            <button
-              onClick={() => { setShowForm(!showForm); setError(''); setSuccess(''); }}
-              style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}
-            >
-              <FiPlusCircle size={15} />
-              {showForm ? 'Cancel' : 'New Request'}
-            </button>
-          </div>
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      
+      {/* Upper header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-color, #2b1220)', fontFamily: 'var(--font-serif)' }}>
+            Catalog Specifications & Master Data
+          </h1>
+          <p style={{ color: 'var(--text-muted, #757575)', fontSize: '14px', marginTop: '4px' }}>
+            Browse the active catalog specification attributes and suggest updates to build catalog parity.
+          </p>
         </div>
+        <button
+          onClick={loadData}
+          style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}
+        >
+          <FiRefreshCw size={13} /> Refresh
+        </button>
+      </div>
 
-        {/* Alerts */}
-        {error && (
-          <div style={{ background: '#fee2e2', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-            <FiAlertCircle /> {error}
-          </div>
-        )}
-        {success && (
-          <div style={{ background: '#d1fae5', color: '#10b981', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-            <FiCheckCircle /> {success}
-          </div>
-        )}
+      {/* Toggle Tab Bar */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '24px', gap: '16px' }}>
+        <button
+          onClick={() => { setActiveTab('browser'); setError(''); }}
+          style={{
+            padding: '12px 16px', background: 'none', border: 'none', fontSize: '14px', fontWeight: 600,
+            cursor: 'pointer', borderBottom: activeTab === 'browser' ? '2.5px solid var(--primary-color)' : '2.5px solid transparent',
+            color: activeTab === 'browser' ? 'var(--primary-color)' : 'var(--text-muted)'
+          }}
+        >
+          Catalog Browser
+        </button>
+        <button
+          onClick={() => { setActiveTab('my-requests'); setError(''); }}
+          style={{
+            padding: '12px 16px', background: 'none', border: 'none', fontSize: '14px', fontWeight: 600,
+            cursor: 'pointer', borderBottom: activeTab === 'my-requests' ? '2.5px solid var(--primary-color)' : '2.5px solid transparent',
+            color: activeTab === 'my-requests' ? 'var(--primary-color)' : 'var(--text-muted)'
+          }}
+        >
+          My Change Requests ({requests.length})
+        </button>
+      </div>
 
-        {/* New Request Form */}
-        {showForm && (
-          <form onSubmit={handleSubmit} style={{ background: 'var(--bg-secondary)', border: '1.5px solid var(--primary-color)', borderRadius: '12px', padding: '24px', marginBottom: '28px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '18px', color: 'var(--text-color)' }}>
-              Submit a New Attribute Request
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  Attribute Type <span style={{ color: 'var(--primary-color)' }}>*</span>
-                </label>
-                <select
-                  value={form.typeSlug}
-                  onChange={handleTypeChange}
-                  required
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-color)', fontSize: '14px' }}
+      {error && (
+        <div style={{ background: '#fee2e2', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+          <FiAlertCircle /> {error}
+        </div>
+      )}
+      {success && (
+        <div style={{ background: '#d1fae5', color: '#10b981', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px' }}>
+          <FiCheckCircle /> {success}
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>Loading Master Data...</div>
+      ) : activeTab === 'browser' ? (
+        <>
+          {viewMode === 'grid' ? (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700 }}>Attribute Types</h3>
+                <button
+                  onClick={() => { setModalType('add_type'); }}
+                  style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}
                 >
-                  <option value="">Select type...</option>
-                  {masterTypes.map(t => (
-                    <option key={t.id} value={t.slug}>{t.name}</option>
-                  ))}
-                </select>
+                  <FiPlus /> Request New Type
+                </button>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  New Item Name <span style={{ color: 'var(--primary-color)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Chanderi, Peacock Blue, Banarasi..."
-                  value={form.itemName}
-                  onChange={e => setForm(f => ({ ...f, itemName: e.target.value }))}
-                  required
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-color)', fontSize: '14px', boxSizing: 'border-box' }}
-                />
+
+              <div className={styles.typeGrid}>
+                {masterTypes.map(t => {
+                  const itemsCount = masterItems.filter(item => item.typeId === t.id).length;
+                  return (
+                    <div key={t.id} className={styles.typeCard}>
+                      <div className={styles.cardHeader}>
+                        <div className={styles.iconWrapper}>
+                          {getCategoryIcon(t.slug)}
+                        </div>
+                        <div className={styles.titleArea}>
+                          <h4 className={styles.cardName}>{t.name}</h4>
+                          <span className={styles.countBadge}>{itemsCount} items</span>
+                        </div>
+                      </div>
+                      <p className={styles.cardDesc}>
+                        {t.description || `Manage classification options for the ${t.name.toLowerCase()} attribute.`}
+                      </p>
+                      
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        <span style={{ fontSize: '11px', color: '#757575', background: '#f5f5f5', padding: '3px 8px', borderRadius: '4px' }}>
+                          {t.showInFilters ? 'Filters Visible' : 'Filters Hidden'}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#757575', background: '#f5f5f5', padding: '3px 8px', borderRadius: '4px' }}>
+                          {t.showInSpecifications ? 'Specs Visible' : 'Specs Hidden'}
+                        </span>
+                      </div>
+
+                      <div className={styles.cardActions} style={{ display: 'flex', gap: '8px', marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '12px' }}>
+                        <button
+                          onClick={() => {
+                            setSelectedType(t.id);
+                            setViewMode('table');
+                            setCurrentPage(1);
+                            setSearchQuery('');
+                          }}
+                          className={styles.viewItemsBtn}
+                          style={{ flex: 1, padding: '7px 12px', borderRadius: '6px', border: '1px solid var(--primary-color)', color: 'var(--primary-color)', background: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}
+                        >
+                          Browse Items
+                        </button>
+                        <button
+                          onClick={() => {
+                            setTargetId(t.id);
+                            setTypeName(t.name);
+                            setShowInFilters(t.showInFilters);
+                            setShowInSpecifications(t.showInSpecifications);
+                            setModalType('edit_type');
+                          }}
+                          style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                          title="Request Edit Type"
+                        >
+                          <FiEdit />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setTargetId(t.id);
+                            setModalType('delete_type');
+                          }}
+                          style={{ padding: '7px 10px', borderRadius: '6px', border: '1px solid #fee2e2', color: '#ef4444', background: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                          title="Request Delete Type"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  Reason / Context (optional)
+            </div>
+          ) : (
+            <div>
+              {/* Table detail view */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px solid var(--border-color)', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: 'var(--text-color)' }}
+                >
+                  <FiArrowLeft /> Back to Types
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px', color: 'var(--primary-color)' }}>{getCategoryIcon(currentType?.slug || '')}</span>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700 }}>{currentType?.name || 'Items'}</h3>
+                </div>
+
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <FiSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                    <input
+                      type="text"
+                      placeholder="Search items..."
+                      value={searchQuery}
+                      onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                      style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '13px', width: '200px' }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => { setTargetId(currentTypeId); setModalType('add_item'); }}
+                    style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}
+                  >
+                    <FiPlus /> Request Add Item
+                  </button>
+                </div>
+              </div>
+
+              <DataTable
+                headers={['Name', 'Slug', 'Description', 'Status', 'Sort Order', 'Actions']}
+                items={paginatedItems}
+                renderRow={(item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                        {currentType?.slug === 'colors' && item.colorHex && (
+                          <span style={{ display: 'block', width: '16px', height: '16px', borderRadius: '50%', background: item.colorHex, border: '1px solid #ccc' }} />
+                        )}
+                        {item.name}
+                      </div>
+                    </td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '12px', color: '#6b7280' }}>{item.slug}</td>
+                    <td style={{ color: '#6b7280', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {item.description || '—'}
+                    </td>
+                    <td>
+                      <span style={{ background: item.isActive ? '#d1fae5' : '#fee2e2', color: item.isActive ? '#10b981' : '#ef4444', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+                        {item.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>{item.sortOrder ?? '—'}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => {
+                            setTargetId(item.id);
+                            setItemName(item.name);
+                            setItemDescription(item.description || '');
+                            setItemColorHex(item.colorHex || '#ffffff');
+                            setModalType('edit_item');
+                          }}
+                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #e0e0e0', background: 'none', cursor: 'pointer', color: 'var(--text-color)' }}
+                          title="Request Edit Item"
+                        >
+                          <FiEdit size={12} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setTargetId(item.id);
+                            setModalType('delete_item');
+                          }}
+                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #fee2e2', background: 'none', cursor: 'pointer', color: '#ef4444' }}
+                          title="Request Delete Item"
+                        >
+                          <FiTrash2 size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              />
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{ background: 'none', border: '1px solid #e0e0e0', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                  >
+                    Prev
+                  </button>
+                  <span style={{ fontSize: '13px', color: '#6b7280' }}>Page {currentPage} of {totalPages}</span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{ background: 'none', border: '1px solid #e0e0e0', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <div>
+          {/* My requests list */}
+          {requests.length === 0 ? (
+            <EmptyState
+              title="No Requests Submitted"
+              description="Suggest attributes or items to be added/modified in the master catalog. Use the Catalog Browser to start."
+              icon={<FiDatabase size={36} />}
+            />
+          ) : (
+            <DataTable
+              headers={['Request Type', 'Proposed Change', 'Reason', 'Status', 'Admin Response', 'Submitted On']}
+              items={requests}
+              renderRow={(r) => {
+                const formatReq = (t) => t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                
+                const renderProposedDetails = (req) => {
+                  const type = req.requestType;
+                  if (type === 'add_item') {
+                    return (
+                      <div>
+                        <strong>{req.itemName}</strong>
+                        <div style={{ fontSize: '11px', color: '#757575' }}>Under type: {req.typeName || req.typeSlug}</div>
+                      </div>
+                    );
+                  }
+                  if (type === 'add_type') {
+                    return <div><strong>New Type: {req.typeName}</strong></div>;
+                  }
+                  if (type === 'edit_item') {
+                    return (
+                      <div>
+                        <strong>Edit Item ID {req.targetItemId}</strong>
+                        <div style={{ fontSize: '11px', color: '#757575' }}>New name: {req.payload?.name || req.itemName}</div>
+                      </div>
+                    );
+                  }
+                  if (type === 'delete_item') {
+                    return <div style={{ color: '#ef4444' }}><strong>Delete Item ID {req.targetItemId}</strong></div>;
+                  }
+                  if (type === 'edit_type') {
+                    return (
+                      <div>
+                        <strong>Edit Type ID {req.targetTypeId}</strong>
+                        <div style={{ fontSize: '11px', color: '#757575' }}>New name: {req.payload?.name || req.typeName}</div>
+                      </div>
+                    );
+                  }
+                  if (type === 'delete_type') {
+                    return <div style={{ color: '#ef4444' }}><strong>Delete Type ID {req.targetTypeId}</strong></div>;
+                  }
+                  return <div>{req.itemName || req.typeName}</div>;
+                };
+
+                return (
+                  <tr key={r.id}>
+                    <td style={{ fontWeight: 600 }}>{formatReq(r.requestType || 'add_item')}</td>
+                    <td>{renderProposedDetails(r)}</td>
+                    <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={r.reason}>
+                      {r.reason || '—'}
+                    </td>
+                    <td><StatusBadge status={r.status} /></td>
+                    <td style={{ color: '#ef4444', fontWeight: 500 }}>{r.adminNote || '—'}</td>
+                    <td style={{ fontSize: '12px', color: '#757575' }}>
+                      {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                  </tr>
+                );
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Submission Modal Overlay */}
+      {modalType && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} onClick={closeModals} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '16px', padding: '32px', zIndex: 201, width: '480px', maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: '18px', marginBottom: '18px', color: 'var(--text-color, #2b1220)' }}>
+              Submit Request: {modalType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+            </h3>
+            
+            <form onSubmit={handleRequestSubmit}>
+              
+              {/* Conditional Inputs */}
+              {(modalType === 'add_type' || modalType === 'edit_type') && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>Type Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Zari Types, Silk Purity"
+                    value={typeName}
+                    onChange={e => setTypeName(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e0e0e0', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+                    <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input type="checkbox" checked={showInFilters} onChange={e => setShowInFilters(e.target.checked)} />
+                      Show in website filters
+                    </label>
+                    <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input type="checkbox" checked={showInSpecifications} onChange={e => setShowInSpecifications(e.target.checked)} />
+                      Show in specifications
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {(modalType === 'add_item' || modalType === 'edit_item') && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>Item Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Pure Georgette, Royal Blue"
+                    value={itemName}
+                    onChange={e => setItemName(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e0e0e0', boxSizing: 'border-box', marginBottom: '12px' }}
+                  />
+
+                  {((modalType === 'add_item' && masterTypes.find(t => t.id === targetId)?.slug === 'colors') ||
+                    (modalType === 'edit_item' && currentType?.slug === 'colors')) && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>Color Hex Code *</label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input
+                          type="color"
+                          value={itemColorHex}
+                          onChange={e => setItemColorHex(e.target.value)}
+                          style={{ border: '1px solid #ccc', borderRadius: '4px', width: '40px', height: '40px', padding: '0', cursor: 'pointer' }}
+                        />
+                        <input
+                          type="text"
+                          value={itemColorHex}
+                          onChange={e => setItemColorHex(e.target.value)}
+                          placeholder="#ffffff"
+                          style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #e0e0e0', width: '120px' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>Description</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Brief description of this item..."
+                    value={itemDescription}
+                    onChange={e => setItemDescription(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e0e0e0', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+              )}
+
+              {/* Reason Input */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>
+                  Reason / Business Context *
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Explain why this attribute is needed for your products..."
-                  value={form.reason}
-                  onChange={e => setForm(f => ({ ...f, reason: e.target.value }))}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-color)', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box' }}
+                  required
+                  placeholder="Tell administration why this catalog change is required (e.g. 'Needed for listing new Kanchipuram collection')..."
+                  value={requestReason}
+                  onChange={e => setRequestReason(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e0e0e0', boxSizing: 'border-box', resize: 'vertical' }}
                 />
               </div>
-            </div>
-            <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button type="button" onClick={() => setShowForm(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '9px 20px', cursor: 'pointer', fontSize: '14px', color: 'var(--text-muted)' }}>
-                Cancel
-              </button>
-              <button type="submit" disabled={submitting} style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 22px', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: 600 }}>
-                {submitting ? 'Submitting...' : 'Submit Request'}
-              </button>
-            </div>
-          </form>
-        )}
 
-        {/* Requests List */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading requests...</div>
-        ) : requests.length === 0 ? (
-          <div className={styles.emptyState}>
-            <FiClock size={40} style={{ opacity: 0.3, marginBottom: '12px' }} />
-            <p>No requests yet. Use the button above to request a new catalog attribute.</p>
+              {/* Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={closeModals}
+                  style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '9px 20px', cursor: 'pointer', fontSize: '14px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 22px', cursor: submitting ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '14px' }}
+                >
+                  {submitting ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </div>
+
+            </form>
           </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                  {['Type', 'Requested Item', 'Reason', 'Status', 'Admin Note', 'Date'].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map(r => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '12px', fontWeight: 600, color: 'var(--text-color)' }}>{r.typeName}</td>
-                    <td style={{ padding: '12px', color: 'var(--text-color)' }}>{r.itemName}</td>
-                    <td style={{ padding: '12px', color: 'var(--text-muted)', maxWidth: '200px' }}>{r.reason || '—'}</td>
-                    <td style={{ padding: '12px' }}><StatusBadge status={r.status} /></td>
-                    <td style={{ padding: '12px', color: 'var(--text-muted)', fontStyle: r.adminNote ? 'normal' : 'italic' }}>{r.adminNote || '—'}</td>
-                    <td style={{ padding: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                      {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+        </>
+      )}
+
     </div>
   );
 }

@@ -3,7 +3,7 @@
 //  Centralized API client for all seller backend calls
 // ============================================================
 
-const API_BASE = 'http://localhost:5001/api/sellers';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5001/api/sellers' : `${window.location.origin}/api/sellers`;
 
 function getToken() {
   return localStorage.getItem('hs_seller_token');
@@ -83,7 +83,9 @@ export const sellerApi = {
   updateProfile: (data) => request.put('/profile', data),
   updatePassword: (currentPassword, newPassword) => request.put('/settings/password', { currentPassword, newPassword }),
 
-  // Master Data Requests
+  // Master Data Configuration & Requests
+  getMasterTypes: () => request.get('/master-data/types'),
+  getMasterItems: () => request.get('/master-data/items'),
   getMasterDataRequests: () => request.get('/master-data-requests'),
   submitMasterDataRequest: (data) => request.post('/master-data-requests', data),
 

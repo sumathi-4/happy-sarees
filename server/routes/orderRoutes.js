@@ -127,6 +127,23 @@ router.post('/', optionalAuth, async (req, res) => {
       );
     }
 
+    // ── Group and Insert Seller & Admin Notifications ──
+    const sellerIds = Array.from(new Set(items.map(item => sellerMap[Number(item.productId || item.id)]).filter(Boolean)));
+    for (const sId of sellerIds) {
+      await client.query(
+        `INSERT INTO seller_notifications (seller_id, type, title, message)
+         VALUES ($1, 'new_order', 'New Order Received', $2)`,
+        [sId, `Order #${order.order_number} has been placed containing your products.`]
+      );
+    }
+
+    // Insert admin notification
+    await client.query(
+      `INSERT INTO admin_notifications (type, title, message, entity_type, entity_id)
+       VALUES ('new_order', 'New Order Placed', $1, 'order', $2)`,
+      [`A new order #${order.order_number} for ₹${totals.finalTotal} was placed.`, order.id]
+    );
+
     // Auto timeline log initial creation
     await client.query(
       `INSERT INTO order_timeline (order_id, status, note) VALUES ($1, $2, $3)`,

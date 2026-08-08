@@ -134,8 +134,9 @@ async function createSellerProduct(sellerId, data) {
         fabric, color, weave, border, pallu, occasion,
         blouse_included, blouse_size, height, width, weight,
         sku, in_stock, stock_count,
-        seller_id, approval_status, status, submitted_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, 'pending', 'draft', CURRENT_TIMESTAMP)
+        seller_id, approval_status, status, submitted_at,
+        video_url, is_new_arrival
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, 'pending', 'draft', CURRENT_TIMESTAMP, $22, $23)
       RETURNING id
     `;
     const productValues = [
@@ -143,7 +144,9 @@ async function createSellerProduct(sellerId, data) {
       data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
       data.blouseIncluded ?? true, data.blouseSize || null, data.height || '5.5m', data.width || '1.1m', data.weight || null,
       autoSku, inStock, stockCount,
-      sellerId
+      sellerId,
+      data.videoUrl || data.video_url || null,
+      data.isNewArrival ?? data.newArrival ?? data.is_new_arrival ?? true
     ];
 
     const productRes = await client.query(productQuery, productValues);
@@ -233,7 +236,9 @@ async function updateSellerProduct(sellerId, productId, data) {
         data.name, data.categoryId || null, data.description, data.price, data.originalPrice || null,
         data.fabric, data.color, data.weave, data.border, data.pallu, data.occasion,
         data.blouseIncluded ?? true, data.blouseSize || null, data.height || '5.5m', data.width || '1.1m', data.weight || null,
-        data.sku || current.sku
+        data.sku || current.sku,
+        data.videoUrl || data.video_url || null,
+        data.isNewArrival ?? data.newArrival ?? data.is_new_arrival ?? true
       );
       updateQuery += `,
         name = $5,
@@ -253,6 +258,8 @@ async function updateSellerProduct(sellerId, productId, data) {
         width = $19,
         weight = $20,
         sku = $21,
+        video_url = $22,
+        is_new_arrival = $23,
         approval_status = 'pending',
         rejection_reason = NULL,
         submitted_at = CURRENT_TIMESTAMP

@@ -3,7 +3,7 @@
 //  Centralized API client for all admin backend calls
 // ============================================================
 
-const API_BASE = 'http://localhost:5001/api/admin';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5001/api/admin' : `${window.location.origin}/api/admin`;
 
 function getToken() {
   return localStorage.getItem('hs_admin_token');

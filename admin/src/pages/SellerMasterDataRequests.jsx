@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiCheckCircle, FiXCircle, FiClock, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 
-const API_BASE = 'http://localhost:5001/api/admin';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5001/api/admin' : `${window.location.origin}/api/admin`;
 function getToken() { return localStorage.getItem('hs_admin_token'); }
 async function adminReq(method, path, body = null) {
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` };
@@ -22,6 +22,86 @@ function Badge({ status }) {
   return (
     <span style={{ background: s.bg, color: s.color, padding: '3px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>{s.label}</span>
   );
+}
+
+function formatRequestType(t) {
+  if (!t) return 'Add Item';
+  return t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function renderChangeDetails(r) {
+  const type = r.requestType || 'add_item';
+  
+  if (type === 'add_item') {
+    return (
+      <div>
+        <strong>{r.itemName}</strong>
+        {r.payload?.colorHex && (
+          <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: r.payload.colorHex, marginLeft: '6px', border: '1px solid #ccc', verticalAlign: 'middle' }} />
+        )}
+        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+          Under Category: {r.typeName || r.typeSlug}
+        </div>
+      </div>
+    );
+  }
+  
+  if (type === 'add_type') {
+    return (
+      <div>
+        <strong>Type: {r.typeName}</strong>
+        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+          Filters: {r.payload?.showInFilters ? 'Yes' : 'No'} | Specs: {r.payload?.showInSpecifications ? 'Yes' : 'No'}
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'edit_item') {
+    return (
+      <div>
+        <strong>Edit Item ID {r.targetItemId}</strong>
+        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+          New Name: <span style={{ color: '#10b981', fontWeight: 600 }}>{r.payload?.name || r.itemName}</span>
+        </div>
+        {r.payload?.colorHex && (
+          <div style={{ fontSize: '11px' }}>
+            Color: {r.payload.colorHex} 
+            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: r.payload.colorHex, marginLeft: '4px', verticalAlign: 'middle' }} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (type === 'delete_item') {
+    return (
+      <div style={{ color: '#ef4444' }}>
+        <strong>Delete Item ID {r.targetItemId}</strong>
+      </div>
+    );
+  }
+
+  if (type === 'edit_type') {
+    return (
+      <div>
+        <strong>Edit Type ID {r.targetTypeId}</strong>
+        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+          New Name: <span style={{ color: '#10b981', fontWeight: 600 }}>{r.payload?.name || r.typeName}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'delete_type') {
+    return (
+      <div style={{ color: '#ef4444' }}>
+        <strong>Delete Type ID {r.targetTypeId}</strong>
+      </div>
+    );
+  }
+
+  return <div>{r.itemName || r.typeName || '—'}</div>;
 }
 
 function SellerMasterDataRequests() {
@@ -149,7 +229,7 @@ function SellerMasterDataRequests() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color, #e5e7eb)', background: 'var(--bg-secondary, #f9fafb)' }}>
-                  {['Seller', 'Type', 'Item Requested', 'Reason', 'Status', 'Date', 'Actions'].map(h => (
+                  {['Seller', 'Request Type', 'Proposed Change', 'Reason', 'Status', 'Date', 'Actions'].map(h => (
                     <th key={h} style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600, fontSize: '12px', color: 'var(--text-secondary, #6b7280)', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -161,8 +241,12 @@ function SellerMasterDataRequests() {
                       <div style={{ fontWeight: 600, color: 'var(--text-primary, #1a1a2e)', fontSize: '13px' }}>{r.storeName}</div>
                       <div style={{ fontSize: '12px', color: 'var(--text-secondary, #6b7280)' }}>{r.sellerEmail}</div>
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)', fontWeight: 600 }}>{r.typeName}</td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)' }}>{r.itemName}</td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)', fontWeight: 600 }}>
+                      {formatRequestType(r.requestType)}
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-primary, #374151)' }}>
+                      {renderChangeDetails(r)}
+                    </td>
                     <td style={{ padding: '14px 16px', color: 'var(--text-secondary, #6b7280)', maxWidth: '200px' }}>{r.reason || '—'}</td>
                     <td style={{ padding: '14px 16px' }}><Badge status={r.status} /></td>
                     <td style={{ padding: '14px 16px', color: 'var(--text-secondary, #6b7280)', whiteSpace: 'nowrap', fontSize: '12px' }}>
@@ -179,7 +263,7 @@ function SellerMasterDataRequests() {
                             <FiCheckCircle size={13} /> Approve
                           </button>
                           <button
-                            onClick={() => { setRejectModal({ id: r.id, itemName: r.itemName }); setRejectNote(''); }}
+                            onClick={() => { setRejectModal({ id: r.id, itemName: r.itemName || r.typeName || `Request #${r.id}` }); setRejectNote(''); }}
                             disabled={actionLoading === r.id}
                             style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '6px', padding: '6px 14px', cursor: 'pointer', fontWeight: 600, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
                           >

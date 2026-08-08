@@ -471,7 +471,9 @@ function Settings() {
           language: settings.language,
           timezone: settings.timezone,
           dateFormat: settings.dateFormat,
-          timeFormat: settings.timeFormat
+          timeFormat: settings.timeFormat,
+          payoutHoldDays: settings.payoutHoldDays,
+          tcsRate: settings.tcsRate
         }),
         settingsApi.updateContact({
           email: settings.email,
@@ -740,6 +742,37 @@ function Settings() {
                   <option>12 Hours (hh:mm AM/PM)</option>
                   <option>24 Hours (HH:mm)</option>
                 </select>
+              </Field>
+            </div>
+          </SettingsCard>
+
+          <SettingsCard title="Payout & TCS Settings" icon={<FiCreditCard />}>
+            <div className={styles.formGrid}>
+              <Field label="Payout Hold Period (Days after delivery)" half>
+                <input 
+                  type="number" 
+                  className={styles.input} 
+                  value={settings.payoutHoldDays || 7} 
+                  onChange={e => handleChange('payoutHoldDays', Number(e.target.value))} 
+                  min="0"
+                />
+                <span className={styles.fieldHint} style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                  Number of days after an order is marked 'Delivered' before it is eligible for a seller payout.
+                </span>
+              </Field>
+
+              <Field label="TCS Rate (%)" half>
+                <input 
+                  type="number" 
+                  className={styles.input} 
+                  value={settings.tcsRate || 1.00} 
+                  onChange={e => handleChange('tcsRate', Number(e.target.value))} 
+                  step="0.01"
+                  min="0"
+                />
+                <span className={styles.fieldHint} style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                  Tax Collected at Source (TCS) percentage deducted from seller payouts.
+                </span>
               </Field>
             </div>
           </SettingsCard>

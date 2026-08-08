@@ -317,6 +317,93 @@ class EmailService {
 
     return { subject, html };
   }
+
+  async sendSellerApprovalEmail(email, storeName, isApproved, reason = null) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Happy Sarees';
+      const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'sumathisrimathi4@gmail.com';
+      const subject = isApproved 
+        ? 'Welcome to Happy Sarees - Account Approved!' 
+        : 'Update on your Happy Sarees Seller Account';
+      
+      const html = `
+        <h3>Dear ${storeName || 'Seller'},</h3>
+        <p>${isApproved 
+          ? 'Congratulations! Your seller account has been approved. You can now log in to the Seller Portal and start listing your products.' 
+          : `Thank you for your interest. Unfortunately, your seller account request could not be approved at this time. Reason: ${reason || 'Details do not meet our criteria.'}`}</p>
+        <p>Best regards,<br/>Happy Sarees Team</p>
+      `;
+
+      const transporter = this.getTransporter();
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: email,
+        subject,
+        html
+      });
+      console.log(`[EmailService] Seller approval email sent to ${email}`);
+    } catch (err) {
+      console.error('[EmailService Error] Failed to send seller approval email:', err.message);
+    }
+  }
+
+  async sendProductApprovalEmail(email, storeName, productName, isApproved, reason = null) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Happy Sarees';
+      const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'sumathisrimathi4@gmail.com';
+      const subject = isApproved 
+        ? `Product Approved: ${productName} is now live!` 
+        : `Product Update: ${productName}`;
+
+      const html = `
+        <h3>Dear ${storeName || 'Seller'},</h3>
+        <p>${isApproved 
+          ? `Great news! Your product "<strong>${productName}</strong>" has been approved and is now live on the Happy Sarees website.` 
+          : `We reviewed your product "<strong>${productName}</strong>" and it has been rejected at this time. Reason: ${reason || 'Does not meet catalog criteria.'}`}</p>
+        <p>Best regards,<br/>Happy Sarees Team</p>
+      `;
+
+      const transporter = this.getTransporter();
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: email,
+        subject,
+        html
+      });
+      console.log(`[EmailService] Product approval email sent to ${email}`);
+    } catch (err) {
+      console.error('[EmailService Error] Failed to send product approval email:', err.message);
+    }
+  }
+
+  async sendMasterDataRequestEmail(email, storeName, requestTypeName, itemName, isApproved, reason = null) {
+    try {
+      const fromName = process.env.SMTP_FROM_NAME || 'Happy Sarees';
+      const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'sumathisrimathi4@gmail.com';
+      const subject = isApproved 
+        ? `Catalog Request Approved: ${itemName}` 
+        : `Catalog Request Update: ${itemName}`;
+
+      const html = `
+        <h3>Dear ${storeName || 'Seller'},</h3>
+        <p>${isApproved 
+          ? `Your catalog master data request for "<strong>${itemName}</strong>" under "<strong>${requestTypeName}</strong>" has been approved. It is now available for listing products.` 
+          : `Your catalog master data request for "<strong>${itemName}</strong>" under "<strong>${requestTypeName}</strong>" could not be approved at this time. Reason: ${reason || 'Not applicable to current catalog structure.'}`}</p>
+        <p>Best regards,<br/>Happy Sarees Team</p>
+      `;
+
+      const transporter = this.getTransporter();
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: email,
+        subject,
+        html
+      });
+      console.log(`[EmailService] Master data request email sent to ${email}`);
+    } catch (err) {
+      console.error('[EmailService Error] Failed to send master data request email:', err.message);
+    }
+  }
 }
 
 module.exports = new EmailService();

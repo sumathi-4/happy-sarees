@@ -16,5 +16,6 @@ router.put('/:id/payment-status', adminAuth, requirePermission('orders','edit'),
 router.put('/:id/approve-return', adminAuth, requirePermission('orders','edit'), ctrl.approveReturn);
 router.put('/:id/reject-return',  adminAuth, requirePermission('orders','edit'), ctrl.rejectReturn);
 router.delete('/:id',         adminAuth, requirePermission('orders','manage'), ctrl.deleteOrder);
+router.put('/items/:itemId/status', adminAuth, requirePermission('orders','edit'), ctrl.updateItemFulfillmentStatus);
 
 module.exports = router;
