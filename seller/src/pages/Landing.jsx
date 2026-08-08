@@ -141,34 +141,46 @@ export default function Landing() {
 
   const categories = [
     {
+      id: 'kanchipuram',
       name: 'Kanchipuram Silk',
-      tag: 'PURE SILK WEAVES',
-      img: '/images/find_your_perfect_saree_banner.png'
+      subtext: 'Timeless silk craftsmanship',
+      img: '/images/cat_kanchipuram.png',
+      className: styles.bentoCardKanchipuram
     },
     {
-      name: 'Banarasi Heritage',
-      tag: 'ROYAL ZARI WEAVES',
-      img: '/images/woven_to_be_noticed_banner.jpg'
+      id: 'banarasi',
+      name: 'Banarasi',
+      subtext: 'Heritage woven in every thread',
+      img: '/images/cat_banarasi.png',
+      className: styles.bentoCardBanarasi
     },
     {
-      name: 'Organza & Tissue',
-      tag: 'FESTIVE & ELEGANT',
-      img: '/images/promo_banner.jpg'
+      id: 'organza',
+      name: 'Organza',
+      subtext: 'Light. Elegant. Contemporary.',
+      img: '/images/cat_organza.png',
+      className: styles.bentoCardOrganza
     },
     {
-      name: 'Mulmul & Cotton',
-      tag: 'DAILY HANDLOOM',
-      img: '/images/why_choose_us_models.png'
+      id: 'cotton',
+      name: 'Cotton',
+      subtext: 'Everyday comfort and elegance',
+      img: '/images/why_choose_us_models.png',
+      className: styles.bentoCardCotton
     },
     {
-      name: 'Georgette & Chiffon',
-      tag: 'PARTY & DESIGNER',
-      img: '/images/woven_to_be_noticed_banner.jpg'
+      id: 'georgette',
+      name: 'Georgette',
+      subtext: 'Graceful & flowing styles',
+      img: '/images/woven_to_be_noticed_banner.jpg',
+      className: styles.bentoCardGeorgette
     },
     {
-      name: 'Bridal & Lehengas',
-      tag: 'WEDDING COLLECTION',
-      img: '/images/find_your_perfect_saree_banner.png'
+      id: 'bridal',
+      name: 'Bridal Sarees',
+      subtext: "For life's most beautiful moments",
+      img: '/images/find_your_perfect_saree_banner.png',
+      className: styles.bentoCardBridal
     }
   ];
 
@@ -414,36 +426,41 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── SECTION 6: WHAT YOU CAN SELL (CATEGORIES) ─────────── */}
+      {/* ── SECTION 6: WHAT YOU CAN SELL (CATEGORIES — BENTO GRID MATCHING IMAGE 1) ── */}
       <section id="categories" className={styles.categoriesSection}>
         <div className={styles.sectionContainer}>
           <div className={styles.sectionHeader}>
-            <span className={styles.eyebrowTag}>POPULAR CATEGORIES</span>
-            <h2 className={styles.sectionTitle}>Showcase All Types of Saree Weaves</h2>
+            <span className={styles.eyebrowTag}>SAREE CATEGORIES</span>
+            <h2 className={styles.sectionTitle}>Made For Every Saree Story</h2>
             <p className={styles.sectionSubtitle}>
-              From traditional handloom silks to modern partywear organzas, buyers come to Happy Sarees for every occasion.
+              From timeless classics to modern weaves, sell every style that represents your craft.
             </p>
           </div>
 
-          <div className={styles.categoryGrid}>
+          <div className={styles.bentoCategoryGrid}>
             {categories.map((cat, idx) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                key={cat.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.08 }}
-                className={styles.categoryTile}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+                className={`${styles.bentoCard} ${cat.className}`}
               >
                 <img
                   src={cat.img}
                   alt={cat.name}
-                  className={styles.categoryImg}
+                  className={styles.bentoImg}
                   onError={(e) => handleImageError(e, fallbackSareeImg)}
                 />
-                <div className={styles.categoryOverlay}>
-                  <span className={styles.categoryTag}>{cat.tag}</span>
-                  <h3 className={styles.categoryName}>{cat.name}</h3>
+                <div className={styles.bentoOverlay}>
+                  <div className={styles.bentoContentTop}>
+                    <h3 className={styles.bentoTitle}>{cat.name}</h3>
+                    <p className={styles.bentoSubtext}>{cat.subtext}</p>
+                  </div>
+                  <div className={styles.bentoArrowBtn}>
+                    <FiArrowRight />
+                  </div>
                 </div>
               </motion.div>
             ))}

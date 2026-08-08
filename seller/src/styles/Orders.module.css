@@ -1405,3 +1405,670 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Order List (ol) Redesign CSS ── */
+.olContainer {
+  padding: 24px;
+  animation: fadeIn 0.4s ease;
+  font-family: var(--font-sans);
+  color: var(--text-color);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.olToast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: var(--radius-small, 8px);
+  box-shadow: 0 10px 30px rgba(209, 27, 105, 0.2);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  animation: slideIn 250ms ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.olHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.olEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.olTitle {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 0;
+}
+
+.olSubtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+}
+
+.olRefreshBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--bg-white);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-color);
+  border-radius: var(--radius-small, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.olRefreshBtn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: rgba(209, 27, 105, 0.02);
+}
+
+.olStatsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.olStatCard {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium, 16px);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-premium, 0 4px 20px rgba(0,0,0,0.05));
+  border: 1px solid rgba(43, 18, 32, 0.05);
+  border-left: 4.5px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.olStatCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover, 0 8px 30px rgba(0,0,0,0.08));
+}
+
+.olStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.olStatValue {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-serif);
+}
+
+.olTabsBar {
+  display: flex;
+  background: var(--bg-white);
+  border: 1px solid rgba(43, 18, 32, 0.07);
+  border-radius: var(--radius-premium, 16px);
+  box-shadow: var(--shadow-premium);
+  padding: 4px 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.olTabsList {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 280px;
+}
+
+.olTabsList::-webkit-scrollbar {
+  height: 2px;
+}
+
+.olTabBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 3.5px solid transparent;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.olTabBtn:hover {
+  color: var(--primary-color);
+}
+
+.olTabBtnActive {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.olCountPill {
+  background: rgba(43, 18, 32, 0.06);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.olCountPillActive {
+  background: var(--primary-color);
+  color: #fff !important;
+}
+
+.olSearchBox {
+  position: relative;
+  width: 280px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .olSearchBox { width: 100%; }
+}
+
+.olSearchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.olSearchInput {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  border: 1.5px solid rgba(43, 18, 32, 0.1);
+  border-radius: var(--radius-small, 8px);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.olSearchInput:focus {
+  border-color: var(--primary-color);
+}
+
+.olSearchClear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.olSearchClear:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.olErrorBanner {
+  background: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  padding: 12px 16px;
+  border-radius: var(--radius-small, 8px);
+  font-size: 13.5px;
+  margin-bottom: 24px;
+}
+
+.olCard {
+  background: var(--bg-white);
+  border: 1px solid rgba(43, 18, 32, 0.06);
+  border-radius: var(--radius-premium, 16px);
+  box-shadow: var(--shadow-premium);
+  overflow: hidden;
+}
+
+.olEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.olEmptyTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.olEmptyDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.olTableWrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.olTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.olTh {
+  padding: 14px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  background: rgba(209, 27, 105, 0.02);
+  border-bottom: 1.5px solid var(--border-color);
+}
+
+.olTr {
+  border-bottom: 1px solid rgba(43, 18, 32, 0.05);
+  transition: background 0.15s ease;
+}
+
+.olTr:hover {
+  background: rgba(209, 27, 105, 0.015);
+}
+
+.olTd {
+  padding: 16px 20px;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.olOrderNum {
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 13.5px;
+  color: var(--text-color);
+}
+
+.olProductCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 280px;
+}
+
+.olProductImg {
+  width: 36px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: var(--radius-small, 6px);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.olProductInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.olProductName {
+  font-weight: 700;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.olProductQty {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.olDate {
+  color: var(--text-muted);
+}
+
+.olCustomer {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+}
+
+.olCustomerName {
+  font-weight: 600;
+}
+
+.olCustomerEmail {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  display: block;
+}
+
+.olTotal {
+  font-weight: 800;
+  color: var(--text-color);
+  font-size: 13.5px;
+}
+
+.olActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.olActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-small, 6px);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+}
+
+.olActionView {
+  background: rgba(39, 24, 157, 0.05);
+  color: var(--secondary-color);
+}
+
+.olActionView:hover {
+  background: var(--secondary-color);
+  color: #fff;
+}
+
+.olActionEdit {
+  background: rgba(209, 27, 105, 0.05);
+  color: var(--primary-color);
+}
+
+.olActionEdit:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.olTableFooter {
+  padding: 14px 20px;
+  background: rgba(43, 18, 32, 0.01);
+  border-top: 1px solid rgba(43, 18, 32, 0.04);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Modal Overlay & Dialog ── */
+.olModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(43, 18, 32, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.olModal {
+  background: var(--bg-white);
+  border-radius: var(--radius-premium, 16px);
+  box-shadow: 0 20px 50px rgba(43, 18, 32, 0.15);
+  border: 1px solid rgba(43, 18, 32, 0.06);
+  width: 100%;
+  max-width: 520px;
+  animation: modalScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.olModalHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(43, 18, 32, 0.07);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.olModalTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.olModalClose {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.olModalClose:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.olModalBody {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.olModalDesc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin: 0 0 20px 0;
+}
+
+.olDetailGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.olDetailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(43, 18, 32, 0.06);
+}
+
+.olDetailRow:last-child {
+  border-bottom: none;
+}
+
+.olDetailLabel {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.olDetailValue {
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: right;
+}
+
+.olFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.olFieldLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-color);
+  letter-spacing: 0.02em;
+}
+
+.olSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(43, 18, 32, 0.1);
+  border-radius: var(--radius-small, 8px);
+  outline: none;
+  font-size: 13px;
+  background: var(--bg-white);
+}
+
+.olSelect:focus {
+  border-color: var(--primary-color);
+}
+
+.olInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(43, 18, 32, 0.1);
+  border-radius: var(--radius-small, 8px);
+  outline: none;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.olInput:focus {
+  border-color: var(--primary-color);
+}
+
+.olModalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(43, 18, 32, 0.07);
+  background: rgba(43, 18, 32, 0.015);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.olBtnSecondary {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-small, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.olBtnSecondary:hover {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.olBtnPrimary {
+  padding: 9px 20px;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-small, 8px);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: filter 0.2s ease;
+}
+
+.olBtnPrimary:hover {
+  filter: brightness(0.9);
+}
+
+.olSkeletonWrap {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.olSkeletonRow {
+  height: 48px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.03) 25%, rgba(0,0,0,0.07) 50%, rgba(0,0,0,0.03) 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loadingShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+

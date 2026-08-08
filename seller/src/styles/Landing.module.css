@@ -676,65 +676,138 @@
   line-height: 1.6;
 }
 
-/* ── WHAT YOU CAN SELL (CATEGORIES) ───────────────────────── */
+/* ── WHAT YOU CAN SELL (CATEGORIES — BENTO GRID MATCHING IMAGE 1) ── */
 .categoriesSection {
   padding: 110px 0;
   background-color: #ffffff;
 }
 
-.categoryGrid {
+.bentoCategoryGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  grid-template-columns: 1.15fr 1fr 1fr 1fr;
+  grid-template-rows: 250px 250px;
+  gap: 1.2rem;
 }
 
-.categoryTile {
+.bentoCard {
   position: relative;
-  border-radius: var(--radius-premium);
+  border-radius: 22px;
   overflow: hidden;
-  height: 280px;
-  box-shadow: 0 10px 30px rgba(43, 18, 32, 0.1);
+  box-shadow: 0 10px 30px rgba(43, 18, 32, 0.08);
   text-decoration: none;
-  background: #27189D;
-  border: 1px solid rgba(197, 160, 89, 0.2);
+  background: #1a0f6e;
+  border: 1px solid rgba(209, 27, 105, 0.12);
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.categoryImg {
+.bentoCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 42px rgba(209, 27, 105, 0.18);
+  border-color: rgba(197, 160, 89, 0.5);
+}
+
+/* Card Grid Placements */
+.bentoCardKanchipuram {
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+}
+
+.bentoCardBanarasi {
+  grid-column: 2 / 4;
+  grid-row: 1 / 2;
+}
+
+.bentoCardOrganza {
+  grid-column: 4 / 5;
+  grid-row: 1 / 2;
+}
+
+.bentoCardCotton {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+.bentoCardGeorgette {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+}
+
+.bentoCardBridal {
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
+}
+
+.bentoImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.categoryTile:hover .categoryImg {
-  transform: scale(1.08);
+.bentoCard:hover .bentoImg {
+  transform: scale(1.06);
 }
 
-.categoryOverlay {
+.bentoOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 35%, rgba(26, 15, 110, 0.92) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(20, 10, 35, 0.72) 100%);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 1.6rem;
   color: #ffffff;
+  z-index: 2;
 }
 
-.categoryTag {
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: var(--gold-color);
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
+.bentoContentTop {
+  max-width: 85%;
 }
 
-.categoryName {
+.bentoTitle {
   font-family: var(--font-serif);
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  margin-top: 4px;
   color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.bentoCardKanchipuram .bentoTitle {
+  font-size: 1.8rem;
+}
+
+.bentoSubtext {
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 500;
+  line-height: 1.4;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.bentoArrowBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.bentoCard:hover .bentoArrowBtn {
+  background: #ffffff;
+  color: var(--primary-color);
+  border-color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 /* ── COMMISSION & TRANSPARENCY STRIP ────────────────────── */
@@ -1138,8 +1211,24 @@
     height: 390px;
   }
 
-  .benefitsGrid, .categoryGrid, .testimonialGrid {
+  .benefitsGrid, .testimonialGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bentoCategoryGrid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .bentoCardKanchipuram,
+  .bentoCardBanarasi,
+  .bentoCardOrganza,
+  .bentoCardCotton,
+  .bentoCardGeorgette,
+  .bentoCardBridal {
+    grid-column: auto;
+    grid-row: auto;
+    height: 250px;
   }
 
   .stepsGrid {
@@ -1175,7 +1264,7 @@
     font-size: 0.68rem;
   }
 
-  .benefitsGrid, .categoryGrid, .testimonialGrid, .transparencyGrid {
+  .benefitsGrid, .bentoCategoryGrid, .testimonialGrid, .transparencyGrid {
     grid-template-columns: 1fr;
   }
 
