@@ -38,17 +38,17 @@ export default function Landing() {
     payoutsDisbursed: 2500000
   });
 
-  // Sticky nav scroll listener
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = [
+    '/images/hero_slider_1.jpg',
+    '/images/hero_slider_2.jpg'
+  ];
+
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % slides.length);
+    }, 4500);
+    return () => clearInterval(timer);
   }, []);
 
   // Fetch live stats from backend
@@ -144,42 +144,42 @@ export default function Landing() {
       id: 'kanchipuram',
       name: 'Kanchipuram Silk',
       subtext: 'Timeless silk craftsmanship',
-      img: '/images/cat_kanchipuram.png',
+      img: '/images/cat_kanchipuram.jpg',
       className: styles.bentoCardKanchipuram
     },
     {
       id: 'banarasi',
       name: 'Banarasi',
       subtext: 'Heritage woven in every thread',
-      img: '/images/cat_banarasi.png',
+      img: '/images/cat_banarasi.jpg',
       className: styles.bentoCardBanarasi
     },
     {
       id: 'organza',
       name: 'Organza',
       subtext: 'Light. Elegant. Contemporary.',
-      img: '/images/cat_organza.png',
+      img: '/images/cat_organza.jpg',
       className: styles.bentoCardOrganza
     },
     {
       id: 'cotton',
       name: 'Cotton',
       subtext: 'Everyday comfort and elegance',
-      img: '/images/why_choose_us_models.png',
+      img: '/images/cat_cotton.jpg',
       className: styles.bentoCardCotton
     },
     {
       id: 'georgette',
       name: 'Georgette',
       subtext: 'Graceful & flowing styles',
-      img: '/images/woven_to_be_noticed_banner.jpg',
+      img: '/images/cat_georgette.jpg',
       className: styles.bentoCardGeorgette
     },
     {
       id: 'bridal',
       name: 'Bridal Sarees',
       subtext: "For life's most beautiful moments",
-      img: '/images/find_your_perfect_saree_banner.png',
+      img: '/images/cat_bridal.jpg',
       className: styles.bentoCardBridal
     }
   ];
@@ -324,21 +324,19 @@ export default function Landing() {
               className={styles.heroVisualCol}
             >
               <div className={styles.heroImageFrame}>
-                <img
-                  src="/images/woven_to_be_noticed_banner.jpg"
-                  alt="Saree Weaver Craftsmanship"
-                  className={styles.heroImg}
-                  onError={(e) => handleImageError(e, '/images/find_your_perfect_saree_banner.png')}
-                />
-                <div className={styles.heroBadgeFloating}>
-                  <div className={styles.badgeIconCircle}>
-                    <FiShield />
-                  </div>
-                  <div>
-                    <span className={styles.badgeTextMain}>100% Verified Sellers</span>
-                    <span className={styles.badgeTextSub}>Direct Bank Settlements</span>
-                  </div>
-                </div>
+                <AnimatePresence initial={false}>
+                  <motion.img
+                    key={currentSlide}
+                    src={slides[currentSlide]}
+                    alt="Saree Weaver Craftsmanship"
+                    className={styles.heroSliderImg}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.0, ease: 'easeInOut' }}
+                    onError={(e) => handleImageError(e, '/images/find_your_perfect_saree_banner.png')}
+                  />
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>
